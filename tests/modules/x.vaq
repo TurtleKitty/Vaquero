@@ -1,0 +1,6 @@
+
+(lib (x)
+    (if (= x 0)
+        'x
+        (use foo "y.vaq" x.dec)))
+

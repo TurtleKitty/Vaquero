@@ -1,0 +1,56 @@
+
+(def empty "")
+(def str "vaquero")
+(def yuck "YUCK")
+(def one "1")
+(def pi "3.14")
+(def fbb "foo.bar.baz")
+(def wwf "wah_23_wah_42___fuh")
+(def fb "  foonballardy!!!  \n")
+(def complicated "foo: x&1 bar : y&2 baz:z&3 quux :u&4, quakz: v&5")
+
+(sys.test 'text-type (= str.type 'text))
+(sys.test 'text-true (= str.to-bool true))
+(sys.test 'text-false (= empty.to-bool false))
+(sys.test 'text-to-symbol (= str.to-symbol 'vaquero))
+(sys.test 'text-to-int (= one.to-number 1))
+(sys.test 'text-to-real (= pi.to-number 3.14))
+(sys.test 'text-split (= '("foo" "bar" "baz") (fbb.split "[.]")))
+(sys.test 'text-set! (= "2" (seq (one.set! 0 \2) one)))
+(sys.test 'text-uc   (= "VAQUERO" str.uc))
+(sys.test 'text-lc   (= "yuck" yuck.lc))
+(sys.test 'text-take (= "va" (str.take 2)))
+(sys.test 'text-drop (= "quero" (str.drop 2)))
+(sys.test 'text-trim (= fb.trim "foonballardy!!!"))
+(sys.test 'text-ltrim (= fb.ltrim "foonballardy!!!  \n"))
+(sys.test 'text-rtrim (= fb.rtrim "  foonballardy!!!"))
+(sys.test 'text-lpad (= "   vaquero" (str.lpad \space 10)))
+(sys.test 'text-rpad (= "vaquero   " (str.rpad \space 10)))
+(sys.test 'text-chomp (= fb.chomp "  foonballardy!!!  "))
+(sys.test 'text-index (= (fb.index "!") 14))
+
+(sys.test 'text-regex-match-case-sensitive
+    (and 
+        (str.match "vaquero")
+        (not (str.match "VAQUERO"))))
+
+(sys.test 'text-regex-match-case-insensitive
+    (str.match "VAQUERO" flags: "i"))
+
+(sys.test 'text-regex-split
+    (= '("wah" "wah" "fuh")
+        (wwf.split "_+\\d+_+")))
+
+(sys.test 'text-regex-capture
+    (=
+        '(("foo: x&1" "foo" "x&1" "x" "1") ("bar : y&2" "bar" "y&2" "y" "2") ("baz:z&3" "baz" "z&3" "z" "3") ("quux :u&4" "quux" "u&4" "u" "4") ("quakz: v&5" "quakz" "v&5" "v" "5"))
+        (complicated.capture (text: ((\w+)\s*:\s*((\w+)&(\d+)))))))
+
+(sys.test 'text-regex-replace
+    (= "blah_23_wah_42___fuh"
+        (wwf.replace "wah" "blah")))
+
+(sys.test 'text-regex-replace-all
+    (= "blah_23_blah_42___fuh"
+        (wwf.replace "wah" "blah" flags: "g")))
+

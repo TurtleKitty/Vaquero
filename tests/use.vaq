@@ -1,0 +1,91 @@
+
+; use
+
+(sys.test 'use-proc-file
+    (let ()
+        (use foreigner "modules/proc.vaq")
+        (= (foreigner 1 2) '(foreigner 1 2))))
+
+(sys.test 'use-parameters-file
+    ((proc ()
+        (use one   "modules/param.vaq" 1 2)
+        (use two   "modules/param.vaq" 'a 'b 'c 'd)
+        (use three "modules/param.vaq" 2 3 4 foo: "FOO" bar: "BAR" 5 6)
+        (and
+            (= one   '(1 2 null null ()))
+            (= two   '(a b null null (c d)))
+            (= three '(2 3 "FOO" "BAR" (4 5 6)))))))
+
+(sys.test 'use-other-file
+    (let ()
+        (use other "modules/use_other.vaq" foon-type: 'adler)
+        (= other '(foonballardy 5 7 adler))))
+
+(sys.test 'use-macro-file
+    ((proc ()
+        (use m "modules/macro.vaq")
+        (and
+            (= (m-quote-xyz 1 2 3) '(1 2 3))
+            (= (send (m-calc-xyz 1 2 3) 'code) '(proc (v) (* v 17)))
+            (= ((m-calc-xyz 1 2 3) 4 ) 68)))))
+
+(sys.test 'use-recursive
+    ((proc ()
+        (= 120 (use foo "modules/recursive.vaq" 5)))))
+
+(sys.test 'use-mutually-recursive
+    (let ()
+        (use m1 "modules/x.vaq" 4)
+        (use m2 "modules/x.vaq" 5)
+        (use m3 "modules/y.vaq" 4)
+        (use m4 "modules/y.vaq" 5)
+        (and
+            (= 'x m1)
+            (= 'y m2)
+            (= 'y m3)
+            (= 'x m4))))
+
+(rem: commenting out until new module system is online
+
+(sys.test 'use-symbol
+    (let ()
+        (and
+            (= '(test "0.2.0") (use m1 vaquero/test/vaquero-lib/0))
+            (= '(test "0.1.2") (use m2 vaquero/test/vaquero-lib/0.1))
+            (= '(test "0.1.0") (use m3 vaquero/test/vaquero-lib/0.1.0))
+            (= '(test "1.6.4") (use m4 vaquero/test/vaquero-lib/1))
+            (= '(test "1.2.4") (use m5 vaquero/test/vaquero-lib/1.2.4))
+            (= '(test "1.5.9") (use m6 vaquero/test/vaquero-lib/1.5))
+            (= '(test "1.5.7") (use m7 vaquero/test/vaquero-lib/1.5.7))
+            (= '(test "0.2.0") (use m8 github/TurtleKitty/vaquero-lib/test/vaquero-lib/0))
+            (= '(test "1.6.4") (use m9 github/TurtleKitty/vaquero-lib/test/vaquero-lib/1)))))
+
+(sys.test 'use-proc-https
+    (let () 
+        (use foreigner "https://raw.githubusercontent.com/TurtleKitty/Vaquero/master/tests/modules/proc.vaq")
+        (= (foreigner 1 2) '(foreigner 1 2))))
+
+(sys.test 'use-parameters-https
+    ((proc ()
+        (use one   "https://raw.githubusercontent.com/TurtleKitty/Vaquero/master/tests/modules/param.vaq" 1 2)
+        (use two   "https://raw.githubusercontent.com/TurtleKitty/Vaquero/master/tests/modules/param.vaq" 'a 'b 'c 'd)
+        (use three "https://raw.githubusercontent.com/TurtleKitty/Vaquero/master/tests/modules/param.vaq" 2 3 4 foo: "FOO" bar: "BAR" 5 6)
+        (and
+            (= one   '(1 2 null null ()))
+            (= two   '(a b null null (c d)))
+            (= three '(2 3 "FOO" "BAR" (4 5 6)))))))
+
+(sys.test 'use-other-https
+    (let ()
+        (use other "https://raw.githubusercontent.com/TurtleKitty/Vaquero/master/tests/modules/use_other.vaq" foon-type: 'bobkin)
+        (= other '(foonballardy 5 7 bobkin))))
+
+(sys.test 'use-macro-https
+    ((proc ()
+        (use m "https://raw.githubusercontent.com/TurtleKitty/Vaquero/master/tests/modules/macro.vaq")
+        (and
+            (= (m-quote-xyz 1 2 3) '(1 2 3))
+            (= (send (m-calc-xyz 1 2 3) 'code) '(proc (v) (* v 17)))
+            (= ((m-calc-xyz 1 2 3) 4 ) 68)))))
+)
+

@@ -1,0 +1,69 @@
+
+; macro expansion
+
+(sys.test 'simple-macro
+    (let ()
+        (macro foo (x y) (list 'list x y))
+        (= (foo 1 2) '(1 2))))
+
+(sys.test 'macro-object
+    (let ()
+        (macro brat (x)
+            (def foo (object 'a x))
+            foo.a)
+        (= (brat 1) 1)))
+
+(sys.test 'macro-writing-macro
+    (let ()
+        (macro mac-on-mac (name body)
+            (list 'macro name '(x y)
+                (list
+                    'list
+                    '(quote quote)
+                    (list 'list 'x 'y body))))
+        (mac-on-mac boo 3)
+        (mac-on-mac blorg 'meow)
+        (and
+            (= (boo 1 2) '(1 2 3))
+            (= (blorg 4 5) '(4 5 meow)))))
+
+(sys.test 'macro-eval
+    (let ()
+        (macro-eval
+            (def xyz 23) 
+            (proc bar (x) (* x x)))
+        (macro foo (v) 
+            %(list $v $xyz $(bar v)))
+        (= (foo 7)
+          '(7 23 49))))
+
+(sys.test 'macro-with-internal-procedure
+    (let ()
+        (macro qux (foon ball)
+            (proc bar (x y)
+                (list (- x y) (* x y)))
+            %(list '$(bar foon ball) '$(bar ball foon)))
+        (= (qux 2 3) '((-1 6) (1 6)))))
+
+(sys.test 'macro-with-internal-macro
+    (let ()
+        (macro bob (n)
+            (let loop (x n totes 0)
+                (if x.zero?
+                    totes
+                    (loop x.dec (+ x totes)))))
+        (= (bob 5) 15)))
+
+(sys.test 'runtime-macro ; muhahahaha
+    (wall ()
+        (macro screw-with-proc (f) 
+            (list (list 'proc '(x) (list '* 10 f.code.tail.tail.head)) 3)) 
+        (proc foo (x) (* x x)) 
+        (proc bar (x) (+ x x)) 
+        (def fs (list foo bar))
+        (= '(9 6 (90 60))
+            (list
+                (foo 3)
+                (bar 3)
+                (env.eval (pair 'list (fs.map screw-with-proc)))))))
+

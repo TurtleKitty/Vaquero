@@ -1,0 +1,29 @@
+
+(proc meta (n rec)
+    (if (= n 0)
+        rec
+        (seq
+            (rec.set! (gensym) (record))
+            (meta (- n 1) rec))))
+
+(proc meta-meta (x)
+    (meta 1000 x)
+    (meta 1000 x)
+    (meta 1000 x)
+    (meta 1000 x)
+    (meta 1000 x))
+
+(def x (record))
+
+(meta-meta x)
+(meta-meta x)
+(meta-meta x)
+(meta-meta x)
+(meta-meta x)
+(meta-meta x)
+(meta-meta x)
+(meta-meta x)
+(meta-meta x)
+(meta-meta x)
+
+(sys.say (sys.read))

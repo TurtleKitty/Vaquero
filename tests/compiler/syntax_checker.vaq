@@ -1,0 +1,10 @@
+
+(use checker "../../compiler/syntax_checker.vaq" sys.log)
+
+(def code (sys.fs.from "tests/bool.vaq" (proc (f) f.read-vaquero)))
+
+(def macro-env (make-env))
+(def expanded (macro-env.expand code))
+
+(sys.test 'syntax-checker (checker expanded))
+

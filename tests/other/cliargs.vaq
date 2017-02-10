@@ -1,0 +1,5 @@
+#!/usr/local/bin/vaquero run
+
+(sys.say sys.opt)
+(sys.say sys.rest)
+

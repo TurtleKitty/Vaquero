@@ -1,0 +1,291 @@
+
+; Vaquero core
+
+; def
+
+(def x 5)
+(sys.test 'def (= x 5))
+
+
+; quote
+
+(sys.test 'quote-symbol (= (quote foo) 'foo))
+(sys.test 'quote-list (= (list 1 2 3) '(1 2 3)))
+
+
+; if
+
+(sys.test 'if-true
+    (if true
+        true
+        false))
+
+(sys.test 'if-false
+    (if false
+        false
+        true))
+
+; seq
+
+(sys.test 'seq-1
+    (= (seq 1) 1))
+
+(sys.test 'seq-2
+    (= (seq 1 2) 2))
+
+(sys.test 'seq-3
+    (= (seq 1 2 3) 3))
+
+
+; set!
+
+(sys.test 'set!
+    (let (mute 1)
+        (set! mute 2)
+        (= mute 2)))
+
+(sys.test 'set-other
+    (let (mute 1)
+        (set! mute "I'm a text!")
+        (= mute "I'm a text!")))
+
+(sys.test 'set-higher
+    (let (mute 1)
+        (let ()
+            (set! mute 3))
+        (= mute 3)))
+
+; del!
+
+(sys.test 'del!
+    (= 'undefined-symbol
+        (guard
+            (proc (e k) e.name)
+            (let (doomed 23)
+                (def flag (= doomed 23))
+                (del! doomed)
+                doomed))))
+
+(sys.test 'del-higher!
+    (= 'undefined-symbol
+        (guard
+            (proc (e k) e.name)
+            (let (doomed 23)
+                (let ()
+                    (del! doomed))
+                doomed))))
+
+; proc
+
+(sys.test 'proc-identity
+    (let ()
+        (def foo (proc (x) x))
+        (= 'zebra (foo 'zebra))))
+
+(sys.test 'proc-add
+    (let ()
+        (def bar (proc (x y) (+ x y)))
+        (= 5 (bar 2 3))))
+
+(sys.test 'proc-recursion
+    (let ()
+        (def fact
+            (proc (n)
+                (if (= n 1)
+                    1
+                    (* n (fact (- n 1))))))
+        (= 120 (fact 5))))
+
+(sys.test 'proc-options
+    (let ()
+        (def zuul
+            (proc (x)
+                (if opt.keymaster
+                    (if opt.gatekeeper
+                        (list x opt.keymaster opt.gatekeeper)
+                        (list x opt.keymaster))
+                    x)))
+        (and
+            (= (zuul 'gozer) 'gozer)
+            (= (zuul 'gozer keymaster: 'louis) '(gozer louis))
+            (= (zuul 'gozer keymaster: 'louis gatekeeper: 'dana) '(gozer louis dana)))))
+
+(sys.test 'proc-rest
+    (let ()
+        (def embiggen
+            (proc (xs)
+                (if xs.empty?
+                    xs
+                    (pair (* 10 xs.head) (embiggen xs.tail)))))
+        (def various
+            (proc (funk)
+                (funk rest)))
+        (= (various embiggen 1 2 3) '(10 20 30))))
+
+(sys.test 'proc-mutual-recursion
+    (let ()
+        (def F
+            (proc (n)
+                (if (= n 0)
+                    1
+                    (- n (M (F (- n 1)))))))
+        (def M
+            (proc (n)
+                (if (= n 0)
+                    0
+                    (- n (F (M (- n 1)))))))
+        (and (= (F 19) 12) (= (M 19) 12)))) 
+
+(sys.test 'proc-lexical-closure
+    (let ()
+        (def counter
+            (proc (x)
+                (proc ()
+                    (if opt.inc
+                        (set! x (+ x opt.inc))
+                        x))))
+        (def c1 (counter 0))
+        (def c2 (counter 23))
+        (c1 inc: 1)
+        (c2 inc: 7)
+        (and (= (c1) 1)
+             (= (c2) 30)
+             ((proc ()
+                (def x 99)
+                (c1 inc: 7)
+                (and (= x 99)
+                     (= (c1) 8)))))))
+
+
+; continuations - return, gate, and capture
+
+(sys.test 'return
+    (= 10
+        ((proc ()
+            (return 10)
+            20
+            30))))
+
+(sys.test 'return-nested
+    (= 5
+        ((proc ()
+            (def x ((proc () (return 10) 20)))
+            (if (= x 10)
+                (return 5)
+                6)))))
+
+(sys.test 'gate-no-capture
+    (= 3
+        (gate (+ 1 2))))
+
+(sys.test 'gate-abort
+    (= 2
+        (gate
+            (+ 1
+                (capture k 2)))))
+
+(sys.test 'capture-call-1
+    (= 3
+        (gate
+            (+ 1
+                (capture k (+ 1 (k 1)))))))
+
+(sys.test 'capture-call-n
+    (= 5
+        (gate
+            (+ 1
+                (capture k (+ 1 (k (k (k 1)))))))))
+
+
+; errors - ensure, guard, and fail
+
+(proc proc-handler (err kontinue)
+    (if (= err 'resume)
+        (kontinue 42)
+        (if (= err 'default)
+            69
+            (fail 'we-are-fucked))))
+
+(sys.test 'guard-no-error
+    (= 6
+        (+ 1
+            (guard
+                proc-handler
+                (+ 2 3)))))
+
+(sys.test 'guard-default
+    (= 70
+        (+ 1
+            (guard
+                proc-handler
+                (+ 2 (fail 'default))))))
+
+(sys.test 'guard-continue
+    (= 45
+        (+ 1
+            (guard
+                proc-handler
+                (+ 2 (fail 'resume))))))
+
+(sys.test 'guard-abort
+    (= 0
+        (guard
+            (proc (e k) 0)
+            (+ 1
+                (guard
+                    proc-handler
+                    (+ 2 (fail 'crap)))))))
+
+(sys.test 'ensure-no-jump
+    ((proc ()
+        (def x 1)
+        (def y
+            (ensure
+                (proc () (set! x 3))
+                (seq (set! x 2) (+ x 3))))
+        (and (= x 3) (= y 5)))))
+
+(sys.test 'ensure-no-capture-across
+    ((proc ()
+        (def x 1)
+        (def y
+            (gate
+                (* 10
+                    (ensure
+                        (proc () (set! x 3))
+                        (seq
+                            (set! x 5)
+                            (+ 2
+                                (capture k (k (k x)))))))))
+        (and (= x 3) (= y 90)))))
+
+(sys.test 'ensure-error
+    ((proc ()
+        (def x 1)
+        (def y
+            (guard
+                (proc (e k) (+ 7 e))
+                (ensure
+                    (proc () (set! x 3))
+                    (seq
+                        (set! x 5)
+                        (+ 2 (fail x))))))
+        (and (= x 3) (= y 12)))))
+                
+(sys.test 'wall
+    ((proc ()
+        (def x 1)
+        (def y 2)
+        (def z 3)
+        (wall (x y) ; new environment with passed parameters
+            (def got-x (= x 1))
+            (def got-y (= y 2))
+            (def no-z  (not (env.has? 'z)))
+            (and got-x got-y no-z)))))
+
+(sys.test 'unicode
+    (seq
+        (def λא象
+            (proc () "λא象"))
+        (= (λא象) "λא象")))
+

@@ -1,0 +1,39 @@
+
+(def empty (vector))
+(def vick (vector 8 6 7 5 3 0 9))
+(def veck (vector 3 2 1))
+
+(sys.test 'vector-access (and (= vick.0 8) (= vick.3 5) (= vick.6 9)))
+(sys.test 'vector-apply (= (vick 5) 0)) 
+
+(sys.test 'vector-type        (= vick.type 'vector))
+(sys.test 'vector-view        (= vick.view (list 'vector: 8 6 7 5 3 0 9)))
+(sys.test 'vector-false       (= empty.to-bool false))
+(sys.test 'vector-true        (= vick.to-bool true))
+(sys.test 'vector-to-list     (= vick.to-list '(8 6 7 5 3 0 9)))
+(sys.test 'vector-pairs       (= veck.pairs (list '(0 . 3) '(1 . 2) '(2 . 1))))
+(sys.test 'vector-size        (= vick.size 7))
+(sys.test 'vector-has?        (= (vick.has? 7) true))
+(sys.test 'vector-has?-not    (= (vick.has? 4) false))
+(sys.test 'vector-set!        (seq (veck.set! 1 9) (= 9 veck.1)))
+
+(sys.test 'vector-fold
+    (= (vick.fold
+            0
+            (λ (acc x) (+ acc x))) 38))
+
+(sys.test 'vector-reduce
+    (= (vick.reduce
+            0
+            (λ (acc x) (+ acc x))) 38))
+
+(sys.test 'vector-map
+    (= (vick.map
+            (λ (x) (* 10 x)))
+            '(vector: 80 60 70 50 30 0 90)))
+
+(sys.test 'vector-filter (= (vick.filter (λ (x) (> x 5))) '(vector: 8 6 7 9)))
+(sys.test 'vector-sort-< (= (vick.sort <) '(vector: 0 3 5 6 7 8 9)))
+(sys.test 'vector-sort-> (= (vick.sort >) '(vector: 9 8 7 6 5 3 0)))
+
+

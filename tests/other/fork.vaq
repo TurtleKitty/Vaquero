@@ -1,0 +1,14 @@
+
+(proc p ()
+    (sys.say 1)
+    (sys.proc.sleep (ndx 1 3))
+    (sys.say 2)
+    (sys.proc.sleep (ndx 1 3))
+    (sys.say 3)
+    (sys.proc.sleep (ndx 1 3))
+    (sys.say "Gone!")
+    (sys.proc.exit))
+
+(each n (range 1 7)
+    (sys.proc.fork p))
+

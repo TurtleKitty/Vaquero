@@ -1,0 +1,59 @@
+
+(def cache (:))
+
+(proc get-latest-version (repo path version)
+    (proc frac (x) (x.split "[.]"))
+    (proc ton (x) (x.map (_ _.to-number)))
+    (def n (ton (frac version)))
+    (proc filt (x)
+        (def s n.size)
+        (case s
+            (1) (= x.0 n.0)
+            (2) (and (= x.0 n.0) (= x.1 n.1)) 
+            (3) (= x n)))
+    (proc sorter (x y)
+        (if (< x.0 y.0)
+            false
+            (if (< x.1 y.1)
+                false
+                (if (< x.2 y.2)
+                    false
+                    true))))
+    (def api-uri (cat with: "/" "https://api.github.com/repos" repo "contents" path))
+    (let (cpath (cat with: "-v" api-uri version))
+        (def cached (cache cpath))
+        (if cached
+            cached
+            (seq
+                (def git-info (json.parse (sys.net.http.get api-uri)))
+                (when (not git-info)
+                    (error 'not-found
+                           %(sys.net.http.get $api-uri)
+                           (cat "GitHub API unavailable. Could be network trouble or API rate limits. Try \"curl " api-uri "\"")))
+                (def names (git-info.map (_ _.name)))
+                (def nums (names.map (_ (ton (frac _)))))
+                (def only (nums.filter filt))
+                (when only.size.zero?
+                    (fail (list 'symbol-uri-not-found repo path version)))
+                (def sorted (only.sort sorter))
+                (def the-one (cat.apply sorted.0 (: with ".")))
+                (def the-uri (send (send (git-info.filter (_ (= _.name the-one))) 0) 'download_url))
+                (cache.set! cpath the-uri)
+                the-uri))))
+
+(proc vaquero (str)
+    (def xs (str.split "/"))
+    (def version xs.reverse.head)
+    (def path
+        (cat.apply (xs.take xs.size.dec) (: with "/")))
+    (get-latest-version "TurtleKitty/vaquero-lib" path version))
+
+(proc github (str)
+    (def xs (str.split "/"))
+    (def user xs.0)
+    (def repo xs.1)
+    (def repo-path
+        (cat.apply ((send (xs.drop 2) 'take) (- xs.size 3)) (: with "/")))
+    (def version xs.reverse.head)
+    (get-latest-version (cat with: "/" user repo) repo-path version))
+

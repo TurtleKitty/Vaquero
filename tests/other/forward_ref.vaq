@@ -1,0 +1,13 @@
+
+; not sure if I should worry about this or not...
+
+(sys.test 'proc-forward-reference
+    (=  33
+        (let ()
+            (def x (xyzzy 3))
+
+            (proc xyzzy (x)
+                (* x 11))
+
+            x)))
+

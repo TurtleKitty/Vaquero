@@ -1,0 +1,90 @@
+
+; records
+
+(def barerec (record))
+(def simp (record 'x 2 'y 3))
+(def rec-one (: foo 23))
+
+(sys.test 'record-type (= simp.type 'record))
+(sys.test 'record-true (= true simp.to-bool))
+(sys.test 'record-false (= false barerec.to-bool))
+
+(sys.test 'message-send (and (= simp.x 2) (= simp.y 3)))
+(sys.test 'record-apply (= 2 (simp 'x)))
+
+(sys.test 'record-view
+    (= (list 'record: 'foo 23) rec-one.view))
+
+; primitive messages
+
+(sys.test 'record-has? (simp.has? 'x))
+(sys.test 'record-get (= 2 (simp.get 'x)))
+(sys.test 'record-put (= 5 (send (simp.put 'z 5) 'z)))
+
+(sys.test 'record-set!
+    (= 7
+        (seq
+            (simp.set! 'z 7)
+            simp.z)))
+
+(sys.test 'record-rm
+    (seq
+        (def noob (simp.rm 'z 5))
+        (and (simp.has? 'z) (not (noob.has? 'z)))))
+
+(sys.test 'record-del!
+    (= false
+        (seq
+            (simp.del! 'z)
+            (simp.has? 'z))))
+
+(sys.test 'record-size (= simp.size 2))
+
+(sys.test 'record-keys (= '(x y) (simp.keys.sort <))) 
+
+(sys.test 'record-values
+    (= '(2 3)
+        (simp.values.sort <)))
+
+(sys.test 'record-pairs
+    (= (list '(x . 2) '(y . 3))
+       (simp.pairs.sort (λ (a b) (< a.tail b.tail)))))
+
+(sys.test 'record-to-list
+    (= (list '(x . 2) '(y . 3))
+       (simp.to-list.sort (λ (a b) (< a.tail b.tail)))))
+
+(sys.test 'record-merge ; record equality is broken...
+    (seq
+        (def r1 (: x 1 y 2))
+        (def r2 (: y 5 z 8))
+        (and
+            (= (r1.merge r2) (: x 1 y 5 z 8))  
+            (= (r2.merge r1) (: x 1 y 2 z 8)))))
+
+(def yor (: a 1 b 2 c 3 d 4 e 5))
+
+(sys.test 'record-fold
+    (= 15
+       (yor.fold 0 (λ (total kv) (+ total kv.val)))))
+
+(sys.test 'record-reduce
+    (= '(total . 120)
+       (yor.reduce
+            '(total . 1)
+            (λ (total kv) (pair 'total (* total.val kv.val))))))
+
+(sys.test 'record-map
+    (let ()
+        (proc square-pair (p)
+            (pair p.key (* p.val p.val)))
+        (def noob (yor.map square-pair))
+        (= '(1 4 9 16 25) (noob.values.sort <))))
+
+(sys.test 'record-filter
+    (let ()
+        (proc kill4 (p)
+            (!= p.val 4))
+        (def noob (yor.filter kill4))
+        (= '(1 2 3 5) (noob.values.sort <))))
+

@@ -1,0 +1,6 @@
+
+(def foreign-proc
+    (proc (x y)
+        (list 'foreigner x y)))
+
+(lib () foreign-proc)

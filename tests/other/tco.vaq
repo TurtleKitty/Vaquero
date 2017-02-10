@@ -1,0 +1,14 @@
+
+(sys.test 'tco
+    (seq
+        (def count 1000000)
+        (def upto
+            (proc (max)
+                (def helper
+                    (λ (acc)
+                        (if (= acc max)
+                            acc
+                            (helper (+ acc 1)))))
+                (helper 0)))
+        (= (upto count) count)))
+

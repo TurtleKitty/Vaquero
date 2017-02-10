@@ -1,0 +1,10 @@
+
+(def runs 0)
+
+(proc omega (x)
+    (set! runs runs.inc)
+    (sys.say (list 'run runs))
+    (x x))
+
+(omega omega) ; KABOOM
+

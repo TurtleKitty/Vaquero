@@ -1,0 +1,4 @@
+
+(sys.say sys.fs.pwd)
+(sys.say sys.proc.program-name)
+

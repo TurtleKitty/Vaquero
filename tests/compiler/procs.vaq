@@ -1,0 +1,17 @@
+
+(def foo (proc (x) (+ x x)))
+
+(proc bar (y) (+ y y))
+
+(proc baz (v)
+    (def x (or opt.x 1))
+    (def y (or opt.y 2))
+    (def z (or opt.z 3))
+    (+ v x y z))
+
+(def I (λ (x) x))
+
+(sys.say (baz 1))
+(sys.say 
+    (baz 1 x: 2 y: 3 z: (+ 2 3)))
+

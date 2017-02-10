@@ -1,0 +1,409 @@
+
+; global prelude macros and procs
+
+(proc mahproc (x y)
+    (* x y 10))
+
+(sys.test 'proc
+    (= 120 (mahproc 3 4)))
+
+(sys.test ':
+    (= (record 'x 1 'y 2) (: x 1 y 2)))
+
+(sys.test 'null?
+    (null? null))
+
+(sys.test 'isa?
+    (= true (isa? mahproc 'proc)))
+
+(sys.test 'proc?
+    (proc? mahproc))
+
+(sys.test 'bool?
+    (bool? false))
+
+(sys.test 'symbol?
+    (symbol? 'foo))
+
+(sys.test 'num?
+    (and (num? 0) (num? 3.14159)))
+
+(sys.test 'int?
+    (int? 23))
+
+(sys.test 'nint?
+    (nint? 2.71828))
+
+(sys.test 'rune?
+    (rune? \x))
+
+(sys.test 'text?
+    (text? "foo"))
+
+(sys.test 'pair?
+    (and
+        (pair? '(1 . 2))
+        (pair? (pair 1 2))))
+
+(sys.test 'list?
+    (list? (list 1)))
+
+(sys.test 'vector?
+    (vector? (vector 2 3)))
+
+(sys.test 'record?
+    (record? (: x 1 y 2)))
+
+(sys.test 'append
+    (= '(1 2 3 4 5) (append '(1 2) '(3) '(4 5))))
+
+(sys.test 'papply
+    (=
+        '(partially applied list 1 2 3)
+        (let (x (papply list 'partially 'applied 'list))
+            (x 1 2 3))))
+
+(sys.test 'compose
+    (let ()
+        (proc f (xs) (xs.map (_ (* _ _))))
+        (proc g (xs) (xs.map (_ (+ _ 10))))
+        (and
+            (= '(121 144 169 196 225 256 289)
+                ((compose f g range) 1 7))
+            (= '(11 14 19 26 35 46 59)
+                ((compose g f range) 1 7)))))
+
+(sys.test 'let
+    ((λ ()
+        (def foo
+            (let loop (n 0)
+                (if (= n 10)
+                    n
+                    (loop (+ n 1)))))
+        (= foo 10))))
+
+(sys.test 'let-seq
+    (= '(2 . 3)
+        ((λ ()
+            (let (x 1 y 2)
+                (set! x 2)
+                (set! y 3)
+                (pair x y))))))
+
+(sys.test 'cond
+    ((thunk
+        (proc foo (x)
+            (cond
+                (= x 0) 'foo
+                (= x 1) 'bar
+                (= x 2) (+ x x x)
+                default: (* x x)))
+        (and
+            (= 'foo (foo 0))
+            (= 'bar (foo 1))
+            (= 6    (foo 2))
+            (= 9    (foo 3))))))
+
+(sys.test 'qq
+    ((thunk
+        (def x 1)
+        (def y 'foo)
+        (def z (list 2 3))
+        (and
+            (= (qq x) 'x)
+            (= (qq (unq x)) 1)
+            (= (qq (unq y)) 'foo)
+            (= (qq (unq z)) '(2 3))
+            (= (qq (x y z)) '(x y z))
+            (= (qq (x (unq x) y (unq y) z (unq z))) '(x 1 y foo z (2 3)))
+            (= (qq (x (unq x) y (unq y) z (unqs z))) '(x 1 y foo z 2 3))))))
+
+(sys.test 'when
+    (let ()
+        (proc foo (x)
+            (when (> x 10) 'is-a-biggun))
+        (=  (list (foo 0) (foo 9) (foo 23) (foo 42) (foo 153))
+           '(null null is-a-biggun is-a-biggun is-a-biggun))))
+
+(sys.test 'chain
+    (let ()
+        (def xs (range 0 10))
+        (proc foo (x) (* x x))
+        (proc bar (x) (and (> x 10) (< x 100)))
+        (= '(81 64 49 36 25 16)
+            (chain xs
+                (map foo)
+                (filter bar)
+                (sort >)))))
+
+(sys.test 'case
+    (let ()
+        (proc foo (x)
+            (case x
+                (0) 'foo
+                (1) 'bar
+                (2 3) (+ x x x)
+                default: (* x x)))
+        (and
+            (= 'foo (foo 0))
+            (= 'bar (foo 1))
+            (= 6    (foo 2))
+            (= 9    (foo 3))
+            (= 16   (foo 4)))))
+
+(sys.test 'while
+    (let (i 0 total 0)
+        (def rv
+            (while (< i 20)
+                (set! total (+ total i))
+                (set! i i.inc)
+                (list i total)))
+        (= rv '(20 190)))) 
+
+(sys.test 'while-next
+    (let (i 0 total 0)
+        (def rv
+            (while (< i 20)
+                (set! i i.inc)
+                (when (mod i 3)
+                    (next (list 'next i total)))
+                (set! total (+ total i))
+                (list i total)))
+        (= rv '(next 20 63))))
+
+(sys.test 'while-last
+    (let (i 0 total 0)
+        (def rv
+            (while (< i 20)
+                (set! i i.inc)
+                (when (> total 30)
+                    (last (list 'last i total)))
+                (set! total (+ total i))
+                (list i total)))
+        (= rv '(last 9 36))))
+
+(sys.test 'for
+    (= 210
+        (for (i 0 total 0) (<= i 20) (set! i i.inc)
+            (set! total (+ total i))
+            total)))
+
+(sys.test 'for-next
+    (= 110
+        (for (i 0 total 0) (<= i 20) (set! i i.inc)
+            (when (mod i 2)
+                (next total))
+            (set! total (+ total i))
+            total)))
+
+(sys.test 'for-redo
+    (= 220
+        (for (i 0 total 0) (<= i 20) (set! i i.inc)
+            (when (mod total 2)
+                (set! total total.inc)
+                (redo total))
+            (set! total (+ total i))
+            total)))
+
+(sys.test 'for-last
+    (= 105
+        (for (i 0 total 0) (<= i 20) (set! i i.inc)
+            (when (> total 100)
+                (last total))
+            (set! total (+ total i))
+            total)))
+
+(sys.test 'each
+    (let (items (range 1 5) total 0)
+        (each n items
+            (set! total (+ total n)))
+        (= total 15)))
+
+(sys.test 'each-vector
+    (let (items (apply vector (range 1 5) (:)) total 0)
+        (each n items
+            (set! total (+ total n)))
+        (= total 15)))
+
+(sys.test 'each-record
+    (let (items (: x 1 y 2 z 3 u 4 v 5) total 0)
+        (each n items
+            (set! total (+ total n.val)))
+        (= total 15)))
+
+(sys.test '_
+    (= '(2 4 9)
+        (list
+            ((_ (+ _ _)) 1)
+            ((_ (* 2 _)) 2)
+            ((_ (* _ _)) 3))))
+
+(sys.test 'resend
+    (=
+        '(int rune text symbol number number)
+        (let (xs (list 1 \2 "3" 'four 1/5 6.4))
+            (xs.map (resend 'type)))))
+
+(sys.test 'promise
+    (let (count 0)
+        (def p
+            (promise
+                (seq
+                    (set! count (+ 1 count))
+                    (* 3 4))))
+        (and
+            (= 'promise p.type)
+            (= 12 p.value)
+            (= 12 p.value)
+            (= 1 count))))
+
+(sys.test 'seal-unseal
+    (let ()
+        (def r (: x 1 y 2))
+        (def sr (seal r))
+        (def str (seal r new-type: 'myob))
+        (def foo (let (x 10) (λ (y) (* x y))))
+        (def sfoo (seal foo new-type: 'myob hide: '(env code to-text) secret: "foonballardy")) ; You know nothing about me!
+        (proc handler (e k) true)
+        (and
+            (= sr.type r.type)
+            (and (= sr.x 1) (= sr.y 2))
+            (= str.type 'myob)
+            (= sfoo.type 'myob)
+            (= 30 (foo 3))
+            (= 30 (sfoo 3))
+            (guard
+                handler
+                (sr.set! 0 2)
+                false)
+            (guard
+                handler
+                sfoo.env
+                false)
+            (seq (r.set! 'x 2) true)
+            (= sr.x 2)
+            (= str.x 2)
+            (seq (foo.env.set! 'x 2) true)
+            (= 6 (foo 3))
+            (= 6 (sfoo 3))
+            (guard
+                handler
+                (sfoo.unseal "password?")
+                false)
+            (send (sfoo.unseal "foonballardy") 'code))))
+
+(sys.test 'everywhere
+    (= '(50 50)
+        (let ()
+            (everywhere
+                (def x 1)
+                (proc sq (x) (* x x)))
+
+            (macro foo ()
+                %(def bar $(+ x (sq 7))))
+
+            (foo)
+
+            (def baz (+ x (sq 7)))
+
+            (list bar baz))))
+
+(sys.test 'generic-procedures
+    (= '(murakami 4 -4 1 5 16 6 ("1" "2" "3" "4" "5" "6" "7"))
+        (let ()
+            (gen nosuke 'murakami arity: 7) ; default case
+            (spec nosuke (x)
+                x.pos?
+                (* x x))
+            (spec nosuke (x)
+                x.neg?
+                (- (* x x)))
+            (spec nosuke (x y)
+                (> x y)
+                (+ x y))
+            (spec nosuke (x y)
+                (< x y)
+                (- y x))
+            (spec nosuke (x y)
+                (= x y)
+                (* x y))
+            (spec nosuke (x y z)
+                rest.size.zero?
+                (+ x y z))
+            (spec nosuke (x y z p d q r)
+                true
+                ((send (list x y z p d q r) 'map) (_ _.to-text)))
+            (list
+                (nosuke 0)
+                (nosuke 2)
+                (nosuke -2)
+                (nosuke 2 3)
+                (nosuke 3 2)
+                (nosuke 4 4)
+                (nosuke 1 2 3)
+                (nosuke 1 2 3 4 5 6 7)))))
+
+(sys.test 'ndx
+    ((thunk
+        (def roll (ndx 10 6)) ; fireball!
+        (and (>= roll 10) (<= roll 60)))))
+
+(sys.test 'cat
+    (and
+        (=  "nulltrue x foobarbaz"
+            (cat null true \space \x \space 'foo "bar" '(\b \a \z)))
+        (=  "null/true/x/foo/bar/baz"
+            (cat null true \x 'foo "bar" '(\b \a \z) with: "/"))))
+
+(sys.test 'alias
+    (= 100
+        (let ()
+            (alias λ lambda)
+            (def f (lambda (x) (* 10 x)))
+            (f 10))))
+
+(sys.test 'any?
+    (let (xs '(1 1 1) ys '(1 1 0) zs '(0 0 0))
+        (proc is-1 (x) (= x 1))
+        (and
+            (any? is-1 xs)
+            (any? is-1 ys)
+            (not (any? is-1 zs)))))
+
+(sys.test 'every?
+    (let (xs '(1 1 1) ys '(1 1 0) zs '(0 0 0))
+        (proc is-1 (x) (= x 1))
+        (and
+            (every? is-1 xs)
+            (not (every? is-1 ys))
+            (not (every? is-1 zs)))))
+
+(sys.test 'map
+    (let ()
+        (def xs '(1 2 3))
+        (def ys '(4 5 6))
+        (def zs (vector: 7 8 9))
+        (proc bam! (x y z)
+            (* (+ x y) z))
+        (= '(35 56 81)
+           (map bam! xs ys zs))))
+
+(sys.test 'fold
+    (let ()
+        (def xs '(1 2 3))
+        (def ys '(4 5 6))
+        (def zs '(vector: 7 8 9))
+        (proc zap! (x y z acc)
+            (+ x y z acc))
+        (= 45
+           (fold zap! 0 xs ys zs))))
+
+(sys.test 'zip
+    (let ()
+        (def xs '(a b c))
+        (def ys '(1 2 3))
+        (def zs '(x y z))
+        (= '((a 1 x) (b 2 y) (c 3 z))
+           (zip xs ys zs))))
+
+ 

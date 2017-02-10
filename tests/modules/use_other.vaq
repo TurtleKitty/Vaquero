@@ -1,0 +1,3 @@
+
+(lib () (use baz "../other/foonballardy.vaq" (+ 2 3) (+ 3 4) foon: opt.foon-type))
+

@@ -1,0 +1,29 @@
+
+(def empty ())
+(def ys (list 8 6 7 5 3 0 9))
+(def alist (list '(x . 1) '(y . 2)))
+
+(sys.test 'list-access (and (= ys.0 8) (= ys.3 5) (= ys.6 9)))
+(sys.test 'list-apply (= (ys 5) 0))
+
+(sys.test 'list-type        (= ys.type 'list))
+(sys.test 'list-not-null    (= (null? empty) false))
+(sys.test 'list-view        (= ys.view '(8 6 7 5 3 0 9)))
+(sys.test 'list-false       (= empty.to-bool false))
+(sys.test 'list-true        (= ys.to-bool true))
+(sys.test 'list-to-record   (= alist.to-record (: x 1 y 2)))
+(sys.test 'list-to-vector   (= ys.to-vector (vector: 8 6 7 5 3 0 9)))
+(sys.test 'list-head        (= ys.head 8))
+(sys.test 'list-tail        (= ys.tail '(6 7 5 3 0 9)))
+(sys.test 'list-size        (= ys.size 7))
+(sys.test 'list-has?        (= (ys.has? 7) true))
+(sys.test 'list-has?-not    (= (ys.has? 4) false))
+
+(sys.test 'list-fold    (= (ys.fold 0 +) 38))
+(sys.test 'list-reduce  (= (ys.reduce 0 +) 38))
+(sys.test 'list-map     (= (ys.map (λ (x) (* 10 x))) '(80 60 70 50 30 0 90)))
+(sys.test 'list-filter  (= (ys.filter (λ (x) (> x 5))) '(8 6 7 9)))
+(sys.test 'list-sort-<  (= (ys.sort <) '(0 3 5 6 7 8 9)))
+(sys.test 'list-sort->  (= (ys.sort >) '(9 8 7 6 5 3 0)))
+
+

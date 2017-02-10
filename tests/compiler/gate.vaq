@@ -1,0 +1,5 @@
+
+(gate
+    2
+    (capture k 3))
+

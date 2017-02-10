@@ -1,0 +1,11 @@
+
+(def p (pair 'x 3))
+
+(sys.test 'pair-type        (= p.type 'pair))
+(sys.test 'pair-to-bool     p.to-bool)
+(sys.test 'pair-to-record   (= p.to-record (: x 3)))
+(sys.test 'pair-to-list     (= p.to-list '(x 3)))
+(sys.test 'pair-head        (= p.head 'x))
+(sys.test 'pair-tail        (= p.tail 3))
+(sys.test 'pair-size        (= p.size 2))
+
