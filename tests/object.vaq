@@ -18,9 +18,9 @@
     (let ()
         (def c 3)
         (object
-            'var (λ () c)
-            'thunky (λ () (set! c (+ c 1)))
-            'thunkle (λ () (* otto.var 10))
+            'var (lambda () c)
+            'thunky (lambda () (set! c (+ c 1)))
+            'thunkle (lambda () (* otto.var 10))
             auto: '(var thunky thunkle))))
 
 (sys.test 'auto-basic (= otto.var 3))
@@ -47,7 +47,7 @@
 (def defaulter
     (object
         'e 5
-        default: (λ (msg) (send resender msg))))
+        default: (lambda (msg) (send resender msg))))
 
 (sys.test 'default-basic (= defaulter.e 5))
 (sys.test 'default-parent (= defaulter.d 4))

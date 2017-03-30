@@ -285,7 +285,7 @@
 
 (sys.test 'unicode
     (seq
-        (def λא象
-            (proc () "λא象"))
-        (= (λא象) "λא象")))
+        (def lambdaא象
+            (proc () "lambdaא象"))
+        (= (lambdaא象) "lambdaא象")))
 

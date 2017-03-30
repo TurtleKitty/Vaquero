@@ -9,7 +9,7 @@
     (def z (or opt.z 3))
     (+ v x y z))
 
-(def I (λ (x) x))
+(def I (lambda (x) x))
 
 (sys.say (baz 1))
 (sys.say 

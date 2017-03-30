@@ -18,7 +18,7 @@
                             ((if)       (check-vaquero-if form))
                             ((seq)      (check-vaquero-seq form))
                             ((set!)     (check-vaquero-set! form))
-                            ((λ)        (check-vaquero-lambda form))
+                            ((lambda)        (check-vaquero-lambda form))
                             ((proc)     (check-vaquero-proc form))
                             ((wall)     (check-vaquero-wall form))
                             ((gate)     (check-vaquero-gate form))
@@ -102,11 +102,11 @@
             (else #t))))
 
 (define (check-vaquero-lambda code)
-    (define usage '(λ (<arg> ...) <body>))
+    (define usage '(lambda (<arg> ...) <body>))
     (if (not (list? (cadr code)))
-        (syntax-error code "λ: second argument must be a list of formals." usage)
+        (syntax-error code "lambda: second argument must be a list of formals." usage)
         (if (not (= (length code) 3))
-            (syntax-error code "λ: one body form is required; only one is allowed." usage)
+            (syntax-error code "lambda: one body form is required; only one is allowed." usage)
             #t)))
 
 (define (check-vaquero-proc code)

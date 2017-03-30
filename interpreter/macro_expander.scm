@@ -60,7 +60,7 @@
                                 (setter! 'syntax names)
                                 'null)
                             (exit)))
-                    ((λ proc)
+                    ((lambda proc)
                         (cons head (vaquero-expand (cdr code) (noob))))
                     (else 
                         (if (symbol? head)

@@ -1,5 +1,5 @@
 
 (lib (system x y)
     (system.say (* x y))
-    (λ (z) (system.say (+ x y z))))
+    (lambda (z) (system.say (+ x y z))))
 

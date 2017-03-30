@@ -5,7 +5,7 @@
         (def upto
             (proc (max)
                 (def helper
-                    (λ (acc)
+                    (lambda (acc)
                         (if (= acc max)
                             acc
                             (helper (+ acc 1)))))

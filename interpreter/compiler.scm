@@ -58,7 +58,7 @@
             ((if)       (vaquero-compile-if code))
             ((seq)      (vaquero-compile-seq code))
             ((macro)    (vaquero-compile-macro code))
-            ((λ)        (vaquero-compile-lambda code))
+            ((lambda)        (vaquero-compile-lambda code))
             ((proc)     (vaquero-compile-proc code))
             ((wall)     (vaquero-compile-wall code))
             ((gate)     (vaquero-compile-gate code))
@@ -203,7 +203,7 @@
                                     (lambda (noob)
                                         (bodies-c noob cont err))
                                     err)))))))
-            (hts! p 'type 'λ)
+            (hts! p 'type 'lambda)
             p)
         (vaquero-error 'bad-formals-in-lambda code)))
 

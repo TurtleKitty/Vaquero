@@ -21,8 +21,8 @@
 
 (sys.test 'list-fold    (= (ys.fold 0 +) 38))
 (sys.test 'list-reduce  (= (ys.reduce 0 +) 38))
-(sys.test 'list-map     (= (ys.map (λ (x) (* 10 x))) '(80 60 70 50 30 0 90)))
-(sys.test 'list-filter  (= (ys.filter (λ (x) (> x 5))) '(8 6 7 9)))
+(sys.test 'list-map     (= (ys.map (lambda (x) (* 10 x))) '(80 60 70 50 30 0 90)))
+(sys.test 'list-filter  (= (ys.filter (lambda (x) (> x 5))) '(8 6 7 9)))
 (sys.test 'list-sort-<  (= (ys.sort <) '(0 3 5 6 7 8 9)))
 (sys.test 'list-sort->  (= (ys.sort >) '(9 8 7 6 5 3 0)))
 

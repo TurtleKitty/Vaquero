@@ -73,7 +73,7 @@
                 (if (not (eq? xt yt))
                     #f
                     (case xt
-                        ((env λ proc operator) (eq? x y))
+                        ((env lambda proc operator) (eq? x y))
                         ((record)
                             (let ((x-pairs (sort-symbol-alist (hash-table->alist (htr x 'vars))))
                                   (y-pairs (sort-symbol-alist (hash-table->alist (htr y 'vars)))))
@@ -144,7 +144,7 @@
     ((vaquero-compile-lambda (vaquero-parse code)) (local-env) identity identity))
 
 (define blessed
-    '(def quote if seq macro λ proc wall gate capture guard fail env opt rest return))
+    '(def quote if seq macro lambda proc wall gate capture guard fail env opt rest return))
 
 (define (holy? name)
     (or (member name blessed)

@@ -74,7 +74,7 @@
                 ((compose g f range) 1 7)))))
 
 (sys.test 'let
-    ((λ ()
+    ((lambda ()
         (def foo
             (let loop (n 0)
                 (if (= n 10)
@@ -84,7 +84,7 @@
 
 (sys.test 'let-seq
     (= '(2 . 3)
-        ((λ ()
+        ((lambda ()
             (let (x 1 y 2)
                 (set! x 2)
                 (set! y 3)
@@ -262,7 +262,7 @@
         (def r (: x 1 y 2))
         (def sr (seal r))
         (def str (seal r new-type: 'myob))
-        (def foo (let (x 10) (λ (y) (* x y))))
+        (def foo (let (x 10) (lambda (y) (* x y))))
         (def sfoo (seal foo new-type: 'myob hide: '(env code to-text) secret: "foonballardy")) ; You know nothing about me!
         (proc handler (e k) true)
         (and
@@ -358,7 +358,7 @@
 (sys.test 'alias
     (= 100
         (let ()
-            (alias λ lambda)
+            (alias lambda lambda)
             (def f (lambda (x) (* 10 x)))
             (f 10))))
 

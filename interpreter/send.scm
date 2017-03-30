@@ -28,7 +28,7 @@
                 (case t
                     ((env)    (vaquero-send-env obj msg cont err))
                     ((record) (vaquero-send-record obj msg cont err))
-                    ((λ proc operator) (vaquero-send-proc obj msg cont err))
+                    ((lambda proc operator) (vaquero-send-proc obj msg cont err))
                     (else (vaquero-send-object obj msg cont err)))))
         ((eof-object? obj) (vaquero-send-eof obj msg cont err))
         (else (wtf))))
@@ -372,8 +372,8 @@
                     (cont r))))
         ((fold)
             (vaquero-ho
-                '(λ (xs)
-                    (λ (acc funk)
+                '(lambda (xs)
+                    (lambda (acc funk)
                         (if xs.empty?
                             acc
                             (xs.tail.fold (funk acc xs.head) funk))))
@@ -382,8 +382,8 @@
                 err))
         ((reduce)
             (vaquero-ho
-                '(λ (xs)
-                    (λ (acc funk)
+                '(lambda (xs)
+                    (lambda (acc funk)
                         (if xs.empty?
                             acc
                             (funk xs.head (xs.tail.reduce acc funk)))))
@@ -392,8 +392,8 @@
                 err))
         ((each)
             (vaquero-ho
-                '(λ (xs)
-                    (λ (funk)
+                '(lambda (xs)
+                    (lambda (funk)
                         (if xs.empty?
                             null
                             (seq
@@ -404,25 +404,25 @@
                 err))
         ((map)
             (vaquero-ho
-                '(λ (xs)
-                    (λ (funk)
-                        (xs.reduce '() (λ (x y) (pair (funk x) y)))))
+                '(lambda (xs)
+                    (lambda (funk)
+                        (xs.reduce '() (lambda (x y) (pair (funk x) y)))))
                 obj
                 cont
                 err))
         ((filter)
             (vaquero-ho
-                '(λ (xs)
-                    (λ (funk)
-                        (xs.reduce '() (λ (x y) (if (funk x) (pair x y) y)))))
+                '(lambda (xs)
+                    (lambda (funk)
+                        (xs.reduce '() (lambda (x y) (if (funk x) (pair x y) y)))))
                 obj
                 cont
                 err))
         ((sort)
             (vaquero-ho
-                '(λ (xs)
-                    (λ (funk)
-                        (def merge (λ (a b)
+                '(lambda (xs)
+                    (lambda (funk)
+                        (def merge (lambda (a b)
                             (if a.size.zero?
                                 b
                                 (if b.size.zero?
@@ -430,7 +430,7 @@
                                     (if (funk a.head b.head)
                                         (pair a.0 (merge a.tail b))
                                         (pair b.0 (merge a b.tail)))))))
-                        (def sort (λ (yarr)
+                        (def sort (lambda (yarr)
                             (def len yarr.size)
                             (if (< len 2)
                                 yarr
@@ -608,8 +608,8 @@
                         err))
             ((map)
                 (vaquero-ho
-                    '(λ (rec)
-                        (λ (funk)
+                    '(lambda (rec)
+                        (lambda (funk)
                             (def mapped (rec.to-list.map funk))
                             mapped.to-record))
                     obj
@@ -617,8 +617,8 @@
                     err))
             ((filter) 
                 (vaquero-ho
-                    '(λ (rec)
-                        (λ (funk)
+                    '(lambda (rec)
+                        (lambda (funk)
                             (def mapped (rec.to-list.filter funk))
                             mapped.to-record))
                     obj
@@ -821,24 +821,24 @@
                                 (vaquero-send-vector obj (caar args) cont err)))))))
         ((fold)
             (vaquero-ho
-                '(λ (vec)
-                    (λ (acc funk)
+                '(lambda (vec)
+                    (lambda (acc funk)
                         (vec.to-list.fold acc funk)))
                 obj
                 cont
                 err))
         ((reduce)
             (vaquero-ho
-                '(λ (vec)
-                    (λ (acc funk)
+                '(lambda (vec)
+                    (lambda (acc funk)
                         (vec.to-list.reduce acc funk)))
                 obj
                 cont
                 err))
         ((map)
             (vaquero-ho
-                '(λ (vec)
-                    (λ (funk)
+                '(lambda (vec)
+                    (lambda (funk)
                         (def mapped (vec.to-list.map funk))
                         mapped.to-vector))
                 obj
@@ -846,8 +846,8 @@
                 err))
         ((filter)
             (vaquero-ho
-                '(λ (vec)
-                    (λ (funk)
+                '(lambda (vec)
+                    (lambda (funk)
                         (def mapped (vec.to-list.filter funk))
                         mapped.to-vector))
                 obj
@@ -855,8 +855,8 @@
                 err))
         ((sort)
             (vaquero-ho
-                '(λ (vec)
-                    (λ (funk)
+                '(lambda (vec)
+                    (lambda (funk)
                         (def sorted (vec.to-list.sort funk))
                         sorted.to-vector))
                 obj

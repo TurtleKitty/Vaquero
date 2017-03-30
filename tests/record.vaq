@@ -48,11 +48,11 @@
 
 (sys.test 'record-pairs
     (= (list '(x . 2) '(y . 3))
-       (simp.pairs.sort (λ (a b) (< a.tail b.tail)))))
+       (simp.pairs.sort (lambda (a b) (< a.tail b.tail)))))
 
 (sys.test 'record-to-list
     (= (list '(x . 2) '(y . 3))
-       (simp.to-list.sort (λ (a b) (< a.tail b.tail)))))
+       (simp.to-list.sort (lambda (a b) (< a.tail b.tail)))))
 
 (sys.test 'record-merge ; record equality is broken...
     (seq
@@ -66,13 +66,13 @@
 
 (sys.test 'record-fold
     (= 15
-       (yor.fold 0 (λ (total kv) (+ total kv.val)))))
+       (yor.fold 0 (lambda (total kv) (+ total kv.val)))))
 
 (sys.test 'record-reduce
     (= '(total . 120)
        (yor.reduce
             '(total . 1)
-            (λ (total kv) (pair 'total (* total.val kv.val))))))
+            (lambda (total kv) (pair 'total (* total.val kv.val))))))
 
 (sys.test 'record-map
     (let ()

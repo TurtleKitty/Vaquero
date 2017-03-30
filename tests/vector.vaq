@@ -20,19 +20,19 @@
 (sys.test 'vector-fold
     (= (vick.fold
             0
-            (λ (acc x) (+ acc x))) 38))
+            (lambda (acc x) (+ acc x))) 38))
 
 (sys.test 'vector-reduce
     (= (vick.reduce
             0
-            (λ (acc x) (+ acc x))) 38))
+            (lambda (acc x) (+ acc x))) 38))
 
 (sys.test 'vector-map
     (= (vick.map
-            (λ (x) (* 10 x)))
+            (lambda (x) (* 10 x)))
             '(vector: 80 60 70 50 30 0 90)))
 
-(sys.test 'vector-filter (= (vick.filter (λ (x) (> x 5))) '(vector: 8 6 7 9)))
+(sys.test 'vector-filter (= (vick.filter (lambda (x) (> x 5))) '(vector: 8 6 7 9)))
 (sys.test 'vector-sort-< (= (vick.sort <) '(vector: 0 3 5 6 7 8 9)))
 (sys.test 'vector-sort-> (= (vick.sort >) '(vector: 9 8 7 6 5 3 0)))
 
