@@ -3,10 +3,10 @@
     (string->symbol
         (string-append name "-" (uuid-v4))))
 
-(define (vaquero-record . args)
+(define (vaquero-table . args)
     (define this (mkht))
     (define vars (mkht))
-    (hts! this 'type 'record)
+    (hts! this 'type 'table)
     (for-pairs
         (lambda (k v)
             (hts! vars k v))
@@ -16,7 +16,7 @@
 
 (define (vaquero-environment mama)
     (define this (mkht))
-    (define vars (vaquero-record))
+    (define vars (vaquero-table))
     (hts! this 'type 'env)
     (hts! this 'vars vars)
     (hts! this 'mama (if mama mama 'null))

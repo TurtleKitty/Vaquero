@@ -32,7 +32,7 @@
                                         (case kw
                                             ((rune)     (vaquero-rune-literal port))
                                             ((vector)   (vaquero-read-vector port))
-                                            ((record)   (vaquero-read-record port))
+                                            ((table)   (vaquero-read-table port))
                                             ((text)     (vaquero-read-text port))
                                             ((template) (vaquero-read-template port))
                                             ((doc)      (vaquero-read-rem port) (vaquero-reader port))
@@ -88,8 +88,8 @@
     (read-char port)
     'matrix)
 
-(define (vaquero-read-record port)
-    (apply vaquero-record (vaquero-read-list port)))
+(define (vaquero-read-table port)
+    (apply vaquero-table (vaquero-read-list port)))
 
 (define (vaquero-read-text port)
     (let loop ((token (peek-char port)) (depth 0) (acc '()))

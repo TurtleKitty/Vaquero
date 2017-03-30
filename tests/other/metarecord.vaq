@@ -3,7 +3,7 @@
     (if (= n 0)
         rec
         (seq
-            (rec.set! (gensym) (record))
+            (rec.set! (gensym) (table))
             (meta (- n 1) rec))))
 
 (proc meta-meta (x)
@@ -13,7 +13,7 @@
     (meta 1000 x)
     (meta 1000 x))
 
-(def x (record))
+(def x (table))
 
 (meta-meta x)
 (meta-meta x)

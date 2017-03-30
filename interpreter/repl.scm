@@ -26,7 +26,7 @@
                                     (define mom    (htr env 'mama))
                                     (define evars  (htr env 'vars))
                                     (define mvars  (htr mom 'vars))
-                                    (vaquero-send-record mvars 'merge
+                                    (vaquero-send-table mvars 'merge
                                         (lambda (fn)
                                             (define nuvars (fn evars))
                                             (define print-me (if (eof-object? v) 'EOF v))

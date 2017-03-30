@@ -38,9 +38,9 @@
     (= (matrix (1 2) (3 4))
        (# (1 2) (3 4))))
 
-(sys.test 'record-literal
-    (= (record 'x 1 'y (list 'a 2))
-       (record: x 1 y (a 2))))
+(sys.test 'table-literal
+    (= (table 'x 1 'y (list 'a 2))
+       (table: x 1 y (a 2))))
 
 (sys.test 'text-literal
     (let ()

@@ -8,7 +8,7 @@
     (= 120 (mahproc 3 4)))
 
 (sys.test ':
-    (= (record 'x 1 'y 2) (: x 1 y 2)))
+    (= (table 'x 1 'y 2) (: x 1 y 2)))
 
 (sys.test 'null?
     (null? null))
@@ -51,8 +51,8 @@
 (sys.test 'vector?
     (vector? (vector 2 3)))
 
-(sys.test 'record?
-    (record? (: x 1 y 2)))
+(sys.test 'table?
+    (table? (: x 1 y 2)))
 
 (sys.test 'append
     (= '(1 2 3 4 5) (append '(1 2) '(3) '(4 5))))
@@ -225,7 +225,7 @@
             (set! total (+ total n)))
         (= total 15)))
 
-(sys.test 'each-record
+(sys.test 'each-table
     (let (items (: x 1 y 2 z 3 u 4 v 5) total 0)
         (each n items
             (set! total (+ total n.val)))

@@ -80,12 +80,12 @@
                                     (apply string args))))))
                 (cons 'text? string?)
                 (cons 'rand random)
-                (cons 'record
+                (cons 'table
                     (vaquero-proc
                         primitive-type
                         'global
                         (lambda (args opts cont err)
-                            (cont (apply vaquero-record args)))))
+                            (cont (apply vaquero-table args)))))
                 (cons 'object
                     (vaquero-proc
                         primitive-type
@@ -299,7 +299,7 @@
                     env
                     'rm!
                     (lambda (rm!)
-                        (vaquero-apply rm! (list k) my-empty-record (lambda (_) (cont 'ok))  err))
+                        (vaquero-apply rm! (list k) my-empty-table (lambda (_) (cont 'ok))  err))
                     err)
                 (vaquero-send-env
                     env

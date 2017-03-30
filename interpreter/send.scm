@@ -27,7 +27,7 @@
             (let ((t (htr obj 'type)))
                 (case t
                     ((env)    (vaquero-send-env obj msg cont err))
-                    ((record) (vaquero-send-record obj msg cont err))
+                    ((table) (vaquero-send-table obj msg cont err))
                     ((lambda proc operator) (vaquero-send-proc obj msg cont err))
                     (else (vaquero-send-object obj msg cont err)))))
         ((eof-object? obj) (vaquero-send-eof obj msg cont err))
@@ -313,7 +313,7 @@
 
 (define (vaquero-send-list obj msg cont err)
     (define msgs
-        '(type empty? view to-bool to-list to-text to-vector to-record head key car tail val cdr cons
+        '(type empty? view to-bool to-list to-text to-vector to-table head key car tail val cdr cons
           size reverse has? append take drop apply fold reduce each map filter sort))
     (define (ldefault msg)
         (if (number? msg)
@@ -327,7 +327,7 @@
                 (case msg
                     ((type) 'list)
                     ((empty?) #f)
-                    ((autos) '(view empty? to-bool to-text to-list to-vector to-record head tail key val size reverse))
+                    ((autos) '(view empty? to-bool to-text to-list to-vector to-table head tail key val size reverse))
                     ((resends) '())
                     ((default) ldefault)
                     ((view) (map vaquero-view obj))
@@ -363,10 +363,10 @@
                                 (if (pair? (car args))
                                     (vaquero-send-list obj (caar args) cont err)
                                     (err (vaquero-error-object 'bad-message! `(,obj ,args ,opts) "Message not understood.") cont))))))))
-        ((to-record)
+        ((to-table)
             (if (not (every pair? obj))
-                (err (vaquero-error-object 'not-an-associative-list! `(send ,obj to-record) "list: to-record only works on associative lists." ) cont)
-                (let ((r (vaquero-record)))
+                (err (vaquero-error-object 'not-an-associative-list! `(send ,obj to-table) "list: to-table only works on associative lists." ) cont)
+                (let ((r (vaquero-table)))
                     (define vars (htr r 'vars))
                     (for-each (lambda (p) (hts! vars (car p) (cdr p))) obj)
                     (cont r))))
@@ -445,19 +445,19 @@
 
 (define (vaquero-send-pair obj msg cont err)
     (define msgs
-        '(empty? view to-text to-bool to-list to-record head key car tail val cdr cons size clone))
+        '(empty? view to-text to-bool to-list to-table head key car tail val cdr cons size clone))
     (define msgs+ (append msgs '(messages responds? type)))
     (if (member msg msgs+)
         (cont 
             (case msg
                 ((type) 'pair)
                 ((view to-text) (cons (vaquero-view (car obj)) (vaquero-view (cdr obj))))
-                ((autos) '(view empty? to-bool to-text to-list to-record head tail key val size))
+                ((autos) '(view empty? to-bool to-text to-list to-table head tail key val size))
                 ((resends) '())
                 ((default) default-default)
                 ((to-bool) #t)
                 ((to-list) (list (car obj) (cdr obj)))
-                ((to-record) (vaquero-record (car obj) (cdr obj)))
+                ((to-table) (vaquero-table (car obj) (cdr obj)))
                 ((head key car) (car obj))
                 ((tail val cdr) (cdr obj))
                 ((cons) (lambda (v) (cons v obj)))
@@ -498,7 +498,7 @@
                         (apply obj args)))))
         (idk obj msg cont err)))
 
-(define (vaquero-send-record obj msg cont err)
+(define (vaquero-send-table obj msg cont err)
     (define msgs
         '(view size clone to-bool get put set! rm del! has? apply keys values pairs to-list to-opt to-text merge fold reduce map filter))
     (define vars (htr obj 'vars))
@@ -510,11 +510,11 @@
         ((type view size autos resends default clone to-bool get put set! rm del! has? apply keys values pairs to-list to-opt to-text merge messages responds?)
             (cont
                 (case msg
-                    ((type) 'record)
+                    ((type) 'table)
                     ((view to-text)
                         (let ((keys (htks vars)))
                             (cons
-                                (string->keyword "record")
+                                (string->keyword "table")
                                 (fold
                                     (lambda (p xs)
                                         (cons (car p) (cons (vaquero-view (cdr p)) xs)))
@@ -525,7 +525,7 @@
                     ((resends) '())
                     ((default) rdefault)
                     ((clone)
-                        (let ((noob (vaquero-record)))
+                        (let ((noob (vaquero-table)))
                             (hts! noob 'vars (hash-table-copy vars))
                             noob))
                     ((to-bool)
@@ -537,9 +537,9 @@
                                 'null)))
                     ((put)
                         (lambda args
-                            (define noob (vaquero-record))
+                            (define noob (vaquero-table))
                             (hts! noob 'vars (hash-table-copy vars))
-                            (vaquero-send-record
+                            (vaquero-send-table
                                 noob
                                 'set!
                                 (lambda (setter!)
@@ -552,9 +552,9 @@
                             'null))
                     ((rm)
                         (lambda args
-                            (define noob (vaquero-record))
+                            (define noob (vaquero-table))
                             (hts! noob 'vars (hash-table-copy vars))
-                            (vaquero-send-record
+                            (vaquero-send-table
                                 noob
                                 'del!
                                 (lambda (deleter!)
@@ -571,9 +571,9 @@
                     ((apply)
                         (vaquero-proc
                             primitive-type
-                            'record
+                            'table
                             (lambda (args opts cont err)
-                                (vaquero-send-record obj (caar args) cont err))))
+                                (vaquero-send-table obj (caar args) cont err))))
                     ((keys) (htks vars))
                     ((values) (htvs vars))
                     ((pairs to-list) (hash-table->alist vars))
@@ -593,7 +593,7 @@
                         (lambda (other)
                             (define nuvars (hash-table-merge (htr other 'vars) vars))
                             (define noob (mkht))
-                            (hts! noob 'type 'record)
+                            (hts! noob 'type 'table)
                             (hts! noob 'vars nuvars)
                             noob)))))
             ((fold) (vaquero-send-list
@@ -611,7 +611,7 @@
                     '(lambda (rec)
                         (lambda (funk)
                             (def mapped (rec.to-list.map funk))
-                            mapped.to-record))
+                            mapped.to-table))
                     obj
                     cont
                     err))
@@ -620,7 +620,7 @@
                     '(lambda (rec)
                         (lambda (funk)
                             (def mapped (rec.to-list.filter funk))
-                            mapped.to-record))
+                            mapped.to-table))
                     obj
                     cont
                     err))
@@ -679,7 +679,7 @@
     (define msgs '(view to-text def! set! has? get del! pairs lookup mama extend eval expand))
     (case msg
         ((get has? to-bool keys values pairs)
-            (vaquero-send-record (htr obj 'vars) msg cont err))
+            (vaquero-send-table (htr obj 'vars) msg cont err))
         ((type) (cont 'env))
         ((view to-text)
             (cont
@@ -689,9 +689,9 @@
         ((resends) (cont '()))
         ((default) (cont default-default))
         ((def!)
-            (vaquero-send-record (htr obj 'vars) 'set! cont err))
+            (vaquero-send-table (htr obj 'vars) 'set! cont err))
         ((rm!)
-            (vaquero-send-record (htr obj 'vars) 'del! cont err))
+            (vaquero-send-table (htr obj 'vars) 'del! cont err))
         ((set!)
             (cont
                 (vaquero-proc

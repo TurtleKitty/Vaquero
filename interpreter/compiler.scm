@@ -36,12 +36,12 @@
                     (rval (cons head args) opts))))
         (rval '() '())))
 
-(define my-empty-record (vaquero-record))
+(define my-empty-table (vaquero-table))
 
 (define (prep-options opts)
     (if (= 0 (length opts))
-        my-empty-record
-        (apply vaquero-record
+        my-empty-table
+        (apply vaquero-table
                (map (lambda (k) (if (keyword? k) (keyword->symbol k) k)) opts))))
 
 (define-syntax frag

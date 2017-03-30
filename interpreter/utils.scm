@@ -74,7 +74,7 @@
                     #f
                     (case xt
                         ((env lambda proc operator) (eq? x y))
-                        ((record)
+                        ((table)
                             (let ((x-pairs (sort-symbol-alist (hash-table->alist (htr x 'vars))))
                                   (y-pairs (sort-symbol-alist (hash-table->alist (htr y 'vars)))))
                                 (equal? x-pairs y-pairs)))
@@ -184,7 +184,7 @@
                 '())
             opts))
     (if (pair? xs)
-        (let* ((options (vaquero-record))
+        (let* ((options (vaquero-table))
                (setopt! (vaquero-send-atomic options 'set!)))
             (let loop ((head (car xs)) (tail (cdr xs)) (args '()))
                 (if (eq? (string-ref head 0) #\-)
@@ -196,7 +196,7 @@
                     (if (pair? tail)
                         (loop (car tail) (cdr tail) (cons head args))
                         (rval (cons head args) options)))))
-        (rval '() (vaquero-record))))
+        (rval '() (vaquero-table))))
 
 (define (vaquero-run program)
     (define (get-with-the-program prog)

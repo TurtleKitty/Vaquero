@@ -39,8 +39,8 @@
 (proc null? (thing)
     (= thing null))
 
-(proc record? (thing)
-    (isa? thing 'record))
+(proc table? (thing)
+    (isa? thing 'table))
 
 (proc eof? (x)
     (isa? x 'EOF))
@@ -155,8 +155,8 @@
                     (list (list 'send name-or-vars ''apply) args 'null)))
         (pair lambda-form p.tail)))
 
-(macro : () ; record macro
-    (pair 'record
+(macro : () ; table macro
+    (pair 'table
         (if (pair? rest)
             (if (= (mod rest.size 2) 0)
                 (let loop (k rest.head v rest.1 xs rest.tail.tail acc ())
@@ -494,7 +494,7 @@
                                     (loop p.peek-rune (items.cons item)))))))
             (proc read-object (p)
                 p.read-rune ; discard opening {
-                (let loop (next p.peek-rune items (record))
+                (let loop (next p.peek-rune items (table))
                     (when (eof? next)
                         (error 'json-read-error items "Unexpected EOF in JSON object!"))
                     (if next.whitespace?
@@ -542,7 +542,7 @@
                     (text? thing)   (cat \" (thing.replace "\"" "\\\"" flags: "g") \")
                     (rune? thing)   (json-out (text thing))
                     (vector? thing) (json-out thing.to-list)
-                    (record? thing) (cat \{ (comma-fy (thing.to-list.map (lambda (kv) (cat (json-out kv.key.to-text) \: (json-out kv.val))))) \})
+                    (table? thing) (cat \{ (comma-fy (thing.to-list.map (lambda (kv) (cat (json-out kv.key.to-text) \: (json-out kv.val))))) \})
                     (list? thing)   (cat \[ (comma-fy (thing.map json-out)) \])
                     (pair? thing)   (cat \[ (json-out thing.head) \, (json-out thing.tail) \])
                     default: 
