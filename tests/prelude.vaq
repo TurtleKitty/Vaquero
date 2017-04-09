@@ -358,8 +358,8 @@
 (sys.test 'alias
     (= 100
         (let ()
-            (alias lambda lambda)
-            (def f (lambda (x) (* 10 x)))
+            (alias lambda fn)
+            (def f (fn (x) (* 10 x)))
             (f 10))))
 
 (sys.test 'any?
