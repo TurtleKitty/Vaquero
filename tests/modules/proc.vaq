@@ -1,6 +1,7 @@
 
-(def foreign-proc
+(export go)
+
+(def go
     (proc (x y)
         (list 'foreigner x y)))
 
-(lib () foreign-proc)

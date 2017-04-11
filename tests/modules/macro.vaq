@@ -2,7 +2,7 @@
 (macro quote-xyz (x y z)
     (list 'quote (list x y z)))
 
-(syntax 
+(export 
     quote-xyz
     calc-xyz)
 

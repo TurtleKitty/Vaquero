@@ -102,14 +102,18 @@
             (else #t))))
 
 (define (check-vaquero-let code)
-    (define usage '(let (<name> <value> ...) <body> ...))
-    #t) ; FIXME
+   (define usage '(let (<name> <value> ...) <body> ...))
+   (if (not (list? (cadr code)))
+      (syntax-error code "let: second argument must be a list of alternating names and values." usage)
+      (if (< (length code) 3)
+         (syntax-error code "let: one body form is required." usage)
+         #t)))
 
 (define (check-vaquero-wall code)
    (define usage '(wall (<name> <value> ...) <body> ...))
    (if (not (list? (cadr code)))
       (syntax-error code "wall: second argument must be a list of alternating names and values." usage)
-      (if (not (= (length code) 3))
+      (if (< (length code) 3)
          (syntax-error code "wall: one body form is required." usage)
          #t)))
 

@@ -123,7 +123,7 @@
                    (if (null? names)
                        nu-rval
                        (loop (car names) (cdr names) nu-rval))))
-           (def-env! package-name (vaquero-object pkg-args #f #f #f))))
+           (def-env! package-name (vaquero-object (cons 'type (cons 'package pkg-args)) #f #f #f))))
    code)
 
 (define (vaquero-expand-import code env)

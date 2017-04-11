@@ -1,6 +1,10 @@
 
-(lib (x)
+(use y "y.vaq")
+
+(export do-it)
+
+(proc do-it (x)
     (if (= x 0)
         'x
-        (use foo "y.vaq" x.dec)))
+        (y.do-it x.dec)))
 

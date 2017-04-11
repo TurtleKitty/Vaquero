@@ -1,5 +1,0 @@
-
-(lib (system x y)
-    (system.say (* x y))
-    (lambda (z) (system.say (+ x y z))))
-

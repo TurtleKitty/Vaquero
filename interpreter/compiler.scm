@@ -60,6 +60,7 @@
             ((macro)    (vaquero-compile-macro code))
             ((lambda)   (vaquero-compile-lambda code))
             ((proc)     (vaquero-compile-proc code))
+            ((let)      (vaquero-compile-let code))
             ((wall)     (vaquero-compile-wall code))
             ((gate)     (vaquero-compile-gate code))
             ((capture)  (vaquero-compile-capture code))
@@ -271,6 +272,46 @@
                         err))
                 err))))
 
+(define (vaquero-compile-let code)
+   (define args (cadr code))
+   (define arg-pairs
+      (if (null? args)
+         (cons '() '())
+         (let loop ((name (car args)) (expr (cadr args)) (others (cddr args)) (names '()) (exprs '()))
+            (define nu-names (cons name names))
+            (define nu-exprs (cons expr exprs))
+            (if (null? others)
+               (cons (reverse nu-names) (reverse nu-exprs))
+               (loop (car others) (cadr others) (cddr others) nu-names nu-exprs)))))
+   (define let-vals-c
+      (let ((vals (cdr arg-pairs)))
+         (if (null? args)
+            (lambda (env k e) (k '()))
+            (vaquero-compile-list (cdr arg-pairs)))))
+   (define exprs (cddr code))
+   (define expr-c (vaquero-seq-subcontractor exprs #t))
+   ; create new env and assign args
+   (frag
+      (let-vals-c
+         env
+         (lambda (vals)
+            (define noob (vaquero-environment env))
+            (if (null? args)
+               (expr-c noob cont err)
+               (vaquero-send noob 'def!
+                  (lambda (def!)
+                     (define var-names (car arg-pairs))
+                     (define let-pairs (zip var-names vals))
+                     (let loop ((p (car let-pairs)) (ps (cdr let-pairs)))
+                        (define arg (car p))
+                        (define val (cadr p))
+                        (def! arg val)
+                        (if (pair? ps)
+                           (loop (car ps) (cdr ps))
+                           (expr-c noob cont err))))
+                       err)))
+         err)))
+
 (define (vaquero-compile-wall code)
     (define args (cadr code))
     (define exprs (cddr code))
@@ -351,18 +392,21 @@
          (vaquero-error-object
             'module-not-found
             code
-            (string-join (list "Could not locate module " package-name "!") ""))
+            (string-join (list "Could not locate module at path \"" path "\"") ""))
          cont))
    (define module
       (if (hte? vaquero-modules path)
          (htr vaquero-modules path)
          module-missing))
    (define load-env (local-env))
+(debug 'MODS vaquero-modules)
+(debug 'RUN-MODULE)
+   (module load-env top-cont top-err)
    (frag 
       (define (looker name)
           (lookup load-env name top-cont err))
-      (module load-env top-cont top-err)
       (let ((exports (looker 'vaquero-internal-exports)))
+(debug 'EXPORTS exports)
          (if (eq? exports not-found)
             (module-missing env cont err)
             (let ((pkg-args

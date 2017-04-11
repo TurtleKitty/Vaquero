@@ -1,6 +1,0 @@
-
-(lib (x)
-    (if (< x 2)
-        1
-        (* x (use xyzzy "recursive.vaq" x.dec))))
-

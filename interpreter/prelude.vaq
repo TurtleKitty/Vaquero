@@ -127,42 +127,34 @@
                     (proc () (funz.head (apply funz.tail.head rest opt)))
                     (compose funz.head (apply compose funz.tail null)))))) rest))
 
-(proc make-env ()
-    (wall ()
-        env))
-
-(macro let (name-or-vars)
-    (def is-named (= 'symbol name-or-vars.type))
-    (def vars (if is-named rest.head name-or-vars))
-    (proc sep (x y xs names vals)
-        (if xs.empty?
-            (pair (send (pair x names) 'reverse) (send (pair y vals) 'reverse))
-            (sep xs.head xs.1 xs.tail.tail (pair x names) (pair y vals))))
-    (def p
-        (if vars.empty?
-            (pair () ())
-            (sep vars.head vars.1 vars.tail.tail () ())))
-    (def lambda-form
-        ((send (list 'lambda p.head) 'append)
-            (list
-                (pair 'seq
-                    (if is-named rest.tail rest)))))
-    (if is-named
-        (seq
-            (def args (gensym))
-            (list 'let (list args (pair 'list p.tail))
-                    (list 'def name-or-vars lambda-form)
-                    (list (list 'send name-or-vars ''apply) args 'null)))
-        (pair lambda-form p.tail)))
+(macro loop (name vars)
+   (proc sep (x y xs names vals)
+      (if xs.empty?
+         (pair (send (pair x names) 'reverse) (send (pair y vals) 'reverse))
+         (sep xs.head xs.1 xs.tail.tail (pair x names) (pair y vals))))
+   (def p
+      (if vars.empty?
+         (pair () ())
+         (sep vars.head vars.1 vars.tail.tail () ())))
+   (def lambda-form
+      ((send (list 'lambda p.head) 'append)
+         (list
+            (pair 'seq rest))))
+   (def args (gensym))
+   (list
+      'let
+      (list args (pair 'list p.tail))
+      (list 'def name lambda-form)
+      (list (list 'send name ''apply) args 'null)))
 
 (macro : () ; table macro
     (pair 'table
         (if (pair? rest)
             (if (= (mod rest.size 2) 0)
-                (let loop (k rest.head v rest.1 xs rest.tail.tail acc ())
+                (loop go (k rest.head v rest.1 xs rest.tail.tail acc ())
                     (def noob (pair (list 'quote k) (pair v acc)))
                     (if (pair? xs)
-                        (loop xs.head xs.tail.head xs.tail.tail noob)
+                        (go xs.head xs.tail.head xs.tail.tail noob)
                         noob))
                 (error 'args-fail %(: @rest) "(: ...) requires an even number of arguments"))
             ())))
@@ -174,9 +166,9 @@
             (list 'error ''cond-no-matching-clause (list 'pair ''cond (list 'quote rest)) "(cond... ) form fell through!")))
     (if (< rest.size 2)
         (error 'syntax-error (pair 'cond rest) "(cond ...) should have at least one predicate and consequent.")
-        (let loop (pred rest.0 conseq rest.1 remaining rest.tail.tail)
+        (loop go (pred rest.0 conseq rest.1 remaining rest.tail.tail)
             (if remaining
-                (list 'if pred conseq (loop remaining.0 remaining.1 remaining.tail.tail))
+                (list 'if pred conseq (go remaining.0 remaining.1 remaining.tail.tail))
                 (list 'if pred conseq default)))))
 
 (macro qq (expr)
@@ -247,30 +239,30 @@
             (qq
                 (let ((unq cval) (unq val))
                     (unq
-                        (let loop (set rest.0 conseq rest.1 remaining rest.tail.tail)
+                        (loop go (set rest.0 conseq rest.1 remaining rest.tail.tail)
                             (def pred (qq ((send (quote (unq set)) 'has?) (unq cval))))
                             (if remaining
-                                (list 'if pred conseq (loop remaining.0 remaining.1 remaining.tail.tail))
+                                (list 'if pred conseq (go remaining.0 remaining.1 remaining.tail.tail))
                                 (list 'if pred conseq default)))))))))
 
 (macro while (pred body)
     ; call (next <value>) to skip the rest of the bodies and go to the next loop (continue)
     ;     if predicate evals false, <value> will be returned from the while expression
     ; call (last <value>) to terminate the loop and return said value (break)
-    (def loop (gensym))
+    (def jump (gensym))
     (def rv (gensym))
     (def kont (gensym))
     %(gate
         ((thunk
-            (def $loop
+            (def $jump
                 (lambda ($rv)
                     (seq
-                        (proc next (v) (capture $kont ($loop v)))
+                        (proc next (v) (capture $kont ($jump v)))
                         (proc last (v) (capture $kont v))
                         (if $pred
-                            ($loop (seq @(pair body rest)))
+                            ($jump (seq @(pair body rest)))
                             $rv))))
-            ($loop null)))))
+            ($jump null)))))
 
 (macro _ (body)
     (def uscore (gensym))
@@ -291,13 +283,13 @@
     (when (< rest.size 2)
         (error 'syntax-error %(set! @rest) "set! requires at least two arguments."))
     %(env.set!
-        @(let loop (k rest.head v rest.1 others rest.tail.tail rv ())
+        @(loop go (k rest.head v rest.1 others rest.tail.tail rv ())
             (when (not (symbol? k))
                 (error 'syntax-error %(set! @rest) "set! requires keys to be symbols."))
             (def noob (pair %(quote $k) (pair v rv)))
             (if others.empty?
                 noob
-                (loop others.head others.1 others.tail.tail noob)))))
+                (go others.head others.1 others.tail.tail noob)))))
 
 (macro del! ()
     (when (< rest.size 1)
@@ -332,52 +324,52 @@
 (macro with-gensyms (gs)
     (def pairs (gs.map (_ (list _ '(gensym)))))
     (def lets
-        (let loop (x pairs.head xs pairs.tail)
+        (loop go (x pairs.head xs pairs.tail)
             (if xs
-                (loop (x.append xs.head) xs.tail)
+                (go (x.append xs.head) xs.tail)
                 x)))
     %(let $lets @rest))
 
 (macro chain (obj)
-    (let loop (init obj cmd rest.head cmds rest.tail)
+    (loop go (init obj cmd rest.head cmds rest.tail)
         (def form %((send $init (quote $(send cmd 'head))) @(send cmd 'tail)))
         (if cmds
-            (loop form cmds.head cmds.tail)
+            (go form cmds.head cmds.tail)
             form)))
 
 (macro for (init pred update body)
     (def bodies (pair body rest))
-    (with-gensyms (loop rv tmp kont)
+    (with-gensyms (jump rv tmp kont)
         %(gate
             (let $init
-                (def $loop
+                (def $jump
                     (lambda ($rv)
                         (seq
-                            (proc redo (v) (last ($loop v)))
+                            (proc redo (v) (last ($jump v)))
                             (proc next (v) (seq $update (redo v)))
                             (proc last (v) (capture $kont v))
                             (if $pred
                                 (let ($tmp (seq @bodies))
                                     $update
-                                    ($loop $tmp))
+                                    ($jump $tmp))
                                 $rv))))
-                ($loop null)))))
+                ($jump null)))))
 
 (macro each (name arg body)
     (def bodies (pair body rest))
-    (with-gensyms (xs loop)
+    (with-gensyms (xs jump)
         (qq
             (let ((unq xs) (send (unq arg) 'to-list))
-                (proc (unq loop) ((unq name))
+                (proc (unq jump) ((unq name))
                     (unqs bodies))
-                ((send (unq xs) 'each) (unq loop))))))
+                ((send (unq xs) 'each) (unq jump))))))
 
 (proc range (start end)
     (def step (if opt.step opt.step 1))
-    (let loop (i start acc ())
+    (loop go (i start acc ())
         (if (> i end)
             acc.reverse
-            (loop (+ i step) (pair i acc)))))
+            (go (+ i step) (pair i acc)))))
 
 (macro matrix ()
     ; (matrix ((0 0 1) (0 0 2)) ((0 1 1) (0 2 1)))
@@ -405,19 +397,19 @@
                     (set! default body))
                 (proc gen-apply (args options)
                     (def arity args.size)
-                    (let loop (n arity)
+                    (loop go (n arity)
                         (def cs (clauses n))
                         (proc n-zero ()
                             (if n.zero?
                                 (default.apply args options)
-                                (loop n.dec)))
+                                (go n.dec)))
                         (if (not (pair? cs))
                             (n-zero)
-                            (let larp (x cs.head xs cs.tail)
+                            (loop jump (x cs.head xs cs.tail)
                                 (if (x.head.apply args options)
                                     (x.tail.apply args options)
                                     (if (pair? xs)
-                                        (larp xs.head xs.tail)
+                                        (jump xs.head xs.tail)
                                         (n-zero)))))))
                 (proc view ()
                     (send
@@ -449,10 +441,10 @@
         (error 'type-error %(ndx $n $x) "usage: (ndx n x) : n and x must be integers greater than zero."))
     (proc dx ()
         (+ 1 (rand x)))
-    (let loop (m n total 0)
+    (loop go (m n total 0)
         (if m.zero?
             total
-            (loop m.dec (+ total (dx))))))
+            (go m.dec (+ total (dx))))))
 
 (proc repl (e in out err)
     (out.print "(vaquero) ")
@@ -481,33 +473,33 @@
                 p.read.to-symbol)
             (proc read-array (p)
                 p.read-rune ; discard opening [
-                (let loop (next p.peek-rune items ())
+                (loop go (next p.peek-rune items ())
                     (when (eof? next)
                         (error 'json-read-error items "Unexpected EOF in JSON array!"))
                     (if next.whitespace?
-                        (seq p.read-rune (loop p.peek-rune items))
+                        (seq p.read-rune (go p.peek-rune items))
                         (case next
                             (\])     (seq p.read-rune items.reverse)
-                            (\,)     (seq p.read-rune (loop p.peek-rune items))
+                            (\,)     (seq p.read-rune (go p.peek-rune items))
                             default:
                                 (let (item (reader p))
-                                    (loop p.peek-rune (items.cons item)))))))
+                                    (go p.peek-rune (items.cons item)))))))
             (proc read-object (p)
                 p.read-rune ; discard opening {
-                (let loop (next p.peek-rune items (table))
+                (loop go (next p.peek-rune items (table))
                     (when (eof? next)
                         (error 'json-read-error items "Unexpected EOF in JSON object!"))
                     (if next.whitespace?
-                        (seq p.read-rune (loop p.peek-rune items))
+                        (seq p.read-rune (go p.peek-rune items))
                         (case next
                             (\})  (seq p.read-rune items)
-                            (\,)  (seq p.read-rune (loop p.peek-rune items))
+                            (\,)  (seq p.read-rune (go p.peek-rune items))
                             default:
                                 (let (key (send (reader p) 'to-symbol))
                                     (p.skip-while " :\t\n")
                                     (let (val (reader p))
                                         (items.set! key val)
-                                        (loop p.peek-rune items)))))))
+                                        (go p.peek-rune items)))))))
             (proc reader (p)
                 (def next p.peek-rune)
                 (when (eof? next)
@@ -599,21 +591,21 @@
         (error 'bad-argument %(any? $f $xs @rest)
                              "any?: first argument must be a procedure."))
     (def ys xs.to-list)
-    (let loop (z ys.head zs ys.tail)
+    (loop go (z ys.head zs ys.tail)
         (if (f z)
             true
             (if (pair? zs)
-                (loop zs.head zs.tail)
+                (go zs.head zs.tail)
                 false))))
 
 (proc every? (f xs)
     (when (not (proc? f))
         (error 'bad-argument %(every? $f $xs @rest) "every?: first argument must be a procedure."))
     (def ys xs.to-list)
-    (let loop (z ys.head zs ys.tail)
+    (loop go (z ys.head zs ys.tail)
         (if (f z)
             (if (pair? zs)
-                (loop zs.head zs.tail)
+                (go zs.head zs.tail)
                 true)
             false)))
 
@@ -626,10 +618,10 @@
         (xs.map (resend 'tail)))
     (let (objz (pair xs rest))
         (def lists (objz.map (resend 'to-list)))
-        (let loop (heads (get-heads lists) tails (get-tails lists) results ())
+        (loop go (heads (get-heads lists) tails (get-tails lists) results ())
             (def noo (pair (apply f heads null) results))
             (if (every? identity tails)
-                (loop (get-heads tails) (get-tails tails) noo)
+                (go (get-heads tails) (get-tails tails) noo)
                 noo.reverse))))
 
 (proc fold (kons knil) ; general fold

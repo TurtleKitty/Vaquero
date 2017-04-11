@@ -48,10 +48,10 @@
 (sys.test 'macro-with-internal-macro
     (let ()
         (macro bob (n)
-            (let loop (x n totes 0)
+            (loop go (x n totes 0)
                 (if x.zero?
                     totes
-                    (loop x.dec (+ x totes)))))
+                    (go x.dec (+ x totes)))))
         (= (bob 5) 15)))
 
 (sys.test 'runtime-macro ; muhahahaha

@@ -1,5 +1,0 @@
-
-
-(lib (x y) (list x y opt.foo opt.bar rest))
-
-

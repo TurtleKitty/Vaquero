@@ -76,10 +76,10 @@
 (sys.test 'let
     ((lambda ()
         (def foo
-            (let loop (n 0)
+            (loop go (n 0)
                 (if (= n 10)
                     n
-                    (loop (+ n 1)))))
+                    (go (+ n 1)))))
         (= foo 10))))
 
 (sys.test 'let-seq
