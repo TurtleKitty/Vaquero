@@ -379,10 +379,14 @@
                 (err e cont))
             err)))
 
-(define (vaquer-compile-export code)
+(define (vaquero-compile-export code)
    (define names (cdr code))
    (frag
       (mutate! env (lambda (null) (cont 'null)) err 'vaquero-internal-exports names)))
+
+(define (p x . xs)
+   (display (cons x xs))
+   (newline))
 
 (define (vaquero-compile-use code)
    (define package-name (cadr code))
@@ -399,14 +403,12 @@
          (htr vaquero-modules path)
          module-missing))
    (define load-env (local-env))
-(debug 'MODS vaquero-modules)
-(debug 'RUN-MODULE)
    (module load-env top-cont top-err)
    (frag 
       (define (looker name)
           (lookup load-env name top-cont err))
       (let ((exports (looker 'vaquero-internal-exports)))
-(debug 'EXPORTS exports)
+(p 'EXPORTS exports)
          (if (eq? exports not-found)
             (module-missing env cont err)
             (let ((pkg-args
