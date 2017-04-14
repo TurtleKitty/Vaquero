@@ -14,6 +14,19 @@
             (= (send (m.calc-xyz 1 2 3) 'code) '(proc (v) (* v 17)))
             (= ((m.calc-xyz 1 2 3) 4 ) 68))))
 
+(rem: commenting out until new module system is complete
+
+(sys.test 'use-mutually-recursive
+    (let ()
+        (use mx "modules/x.vaq")
+        (use my "modules/y.vaq")
+        (and
+            (= 'x (mx.do-it 4))
+            (= 'y (my.do-it 5)))))
+
+(sys.test 'import-proc false)
+(sys.test 'import-macro false)
+
 (sys.test 'use-proc-https
     (let () 
         (use foreigner "https://raw.githubusercontent.com/TurtleKitty/Vaquero/master/tests/modules/proc.vaq")
@@ -26,19 +39,6 @@
             (= (m.quote-xyz 1 2 3) '(1 2 3))
             (= (send (m.calc-xyz 1 2 3) 'code) '(proc (v) (* v 17)))
             (= ((m.calc-xyz 1 2 3) 4 ) 68)))))
-
-(sys.test 'use-mutually-recursive
-    (let ()
-        (use m1 "modules/x.vaq")
-        (use m2 "modules/y.vaq")
-        (and
-            (= 'x (m1.do-it 4))
-            (= 'y (m2.do-it 5)))))
-
-(sys.test 'import-proc false)
-(sys.test 'import-macro false)
-
-(rem: commenting out until new module system is online
 
 (sys.test 'use-symbol
     (let ()

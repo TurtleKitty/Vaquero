@@ -6,7 +6,7 @@
     (if has?
         #f
         (let ((expanded (read-expand-cache-prog path (local-env))))
-            (hts! vaquero-modules path 'loading)
+            (hts! vaquero-modules path will-exist)
             (vaquero-eval-module expanded path))))
 
 (define (vaquero-eval-module program path)

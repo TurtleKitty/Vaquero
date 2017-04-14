@@ -403,14 +403,21 @@
          (htr vaquero-modules path)
          module-missing))
    (define load-env (local-env))
-   (module load-env top-cont top-err)
+   (if (eq? module will-exist)
+      #f
+      (module load-env top-cont top-err))
    (frag 
       (define (looker name)
           (lookup load-env name top-cont err))
       (let ((exports (looker 'vaquero-internal-exports)))
 (p 'EXPORTS exports)
          (if (eq? exports not-found)
-            (module-missing env cont err)
+            (err
+               (vaquero-error-object
+                  'exports-not-found
+                  package-name
+                  (string-join (list "Could not locate exports in package " (symbol->string package-name) " at path " path) ""))
+               cont)
             (let ((pkg-args
                      (let loop ((name (car exports)) (names (cdr exports)) (rval '()))
                          (define nu-rval (cons name (cons (looker name) rval)))
