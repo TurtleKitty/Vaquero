@@ -18,7 +18,7 @@
         (with-output-to-file vaquero-use-symbols
             (lambda ()
                 (write-string symbols.vaq))))
-    (global-env)
+    (add-global-prelude (global-env))
 ; FIXME
 ;    (if (member "--skip-prelude" args)
 ;        #f

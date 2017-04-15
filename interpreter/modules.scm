@@ -103,21 +103,16 @@
    (define modules (map mk-mod module-list))
    (define main-program (transform-uses prog))
    `(lambda (,sys-UUID)
-       (seq
-         ,@the-prelude
+      (let ()
+         (def ,module-env-UUID env)
 
-         (def global env)
+         ,@modules
 
-         (let ()
-            (def ,module-env-UUID env)
+         (proc ,main-UUID (sys)
+            ; begin main program
+            ,main-program
+            ; end main program
+         )
 
-            ,@modules
-
-            (proc ,main-UUID (sys)
-               ; begin main program
-               ,main-program
-               ; end main program
-            )
-
-            (,main-UUID ,sys-UUID)))))
+         (,main-UUID ,sys-UUID))))
 

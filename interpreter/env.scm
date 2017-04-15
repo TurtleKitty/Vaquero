@@ -4,7 +4,6 @@
 
 (define (cli-env)
     (define lenv (local-env))
-    (add-global-prelude lenv)
     (extend lenv
         '(sys)
         (list sys)
