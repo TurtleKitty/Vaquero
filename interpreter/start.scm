@@ -41,12 +41,18 @@
                                (vaquero-run linked))
                             (exit))))
                 ((run)
-                    (let ((expanded (read-expand-cache-prog (fname) (cli-env))))
+                    (let* ((expanded (read-expand-cache-prog (fname) (cli-env))) (fpath (locate-path)) (cpath (get-vaquero-compiled-path fpath)))
                         (if (check-vaquero-syntax expanded)
-                            (let ((linked (vaquero-link expanded)) (save-file (open-output-file (get-vaquero-compiled-path (locate-path)))))
-                               (vaquero-write linked save-file)
-                               (close-output-port save-file)
-                               (vaquero-run linked))
+                            (let ((is-cached (and (file-exists? cpath) (file-newer? cpath fpath))))
+                               (if is-cached
+                                  (vaquero-run
+                                     (call-with-input-file
+                                        cpath
+                                        vaquero-read))
+                                  (let ((linked (vaquero-link expanded)) (save-file (open-output-file cpath)))
+                                     (vaquero-write linked save-file)
+                                     (close-output-port save-file)
+                                     (vaquero-run linked))))
                             (exit))))
                 ((check)
                     (let ((its-good (check-vaquero-syntax (cdr (read-expand-cache-prog (fname) (cli-env))))))
