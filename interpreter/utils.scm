@@ -201,13 +201,8 @@
 (define (the-end v) (exit))
 
 (define (vaquero-run program)
-   (define (say x)
-      (display x)
-      (newline))
    (define compiled-scheme-lambda (vaquero-compile program))
-(define xx1 (say compiled-scheme-lambda))
    (define compiled-vaquero-lambda
       (compiled-scheme-lambda (global-env) top-cont top-err))
-(define xx1 (say compiled-vaquero-lambda))
-   (vaquero-apply compiled-scheme-lambda (list sys) 'null the-end top-err))
+   (vaquero-apply compiled-vaquero-lambda (list sys) 'null the-end top-err))
 
