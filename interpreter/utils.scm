@@ -198,14 +198,16 @@
                         (rval (cons head args) options)))))
         (rval '() (vaquero-table))))
 
+(define (the-end v) (exit))
+
 (define (vaquero-run program)
-    (define (get-with-the-program prog)
-        (vaquero-eval-module prog "vaquero-internal-main-module")
-        prog)
-    (if (pair? program)
-        ((vaquero-compile (get-with-the-program program))
-            (cli-env)
-            (lambda (v) (exit))
-            top-err)
-        (exit)))
+   (define (say x)
+      (display x)
+      (newline))
+   (define compiled-scheme-lambda (vaquero-compile program))
+(define xx1 (say compiled-scheme-lambda))
+   (define compiled-vaquero-lambda
+      (compiled-scheme-lambda (global-env) top-cont top-err))
+(define xx1 (say compiled-vaquero-lambda))
+   (vaquero-apply compiled-scheme-lambda (list sys) 'null the-end top-err))
 

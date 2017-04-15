@@ -52,9 +52,10 @@ END
 
 (define *cwd* (current-directory))
 (define *use-cache* #t)
-(define vaquero-use-symbols "~/.vaquero/symbols.vaq")
-(define vaquero-mod-dir     "~/.vaquero/modules")
-(define vaquero-cache-dir   "~/.vaquero/expanded")
+(define vaquero-use-symbols   "~/.vaquero/symbols.vaq")
+(define vaquero-mod-dir       "~/.vaquero/modules")
+(define vaquero-expanded-dir  "~/.vaquero/expanded")
+(define vaquero-compiled-dir  "~/.vaquero/compiled")
 
 (define genv #f)
 (define g-has? #f)

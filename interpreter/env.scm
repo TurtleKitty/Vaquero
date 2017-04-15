@@ -4,6 +4,7 @@
 
 (define (cli-env)
     (define lenv (local-env))
+    (add-global-prelude lenv)
     (extend lenv
         '(sys)
         (list sys)
@@ -188,7 +189,7 @@
 
 (import-default-symbols)
 
-(define (add-global-prelude)
+(define (add-global-prelude this-env)
     (define cpath "~/.vaquero/prelude.vaq")
     (define is-cached (file-exists? cpath))
     (define expanded-prelude
@@ -211,7 +212,7 @@
         (vaquero-seq-subcontractor expanded-prelude #t))
     (define full
         (prelude-c
-                genv
+                this-env
                 top-cont
                 top-err))
     'null)

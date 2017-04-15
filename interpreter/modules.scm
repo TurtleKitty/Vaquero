@@ -18,13 +18,6 @@
 (define (vaquero-module-code path)
    (cdr (htr vaquero-modules path)))
 
-(define (modularize program)
-   (define body
-      (if (pair? program)
-         (transform-uses program)
-         'null))
-   `(proc ))
-
 (define (join-to-symbol xs j)
    (string->symbol (string-join xs j)))
 
@@ -56,14 +49,14 @@
             ((use)
                (define pkg-name (cadr code))
                (define mod-id (vaquero-module-id (caddr code)))
-               `(def ,pkg-name (,(uuid-fy "vaquero-internal-module-proc" mod-id))))
+               `(def ,pkg-name (,(uuid-ify "vaquero-internal-module-proc" mod-id))))
             (else (map transform-uses code))))
       code))
 
 (define (package-module mod-id mod-env code)
    ; should be expanded by now, so the form should be (seq ...)
-   (define proc-name   (uuid-fy "vaquero-internal-module-proc" mod-id))
-   (define object-name (uuid-fy "vaquero-internal-module-object" mod-id))
+   (define proc-name   (uuid-ify "vaquero-internal-module-proc" mod-id))
+   (define object-name (uuid-ify "vaquero-internal-module-object" mod-id))
    (define body (cdr code))
    `(proc ,proc-name ()
       (if ((send ,mod-env (quote has?)) (quote ,object-name))
@@ -92,38 +85,39 @@
       (let ((expanded
                (vaquero-expand
                   (vaquero-read-file
-                     (open-input-string global-prelude-text)))))
+                     (open-input-string global-prelude-text))
+                  (local-env))))
          (set! the-expanded-global-prelude expanded)
          expanded)))
 
 (define (vaquero-link prog)
-   (define sys-UUID        (uuid-fy "sys" (uuid-v4)))
-   (define main-UUID       (uuid-fy "vaquero-internal-main-program" (uuid-v4)))
-   (define module-env-UUID (uuid-fy "vaquero-internal-module-env" (uuid-v4)))
+   (define sys-UUID        (uuid-ify "sys" (uuid-v4)))
+   (define main-UUID       (uuid-ify "vaquero-internal-main-program" (uuid-v4)))
+   (define module-env-UUID (uuid-ify "vaquero-internal-module-env" (uuid-v4)))
    (define the-prelude (cdr (expand-global-prelude)))
-   (define ok (find-modules prog))
+   (define ok          (find-modules prog))
    (define module-list (hash-table-values vaquero-modules))
    (define mk-mod
       (lambda (m)
          (package-module (car m) module-env-UUID (transform-uses (cdr m)))))
    (define modules (map mk-mod module-list))
    (define main-program (transform-uses prog))
-
    `(lambda (,sys-UUID)
-      ,@the-prelude
+       (seq
+         ,@the-prelude
 
-      (def global env)
+         (def global env)
 
-      (let ()
-         (def ,module-env-UUID env)
+         (let ()
+            (def ,module-env-UUID env)
 
-         ,@modules
+            ,@modules
 
-         (proc ,main-UUID (sys)
-            ; begin main program
-            ,main-program
-            ; end main program
-         )
+            (proc ,main-UUID (sys)
+               ; begin main program
+               ,main-program
+               ; end main program
+            )
 
-         (,main-UUID ,sys-UUID))))
+            (,main-UUID ,sys-UUID)))))
 

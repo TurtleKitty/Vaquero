@@ -22,8 +22,11 @@
 (define (get-vaquero-module-path f)
     (string-append vaquero-mod-dir "/" (get-vaquero-path f)))
 
-(define (get-vaquero-cached-path f)
-    (string-append vaquero-cache-dir "/" (get-vaquero-path f)))
+(define (get-vaquero-expanded-path f)
+    (string-append vaquero-expanded-dir "/" (get-vaquero-path f)))
+
+(define (get-vaquero-compiled-path f)
+    (string-append vaquero-compiled-dir "/" (get-vaquero-path f)))
 
 (define (find-file path)
     (define (fnf f)
@@ -78,7 +81,7 @@
     (define abs-path (make-module-absolute-path path))
     (define path-to (make-module-path-to abs-path))
     (define fpath (find-file abs-path))
-    (define cpath (get-vaquero-cached-path fpath))
+    (define cpath (get-vaquero-expanded-path fpath))
     (define is-cached (and (file-exists? cpath) (file-newer? cpath fpath)))
     (if (and *use-cache* is-cached)
         (call-with-input-file
