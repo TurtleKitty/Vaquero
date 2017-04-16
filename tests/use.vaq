@@ -14,15 +14,16 @@
             (= (send (m.calc-xyz 1 2 3) 'code) '(proc (v) (* v 17)))
             (= ((m.calc-xyz 1 2 3) 4 ) 68))))
 
-(rem: commenting out until new module system is complete
-
 (sys.test 'use-mutually-recursive
-    (let ()
-        (use mx "modules/x.vaq")
-        (use my "modules/y.vaq")
-        (and
-            (= 'x (mx.do-it 4))
-            (= 'y (my.do-it 5)))))
+   (let ()
+      ; two-part factorial
+      (use mx "modules/x.vaq")
+      (use my "modules/y.vaq")
+      (and
+         (= 120 (mx.f 5))
+         (= 120 (my.f 6)))))
+
+(rem: commenting out until new module system is complete
 
 (sys.test 'import-proc false)
 (sys.test 'import-macro false)

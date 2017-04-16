@@ -1,10 +1,7 @@
 
-(use x "x.vaq")
+(export f)
 
-(export do-it)
-
-(proc do-it (y)
-    (if (= y 0)
-        'y
-        (x.do-it y.dec)))
+(proc f (n)
+   (use x "x.vaq")
+   (x.f n.dec))
 

@@ -1,10 +1,9 @@
 
-(use y "y.vaq")
+(export f)
 
-(export do-it)
-
-(proc do-it (x)
-    (if (= x 0)
-        'x
-        (y.do-it x.dec)))
+(proc f (n)
+   (use y "y.vaq")
+   (if (< n 2)
+      n
+      (* n (y.f n))))
 
