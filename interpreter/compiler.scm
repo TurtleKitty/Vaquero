@@ -66,8 +66,6 @@
             ((capture)  (vaquero-compile-capture code))
             ((guard)    (vaquero-compile-guard code))
             ((fail)     (vaquero-compile-fail code))
-            ((use)      (vaquero-compile-use code))
-            ((import)   (vaquero-compile-import code))
             ((export)   (vaquero-compile-export code))
             (else       (vaquero-compile-application code)))
         (vaquero-compile-atom code)))
@@ -383,65 +381,6 @@
    (define names (cdr code))
    (frag
       (mutate! env (lambda (null) (cont 'null)) err 'vaquero-internal-exports names)))
-
-(define (p x . xs)
-   (display (cons x xs))
-   (newline))
-
-(define (vaquero-compile-use code)
-   (define package-name (cadr code))
-   (define path (caddr code))
-   (define (module-missing env cont err)
-      (err
-         (vaquero-error-object
-            'module-not-found
-            code
-            (string-join (list "Could not locate module at path \"" path "\"") ""))
-         cont))
-   (define module
-      (if (hte? vaquero-modules path)
-         (htr vaquero-modules path)
-         module-missing))
-   (define load-env (local-env))
-   (if (eq? module will-exist)
-      #f
-      (module load-env top-cont top-err))
-   (frag 
-      (define (looker name)
-          (lookup load-env name top-cont err))
-      (let ((exports (looker 'vaquero-internal-exports)))
-(p 'EXPORTS exports)
-         (if (eq? exports not-found)
-            (err
-               (vaquero-error-object
-                  'exports-not-found
-                  package-name
-                  (string-join (list "Could not locate exports in package " (symbol->string package-name) " at path " path) ""))
-               cont)
-            (let ((pkg-args
-                     (let loop ((name (car exports)) (names (cdr exports)) (rval '()))
-                         (define nu-rval (cons name (cons (looker name) rval)))
-                         (if (null? names)
-                             nu-rval
-                             (loop (car names) (cdr names) nu-rval)))))
-               (mutate!
-                  env
-                  (lambda (null) (cont 'null))
-                  err
-                  package-name
-                  (vaquero-object pkg-args #f #f #f)))))))
-
-(define (vaquero-compile-import code)
-   (define package-name (cadr code))
-   (define imports (caddr code))
-   (frag
-      (define (def-env! name val)
-         (mutate! env top-cont err name val))
-      (let loop ((imp (car imports)) (imps (cdr imports)))
-         (def-env! imp (send package-name imp))
-         (if (null? imps)
-            'null
-            (loop (car imps) (cdr imps))))))
 
 (define (vaquero-compile-list xs)
     (if (pair? xs)

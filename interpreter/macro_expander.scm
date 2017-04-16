@@ -42,12 +42,12 @@
                                 (if (hte? done-been-expanded p)
                                     re-use
                                     (begin
-                                        (hts! done-been-expanded p #t)
+                                        (hts! done-been-expanded p #t) ; FIXME modules should be importable more than once
                                         (vaquero-expand-use re-use env))))
                             (exit)))
                     ((import)
                         (if (check-vaquero-import code)
-                            (vaquero-expand-import)
+                            (vaquero-expand-import code env)
                             (exit)))
                     ((export)
                         (if (check-vaquero-export code)
@@ -95,7 +95,7 @@
                                           (if (and
                                                    ; make damn sure it's a package and macro
                                                    (not (eq? pkg not-found))
-                                                   (eq? 'package (vaquero-send pkg 'type top-cont expand-err))
+                                                   (eq? 'module (vaquero-send pkg 'type top-cont expand-err))
                                                    (hte? (htr pkg 'fields) msg)
                                                    (not (eq? will-exist (htr (htr pkg 'fields) msg))))
                                               (let ((mac (vaquero-send-object pkg msg top-cont expand-err)))
@@ -128,12 +128,12 @@
                    (if (null? names)
                        nu-rval
                        (loop (car names) (cdr names) nu-rval))))
-           (def-env! package-name (vaquero-object (cons 'type (cons 'package pkg-args)) #f #f #f))))
+           (def-env! package-name (vaquero-object (cons 'type (cons 'module pkg-args)) #f #f #f))))
    code)
 
 (define (vaquero-expand-import code env)
    (define package-name (cadr code))
-   (define import-names (cdddr code))
+   (define import-names (cddr code))
    (define import-err
        (lambda (e cont)
            (debug 'import-error e)

@@ -1,14 +1,22 @@
 
 ; use
 
+(use foreigner "modules/proc.vaq")
+(use m "modules/macro.vaq")
+
+; two-part factorial
+(use mx "modules/x.vaq")
+(use my "modules/y.vaq")
+
+(use importer "modules/imports.vaq")
+
+
 (sys.test 'use-proc-file
     (let ()
-        (use foreigner "modules/proc.vaq")
         (= (foreigner.go 1 2) '(foreigner 1 2))))
 
 (sys.test 'use-macro-file
     (let ()
-        (use m "modules/macro.vaq")
         (and
             (= (m.quote-xyz 1 2 3) '(1 2 3))
             (= (send (m.calc-xyz 1 2 3) 'code) '(proc (v) (* v 17)))
@@ -16,17 +24,23 @@
 
 (sys.test 'use-mutually-recursive
    (let ()
-      ; two-part factorial
-      (use mx "modules/x.vaq")
-      (use my "modules/y.vaq")
       (and
          (= 120 (mx.f 5))
          (= 120 (my.f 6)))))
 
-(rem: commenting out until new module system is complete
+(sys.test 'import-proc
+   (let ()
+      (import importer foo bar baz)
+      (= 6 (baz foo bar))))
 
-(sys.test 'import-proc false)
-(sys.test 'import-macro false)
+(sys.test 'import-macro
+   (let ()
+      (import importer bax quux)
+      (= (bax "x") '("x" "x" "x"))
+      (= (bax '(2 3 5)) '((2 3 5) (2 3 5) (2 3 5)))
+      (= (quux 23) 230)))
+
+(rem: commenting out until new module system is complete
 
 (sys.test 'use-proc-https
     (let () 

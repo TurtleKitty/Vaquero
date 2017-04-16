@@ -1,0 +1,13 @@
+
+(export foo bar baz bax quux)
+
+(def foo 2)
+(def bar 3)
+(def baz (lambda (x y) (* x y)))
+
+(macro bax (x)
+   (list 'list x x x))
+
+(macro quux (n)
+   (* 10 n))
+

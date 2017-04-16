@@ -14,6 +14,10 @@
 (define (idk obj msg cont err)
     (err (list 'message-not-understood (vaquero-view obj) msg) cont))
 
+(define (p x . xs)
+   (write (cons x xs))
+   (newline))
+
 (define (debug x . xs)
     (define e (current-error-port))
     (if (null? xs)
