@@ -25,22 +25,16 @@
    (join-to-symbol (list name id) "-"))
 
 (define (find-modules prog)
-   (define (finder form rest)
-      (define (finish)
-         (if (pair? rest)
-            (finder (car rest) (cdr rest))
-            #t))
-      (if (pair? form)
-         (case (car form)
-            ((quote)
-               #t)
-            ((use)
-               (def-vaquero-module (caddr form))
-               (finish))
-            (else
-               (finish)))
-         (finish)))
-   (finder (car prog) (cdr prog)))
+   (if (pair? prog)
+      (case (car prog)
+         ((quote)
+            #t)
+         ((use)
+            (def-vaquero-module (caddr prog))
+            #t)
+         (else
+            (map find-modules prog)))
+      #t))
 
 (define (transform-uses code)
    (if (pair? code)
@@ -57,6 +51,10 @@
    ; should be expanded by now, so the form should be (seq ...)
    (define proc-name   (uuid-ify "vaquero-internal-module-proc" mod-id))
    (define object-name (uuid-ify "vaquero-internal-module-object" mod-id))
+   (define loop-name   (uuid-ify "loop-name" mod-id))
+   (define expo        (uuid-ify "export"    mod-id))
+   (define expos       (uuid-ify "exports"   mod-id))
+   (define rval        (uuid-ify "rval"      mod-id))
    (define body (cdr code))
    `(proc ,proc-name ()
       (if ((send ,mod-env (quote has?)) (quote ,object-name))
@@ -67,36 +65,22 @@
             ; end body
             (def ,object-name
                (apply object (pair 'type (pair 'module
-                  (loop go (expo vaquero-internal-exports.head expos vaquero-internal-exports.tail rval ())
-                     (def nu-rval (pair expo (pair (env.lookup expo) rval)))
-                     (if expos
-                        (go expos.head expos.tail nu-rval)
-                        nu-rval)))) (table)))
+                  ((proc ,loop-name (,expo ,expos ,rval)
+                     (def nu-rval (pair ,expo (pair ((send env 'lookup) ,expo) ,rval)))
+                     (if ,expos
+                        (,loop-name (send ,expos 'head) (send ,expos 'tail) nu-rval)
+                        nu-rval)) (send vaquero-internal-exports 'head) (send vaquero-internal-exports 'tail) ()))) (table)))
 
             ((send ,mod-env (quote def!)) (quote ,object-name) ,object-name)
 
             ,object-name))))
 
-(define the-expanded-global-prelude #f)
-
-(define (expand-global-prelude)
-   (if the-expanded-global-prelude
-      the-expanded-global-prelude
-      (let ((expanded
-               (vaquero-expand
-                  (vaquero-read-file
-                     (open-input-string global-prelude-text))
-                  (local-env))))
-         (set! the-expanded-global-prelude expanded)
-         expanded)))
-
 (define (vaquero-link prog)
    (define sys-UUID        (uuid-ify "sys" (uuid-v4)))
    (define main-UUID       (uuid-ify "vaquero-internal-main-program" (uuid-v4)))
    (define module-env-UUID (uuid-ify "vaquero-internal-module-env" (uuid-v4)))
-   (define the-prelude (cdr (expand-global-prelude)))
-   (define ok          (find-modules prog))
-   (define module-list (hash-table-values vaquero-modules))
+   (define ok              (find-modules prog))
+   (define module-list     (hash-table-values vaquero-modules))
    (define mk-mod
       (lambda (m)
          (package-module (car m) module-env-UUID (transform-uses (cdr m)))))
