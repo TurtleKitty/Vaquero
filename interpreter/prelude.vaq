@@ -1,12 +1,6 @@
 
 ; global environment
 
-(macro lib (vars body)
-    (list 'def 'vaquero-internal-library-export-procedure
-        (pair
-            'proc
-            (pair vars (pair body rest)))))
-
 (macro thunk ()
     (pair 'lambda (pair () rest)))
 
