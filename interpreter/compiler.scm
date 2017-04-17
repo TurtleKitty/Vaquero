@@ -96,33 +96,20 @@
         pass))
 
 (define (vaquero-compile-def code)
-    (define name (cadr code))
-    (define val (caddr code))
-    (if (not (symbol? name))
-        (vaquero-error "def: first argument must be a symbol.  Got " code)
-        (frag
-            (vaquero-send-env env 'has?
-                (lambda (haz?)
-                    (vaquero-send-env env 'get
-                        (lambda (getter)
-                            (if (and
-                                    (haz? name)
-                                    (not (eq? will-exist (getter name))))
-                                (err (vaquero-error-object 'bad-def code "Name already defined in the local environment.") cont)
-                                (let ((val-c (vaquero-compile val)))
-                                    (val-c
-                                        env
-                                        (lambda (v)
-                                            (mutate!
-                                                env
-                                                (lambda (null)
-                                                    (cont v))
-                                                err
-                                                name
-                                                v))
-                                        err))))
-                        err))
-                err))))
+   (define name (cadr code))
+   (define val (caddr code))
+   (define val-c (vaquero-compile val))
+   (frag
+      (val-c
+         env
+         (lambda (v)
+            (mutate!
+               env
+               (lambda (null) (cont v))
+               err
+               name
+               v))
+         err)))
 
 (define (vaquero-compile-quote code)
     (frag
@@ -247,28 +234,16 @@
     (define name (cadr code))
     (define formals (caddr code))
     (define bodies (cdddr code))
-    (if (not (symbol? name))
-        (vaquero-error "macro expects it's first argument to be a symbol.  Got " code)
-        (frag
-            (vaquero-send-env env 'has?
-                (lambda (haz?)
-                    (vaquero-send-env env 'get
-                        (lambda (getter)
-                            (if (and
-                                    (haz? name)
-                                    (not (eq? will-exist (getter name))))
-                                (err (list 'bad-def code name " is already defined in the local environment.") cont)
-                                (let ((thing (make-vaquero-proc code env formals bodies)))
-                                    (hts! thing 'type 'operator)
-                                    (mutate!
-                                        env
-                                        (lambda (null)
-                                            (cont thing))
-                                        err
-                                        name
-                                        thing))))
-                        err))
-                err))))
+    (frag
+        (let ((thing (make-vaquero-proc code env formals bodies)))
+            (hts! thing 'type 'operator)
+            (mutate!
+                env
+                (lambda (null)
+                    (cont thing))
+                err
+                name
+                thing))))
 
 (define (vaquero-compile-let code)
    (define args (cadr code))
@@ -303,10 +278,12 @@
                      (let loop ((p (car let-pairs)) (ps (cdr let-pairs)))
                         (define arg (car p))
                         (define val (cadr p))
-                        (def! arg val)
-                        (if (pair? ps)
-                           (loop (car ps) (cdr ps))
-                           (expr-c noob cont err))))
+                        (vaquero-apply def! (list arg val) 'null
+                           (lambda (v)
+                              (if (pair? ps)
+                                 (loop (car ps) (cdr ps))
+                                 (expr-c noob cont err)))
+                           err)))
                        err)))
          err)))
 
@@ -324,8 +301,10 @@
                         (let ((x (car travellers)) (xs (cdr travellers)))
                             (lookup env x
                                 (lambda (v)
-                                    (def! x v)
-                                    (loop xs))
+                                    (vaquero-apply def! (list x v) 'null
+                                       (lambda (v)
+                                          (loop xs))
+                                       err))
                                 err))
                         (expr-c noob cont err))))
                     err)))

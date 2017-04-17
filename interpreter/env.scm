@@ -16,7 +16,7 @@
         (define preset! (vaquero-send-atomic prelude 'def!))
         (define (fill-prelude fs)
             (define (setem! p)
-                (preset! (car p) (cdr p)))
+                (vaquero-apply preset! (list (car p) (cdr p)) 'null top-cont top-err))
             (map setem! fs))
         (define primitives
             (list
@@ -34,9 +34,6 @@
                 (cons 'mod modulo)
                 (cons 'num? number?)
                 (cons 'int? integer?)
-                (cons 'nint?
-                    (lambda (x)
-                        (and (number? x) (not (integer? x)))))
                 (cons 'rune? char?)
                 (cons 'pair cons)
                 (cons 'pair? pair?)
@@ -245,53 +242,7 @@
         env
         'def!
         (lambda (def!)
-            (apply def! args)
-            (cont 'null))
-        err))
-
-(define (update! env k v cont err)
-    (vaquero-send-env
-        env
-        'has?
-        (lambda (has?)
-            (if (has? k)
-                (vaquero-send-env
-                    env
-                    'def!
-                    (lambda (def!)
-                        (def! k v)
-                        (cont 'null))
-                    err)
-                (vaquero-send-env
-                    env
-                    'parent
-                    (lambda (mom)
-                        (if (and mom (not (eq? mom 'null)))
-                            (update! mom k v cont err)
-                            (cont not-found)))
-                    err)))
-        err))
-
-(define (delete! env k cont err)
-    (vaquero-send-env
-        env
-        'has?
-        (lambda (has?)
-            (if (has? k)
-                (vaquero-send-env
-                    env
-                    'rm!
-                    (lambda (rm!)
-                        (vaquero-apply rm! (list k) my-empty-table (lambda (_) (cont 'ok))  err))
-                    err)
-                (vaquero-send-env
-                    env
-                    'parent
-                    (lambda (mom)
-                        (if (and mom (not (eq? mom 'null)))
-                            (delete! mom k cont err)
-                            (cont not-found)))
-                    err)))
+            (vaquero-apply def! args 'null cont err))
         err))
 
 (define (glookup x)

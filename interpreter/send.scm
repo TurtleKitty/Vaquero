@@ -676,7 +676,8 @@
         (else (idk obj msg cont err))))
 
 (define (vaquero-send-env obj msg cont err)
-    (define msgs '(view to-text def! set! has? get del! pairs lookup parent extend eval expand))
+    (define msgs '(view to-text def! has? get pairs lookup parent extend eval expand))
+    (define undefineds (list not-found will-exist 'null))
     (case msg
         ((get has? to-bool keys values pairs)
             (vaquero-send-table (htr obj 'vars) msg cont err))
@@ -689,47 +690,21 @@
         ((resends) (cont '()))
         ((default) (cont default-default))
         ((def!)
-            (vaquero-send-table (htr obj 'vars) 'set! cont err))
-        ((rm!)
-            (vaquero-send-table (htr obj 'vars) 'del! cont err))
-        ((set!)
             (cont
                 (vaquero-proc
                     primitive-type
                     'env
                     (lambda (args opts cont err)
-                        (define len (length args))
-                        (if (not (> len 1))
-                            (err (vaquero-error-object 'env-error `(set! ,@args) "env.set! requires at least 2 arguments.") cont)
-                            (if (not (= 0 (modulo len 2)))
-                                (err (vaquero-error-object 'env-error `(set! ,@args) "env.set! requires an even number of arguments.") cont)
-                                (let loop ((name (car args)) (val (cadr args)) (rest (cddr args)))
-                                    (update!
-                                        obj
-                                        name
-                                        val
-                                        (lambda (_)
-                                            (if (pair? rest)
-                                                (loop (car rest) (cadr rest) (cddr rest))
-                                                (cont 'null)))
-                                        err))))))))
-        ((del!)
-            (cont
-                (vaquero-proc
-                    primitive-type
-                    'env
-                    (lambda (args opts cont err)
-                        (if (not (> (length args) 0))
-                            (err (vaquero-error-object 'env-error `(del! ,@args) "env.del! requires at least 1 argument.") cont)
-                            (let loop ((name (car args)) (rest (cdr args)))
-                                (delete!
-                                    obj
-                                    name
-                                    (lambda (_)
-                                        (if (pair? rest)
-                                            (loop (car rest) (cdr rest))
-                                            (cont 'ok)))
-                                    err)))))))
+                        (define def-name (car args))
+                        (define def-val  (cadr args))
+                        (define getter  (vaquero-send-table (htr obj 'vars) 'get top-cont err))
+                        (let ((current (getter def-name)))
+                           (p def-name (vaquero-view def-val) (vaquero-view current))
+                           (if (member current undefineds)
+                              (let ((setter! (vaquero-send-table (htr obj 'vars) 'set! top-cont err)))
+                                 (setter! def-name def-val)
+                                 (cont def-val))
+                              (err (vaquero-error-object 'name-already-defined `(def ,def-name ,def-val) "environment: name is already defined.") cont)))))))
         ((lookup)
             (cont
                 (vaquero-proc

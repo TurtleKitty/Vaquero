@@ -52,9 +52,10 @@
                     ((export)
                         (if (check-vaquero-export code)
                             (let ((names (cdr code))
-                                  (setter! (vaquero-apply-wrapper (vaquero-send-atomic env 'def!))))
-                                (setter! 'vaquero-internal-exports names)
-                                code)
+                                  (setter! (vaquero-send-atomic env 'def!)))
+                                (vaquero-apply setter! (list 'vaquero-internal-exports names) 'null
+                                    (lambda (v) code)
+                                    expand-err))
                             (exit)))
                     ((macro)
                         (let* ((noo-env (noob)) (nucode (map (lambda (c) (vaquero-expand c noo-env)) code)))
@@ -128,7 +129,8 @@
                    (if (null? names)
                        nu-rval
                        (loop (car names) (cdr names) nu-rval))))
-           (def-env! package-name (vaquero-object (cons 'type (cons 'module pkg-args)) #f #f #f))))
+           (define module (vaquero-object (cons 'type (cons 'module pkg-args)) #f #f #f))
+           (vaquero-apply def-env! (list package-name module) 'null top-cont expand-err)))
    code)
 
 (define (vaquero-expand-import code env)
@@ -141,8 +143,10 @@
    (define package (lookup env package-name top-cont import-err))
    (define def-env! (vaquero-send-atomic env 'def!))
    (let loop ((import (car import-names)) (imports (cdr import-names)))
-      (def-env! import (vaquero-send-object package import top-cont import-err))
-      (if (null? imports)
-         code
-         (loop (car imports) (cdr imports)))))
+      (vaquero-apply def-env! (list import (vaquero-send-object package import top-cont import-err))
+         (lambda (v)
+            (if (null? imports)
+               code
+               (loop (car imports) (cdr imports))))
+         import-err)))
 

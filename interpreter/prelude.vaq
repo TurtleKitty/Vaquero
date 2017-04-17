@@ -2,7 +2,7 @@
 ; global environment
 
 (macro thunk ()
-    (pair 'lambda (pair () rest)))
+    (pair 'lambda (pair () (pair 'seq rest))))
 
 (proc isa? (thing type)
     (= thing.type type))
@@ -31,7 +31,7 @@
     (isa? thing 'socket))
 
 (proc null? (thing)
-    (= thing null))
+    (is? thing null))
 
 (proc table? (thing)
     (isa? thing 'table))
