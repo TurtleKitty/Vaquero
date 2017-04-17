@@ -10,13 +10,6 @@
         top-cont
         top-err))
 
-(define (symbols-env)
-    (define expanded (read-expand-cache-prog vaquero-use-symbols (cli-env)))
-    (define compiled (vaquero-compile expanded))
-    (define the-env (cli-env))
-    (compiled the-env top-cont top-err)
-    (set! load-symbols-env the-env))
-
 (define (global-env)
     (define (make-new)
         (define prelude (local-env))
@@ -177,16 +170,6 @@
             `(define ,(inject 'global-prelude-text) ,text))))
 
 (import-global-prelude)
-
-(define-syntax import-default-symbols
-    (ir-macro-transformer
-         (lambda (expr inject compare)
-            (define symbols-file "symbols.vaq")
-            (define text
-                (with-input-from-file symbols-file read-string))
-            `(define ,(inject 'symbols.vaq) ,text))))
-
-(import-default-symbols)
 
 (define (add-global-prelude this-env)
     (define cpath "~/.vaquero/prelude.vaq")

@@ -54,18 +54,9 @@
     (> (file-modification-time f1) (file-modification-time f2)))
 
 (define (make-module-absolute-path path)
-    (cond
-        ((symbol? path)
-            (let ((str (symbol->string path)))
-                (define xs (string-split str "/"))
-                (define name (string->symbol (car xs)))
-                (define the-rest (string-join (cdr xs) "/"))
-                (define the-fun (lookup load-symbols-env name top-cont top-err))
-                (if (not (and (hash-table? the-fun) (eq? (htr the-fun 'type) 'proc)))
-                    (vaquero-error path "No entry found in module symbols for " name)
-                    (vaquero-apply the-fun (list the-rest) 'null top-cont top-err))))
-        ((or (uri? path) (absolute-path? path)) path)
-        (else (string-append *cwd* "/" path))))
+   (if (or (uri? path) (absolute-path? path))
+      path
+      (string-append *cwd* "/" path)))
 
 (define (make-module-path-to path)
     (irregex-replace "(/.*)/.*$" path 1))

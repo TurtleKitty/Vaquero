@@ -14,16 +14,7 @@
     (prep-dir vaquero-mod-dir)
     (prep-dir vaquero-expanded-dir)
     (prep-dir vaquero-compiled-dir)
-    (if (not (file-exists? vaquero-use-symbols))
-        (with-output-to-file vaquero-use-symbols
-            (lambda ()
-                (write-string symbols.vaq))))
     (add-global-prelude (global-env))
-; FIXME
-;    (if (member "--skip-prelude" args)
-;        #f
-;        (begin
-;            (symbols-env)))
     (if (not (pair? args))
         (usage)
         (let ((cmd (string->symbol (car args))))

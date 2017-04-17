@@ -52,7 +52,6 @@ END
 
 (define *cwd* (current-directory))
 (define *use-cache* #t)
-(define vaquero-use-symbols   "~/.vaquero/symbols.vaq")
 (define vaquero-mod-dir       "~/.vaquero/modules")
 (define vaquero-expanded-dir  "~/.vaquero/expanded")
 (define vaquero-compiled-dir  "~/.vaquero/compiled")
@@ -60,9 +59,6 @@ END
 (define genv #f)
 (define g-has? #f)
 (define g-get  #f)
-
-(define load-symbols-env #f)
-(define loaded-module-symbols)
 
 (include "read_expand_cache")
 (include "utils")

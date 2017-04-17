@@ -263,25 +263,22 @@
 
 (define (doterator)
     ; foo.bar.baz.bax -> (send (send (send foo 'bar) 'baz) 'bax)
-    (define (match? x)
-        (and
-            (symbol? x)
-            (let ((s (symbol->string x)))
-                (and
-                    (not (string-contains s "/"))
-                    (string-contains s ".")))))
-    (define (transform x)
-        (define (sym-or-num x)
-            (define the-num (string->number x))
-            (if the-num
-                the-num
-                (string->symbol x)))
-        (let* (
-            (str (symbol->string x))
-            (words (string-split str ".")))
-            (let loop ((this (sym-or-num (car words))) (left (cdr words)))
-                (if (eq? left '())
-                    this
-                    (loop (list 'send this `(quote ,(sym-or-num (car left)))) (cdr left))))))
-    (cons match? transform))
+   (define (match? x)
+      (and
+         (symbol? x)
+         (string-contains (symbol->string x) ".")))
+   (define (transform x)
+      (define (sym-or-num x)
+         (define the-num (string->number x))
+         (if the-num
+             the-num
+             (string->symbol x)))
+      (let* (
+         (str (symbol->string x))
+         (words (string-split str ".")))
+         (let loop ((this (sym-or-num (car words))) (left (cdr words)))
+            (if (eq? left '())
+                this
+                (loop (list 'send this `(quote ,(sym-or-num (car left)))) (cdr left))))))
+   (cons match? transform))
 
