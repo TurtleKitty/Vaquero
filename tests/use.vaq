@@ -40,8 +40,6 @@
       (= (bax '(2 3 5)) '((2 3 5) (2 3 5) (2 3 5)))
       (= (quux 23) 230)))
 
-(rem: commenting out until new module system is complete
-
 (sys.test 'use-proc-https
     (let () 
         (use foreigner "https://raw.githubusercontent.com/TurtleKitty/Vaquero/master/tests/modules/proc.vaq")
@@ -54,6 +52,8 @@
             (= (m.quote-xyz 1 2 3) '(1 2 3))
             (= (send (m.calc-xyz 1 2 3) 'code) '(proc (v) (* v 17)))
             (= ((m.calc-xyz 1 2 3) 4 ) 68)))))
+
+(rem: commenting out until new module system is complete
 
 (sys.test 'use-symbol
     (let ()
