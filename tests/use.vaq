@@ -53,19 +53,26 @@
             (= (send (m.calc-xyz 1 2 3) 'code) '(proc (v) (* v 17)))
             (= ((m.calc-xyz 1 2 3) 4 ) 68)))))
 
-(rem: commenting out until new module system is complete
+(macro github (name sym)
+   (def txt sym.to-text)
+   (def xs (txt.split "/"))
+   (def user xs.0)
+   (def repo xs.1)
+   (def module-path
+      (cat (cat.apply (xs.drop 2) (: with "/")) ".vaq"))
+   (def uri (cat "https://raw.githubusercontent.com" user repo "master" module-path with: "/"))
+   %(use $name $uri))
 
-(sys.test 'use-symbol
-    (let ()
-        (and
-            (= '(test "0.2.0") (use m1 vaquero/test/vaquero-lib/0))
-            (= '(test "0.1.2") (use m2 vaquero/test/vaquero-lib/0.1))
-            (= '(test "0.1.0") (use m3 vaquero/test/vaquero-lib/0.1.0))
-            (= '(test "1.6.4") (use m4 vaquero/test/vaquero-lib/1))
-            (= '(test "1.2.4") (use m5 vaquero/test/vaquero-lib/1.2.4))
-            (= '(test "1.5.9") (use m6 vaquero/test/vaquero-lib/1.5))
-            (= '(test "1.5.7") (use m7 vaquero/test/vaquero-lib/1.5.7))
-            (= '(test "0.2.0") (use m8 github/TurtleKitty/vaquero-lib/test/vaquero-lib/0))
-            (= '(test "1.6.4") (use m9 github/TurtleKitty/vaquero-lib/test/vaquero-lib/1)))))
-)
+(sys.test 'use-proc-github
+   (let () 
+      (github p turtlekitty/vaquero/tests/modules/proc)
+      (= (p.go 1 2) '(foreigner 1 2))))
+
+(sys.test 'use-macro-github
+   (let ()
+      (github m turtlekitty/vaquero/tests/modules/macro)
+      (and
+         (= (m.quote-xyz 1 2 3) '(1 2 3))
+         (= (send (m.calc-xyz 1 2 3) 'code) '(proc (v) (* v 17)))
+         (= ((m.calc-xyz 1 2 3) 4 ) 68))))
 
