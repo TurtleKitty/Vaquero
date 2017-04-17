@@ -676,7 +676,7 @@
         (else (idk obj msg cont err))))
 
 (define (vaquero-send-env obj msg cont err)
-    (define msgs '(view to-text def! set! has? get del! pairs lookup mama extend eval expand))
+    (define msgs '(view to-text def! set! has? get del! pairs lookup parent extend eval expand))
     (case msg
         ((get has? to-bool keys values pairs)
             (vaquero-send-table (htr obj 'vars) msg cont err))
@@ -755,7 +755,7 @@
                             (if (eq? '() left)
                                 (extend obj names vals cont err)
                                 (loop (cons (car left) names) (cons (cadr left) vals) (cddr args))))))))
-        ((mama) (cont (htr obj 'mama)))
+        ((parent) (cont (htr obj 'parent)))
         ((eval)
             (cont
                 (lambda (code)

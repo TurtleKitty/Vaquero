@@ -216,7 +216,7 @@
                     err)
                 (vaquero-send-env
                     env
-                    'mama
+                    'parent
                     (lambda (mom)
                         (if (and mom (not (eq? mom 'null)))
                             (lookup mom x cont err)
@@ -264,7 +264,7 @@
                     err)
                 (vaquero-send-env
                     env
-                    'mama
+                    'parent
                     (lambda (mom)
                         (if (and mom (not (eq? mom 'null)))
                             (update! mom k v cont err)
@@ -286,7 +286,7 @@
                     err)
                 (vaquero-send-env
                     env
-                    'mama
+                    'parent
                     (lambda (mom)
                         (if (and mom (not (eq? mom 'null)))
                             (delete! mom k cont err)

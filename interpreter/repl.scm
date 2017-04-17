@@ -23,7 +23,7 @@
                                 env
                                 (lambda (v)
                                     (define noob   (local-env))
-                                    (define mom    (htr env 'mama))
+                                    (define mom    (htr env 'parent))
                                     (define evars  (htr env 'vars))
                                     (define mvars  (htr mom 'vars))
                                     (vaquero-send-table mvars 'merge
@@ -31,7 +31,7 @@
                                             (define nuvars (fn evars))
                                             (define print-me (if (eof-object? v) 'EOF v))
                                             (hts! mom  'vars nuvars)
-                                            (hts! noob 'mama mom)
+                                            (hts! noob 'parent mom)
                                             (vaquero-write print-me stdout)
                                             (newline)
                                             (loop noob))

@@ -14,12 +14,12 @@
     (hts! this 'vars vars)
     this)
 
-(define (vaquero-environment mama)
+(define (vaquero-environment parent)
     (define this (mkht))
     (define vars (vaquero-table))
     (hts! this 'type 'env)
     (hts! this 'vars vars)
-    (hts! this 'mama (if mama mama 'null))
+    (hts! this 'parent (if parent parent 'null))
     this)
 
 (define (vaquero-proc code env compiled)
