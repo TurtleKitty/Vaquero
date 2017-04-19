@@ -698,7 +698,7 @@
                         (define getter (vaquero-send-table (htr obj 'vars) 'get  top-cont err))
                         (define setter (vaquero-send-table (htr obj 'vars) 'set! top-cont err))
                         (if (null? args)
-                           'null
+                           (cont 'null)
                            (let loop ((def-name (car args)) (def-val (cadr args)) (the-rest (cddr args)))
                               (define current (getter def-name))
                               (if (member current undefineds)

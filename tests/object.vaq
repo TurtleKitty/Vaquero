@@ -15,11 +15,10 @@
 ; autoexec
 
 (def otto
-    (let ()
-        (def c 3)
+    (let (c (box 3))
         (object
-            'var (lambda () c)
-            'thunky (lambda () (set! c (+ c 1)))
+            'var (lambda () c.val)
+            'thunky (lambda () (c.set! (+ c.val 1)))
             'thunkle (lambda () (* otto.var 10))
             auto: '(var thunky thunkle))))
 

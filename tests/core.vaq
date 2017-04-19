@@ -236,15 +236,6 @@
         (and (= x.0 3) (= y 12)))))
                 
 (sys.test 'let
-    (let ()
-        (def foo
-            (loop go (n 0)
-                (if (= n 10)
-                    n
-                    (go (+ n 1)))))
-        (= foo 10))))
-
-(sys.test 'let
    (def x 7 y 13)
    (and
       (= '(2 . 3)
