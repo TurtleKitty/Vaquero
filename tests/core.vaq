@@ -25,6 +25,7 @@
         false
         true))
 
+
 ; seq
 
 (sys.test 'seq-1
@@ -36,44 +37,6 @@
 (sys.test 'seq-3
     (= (seq 1 2 3) 3))
 
-
-; set!
-
-(sys.test 'set!
-    (let (mute 1)
-        (set! mute 2)
-        (= mute 2)))
-
-(sys.test 'set-other
-    (let (mute 1)
-        (set! mute "I'm a text!")
-        (= mute "I'm a text!")))
-
-(sys.test 'set-higher
-    (let (mute 1)
-        (let ()
-            (set! mute 3))
-        (= mute 3)))
-
-; del!
-
-(sys.test 'del!
-    (= 'undefined-symbol
-        (guard
-            (proc (e k) e.name)
-            (let (doomed 23)
-                (def flag (= doomed 23))
-                (del! doomed)
-                doomed))))
-
-(sys.test 'del-higher!
-    (= 'undefined-symbol
-        (guard
-            (proc (e k) e.name)
-            (let (doomed 23)
-                (let ()
-                    (del! doomed))
-                doomed))))
 
 ; proc
 
@@ -142,10 +105,10 @@
             (proc (x)
                 (proc ()
                     (if opt.inc
-                        (set! x (+ x opt.inc))
-                        x))))
-        (def c1 (counter 0))
-        (def c2 (counter 23))
+                        (x.set! 0 (+ x.0 opt.inc))
+                        x.0))))
+        (def c1 (counter (vector 0)))
+        (def c2 (counter (vector 23)))
         (c1 inc: 1)
         (c2 inc: 7)
         (and (= (c1) 1)
@@ -238,40 +201,60 @@
 
 (sys.test 'ensure-no-jump
     ((proc ()
-        (def x 1)
+        (def x (vector 1))
         (def y
             (ensure
-                (proc () (set! x 3))
-                (seq (set! x 2) (+ x 3))))
-        (and (= x 3) (= y 5)))))
+                (proc () (x.set! 0 3))
+                (seq (x.set! 0 2) (+ x.0 3))))
+        (and (= x.0 3) (= y 5)))))
 
 (sys.test 'ensure-no-capture-across
     ((proc ()
-        (def x 1)
+        (def x (vector 1))
         (def y
             (gate
                 (* 10
                     (ensure
-                        (proc () (set! x 3))
+                        (proc () (x.set! 0 3))
                         (seq
-                            (set! x 5)
+                            (x.set! 0 5)
                             (+ 2
-                                (capture k (k (k x)))))))))
-        (and (= x 3) (= y 90)))))
+                                (capture k (k (k x.0)))))))))
+        (and (= x.0 3) (= y 90)))))
 
 (sys.test 'ensure-error
     ((proc ()
-        (def x 1)
+        (def x (vector 1))
         (def y
             (guard
                 (proc (e k) (+ 7 e))
                 (ensure
-                    (proc () (set! x 3))
+                    (proc () (x.set! 0 3))
                     (seq
-                        (set! x 5)
-                        (+ 2 (fail x))))))
-        (and (= x 3) (= y 12)))))
+                        (x.set! 0 5)
+                        (+ 2 (fail x.0))))))
+        (and (= x.0 3) (= y 12)))))
                 
+(sys.test 'let
+    (let ()
+        (def foo
+            (loop go (n 0)
+                (if (= n 10)
+                    n
+                    (go (+ n 1)))))
+        (= foo 10))))
+
+(sys.test 'let
+   (def x 7 y 13)
+   (and
+      (= '(2 . 3)
+         (let (x (box 1) y (box 2))
+            (x.set! 2)
+            (y.set! 3)
+            (pair x.0 y.0)))
+      (= x 7)
+      (= y 13)))
+
 (sys.test 'wall
     ((proc ()
         (def x 1)
@@ -285,7 +268,7 @@
 
 (sys.test 'unicode
     (seq
-        (def lambdaא象
-            (proc () "lambdaא象"))
-        (= (lambdaא象) "lambdaא象")))
+        (def λא象
+            (proc () "λא象"))
+        (= (λא象) "λא象")))
 

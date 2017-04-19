@@ -273,28 +273,6 @@
         (lambda ((unq uscore))
             (seq (unqs (rename bodies))))))
 
-(macro set! ()
-    (when (< rest.size 2)
-        (error 'syntax-error %(set! @rest) "set! requires at least two arguments."))
-    %(env.set!
-        @(loop go (k rest.head v rest.1 others rest.tail.tail rv ())
-            (when (not (symbol? k))
-                (error 'syntax-error %(set! @rest) "set! requires keys to be symbols."))
-            (def noob (pair %(quote $k) (pair v rv)))
-            (if others.empty?
-                noob
-                (go others.head others.1 others.tail.tail noob)))))
-
-(macro del! ()
-    (when (< rest.size 1)
-        (error 'syntax-error %(del! @rest) "del! requires at least one argument."))
-    %(env.del!
-        @(rest.map
-            (_
-                (when (not (symbol? _))
-                    (error 'syntax-error %(del! @rest) "del! requires keys to be symbols."))
-                (list 'quote _)))))
-
 (macro ensure (thnk)
     (def v (gensym))
     %(guard
@@ -308,6 +286,17 @@
 
 (macro test ()
     'this-macro-not-yet-implemented) ; FIXME
+
+(proc box (value)
+   (def the-box (vector value))
+   (object
+      'set! (lambda (v)
+               (seq
+                  (the-box.set! 0 v)
+                  v))
+      'val  (lambda () (the-box.0))
+      auto: '(val)
+   ))
 
 (macro qw ()
     (pair 'list (rest.map (lambda (x) x.to-text))))

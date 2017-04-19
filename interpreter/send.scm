@@ -695,16 +695,19 @@
                     primitive-type
                     'env
                     (lambda (args opts cont err)
-                        (define def-name (car args))
-                        (define def-val  (cadr args))
-                        (define getter  (vaquero-send-table (htr obj 'vars) 'get top-cont err))
-                        (let ((current (getter def-name)))
-                           (p def-name (vaquero-view def-val) (vaquero-view current))
-                           (if (member current undefineds)
-                              (let ((setter! (vaquero-send-table (htr obj 'vars) 'set! top-cont err)))
-                                 (setter! def-name def-val)
-                                 (cont def-val))
-                              (err (vaquero-error-object 'name-already-defined `(def ,def-name ,def-val) "environment: name is already defined.") cont)))))))
+                        (define getter (vaquero-send-table (htr obj 'vars) 'get  top-cont err))
+                        (define setter (vaquero-send-table (htr obj 'vars) 'set! top-cont err))
+                        (if (null? args)
+                           'null
+                           (let loop ((def-name (car args)) (def-val (cadr args)) (the-rest (cddr args)))
+                              (define current (getter def-name))
+                              (if (member current undefineds)
+                                 (begin
+                                    (setter def-name def-val)
+                                    (if (null? the-rest)
+                                       (cont def-val)
+                                       (loop (car the-rest) (cadr the-rest) (cddr the-rest))))
+                                 (err (vaquero-error-object 'name-already-defined `(def ,def-name ,def-val) "environment: name is already defined.") cont))))))))
         ((lookup)
             (cont
                 (vaquero-proc

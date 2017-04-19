@@ -31,9 +31,6 @@
 (sys.test 'int?
     (int? 23))
 
-(sys.test 'nint?
-    (nint? 2.71828))
-
 (sys.test 'rune?
     (rune? \x))
 
@@ -85,10 +82,10 @@
 (sys.test 'let-seq
     (= '(2 . 3)
         ((lambda ()
-            (let (x 1 y 2)
-                (set! x 2)
-                (set! y 3)
-                (pair x y))))))
+            (let (x (vector 1) y (vector 2))
+                (x.set! 0 2)
+                (y.set! 0 3)
+                (pair x.0 y.0))))))
 
 (sys.test 'cond
     ((thunk
@@ -152,83 +149,83 @@
             (= 16   (foo 4)))))
 
 (sys.test 'while
-    (let (i 0 total 0)
+    (let (i (box 0) total (box 0))
         (def rv
-            (while (< i 20)
-                (set! total (+ total i))
-                (set! i i.inc)
-                (list i total)))
-        (= rv '(20 190)))) 
+            (while (< i.val 20)
+                (total.set! (+ total.val i.val))
+                (i.set! i.val.inc)
+                (list i.val total.val)))
+        (= rv '(20 190))))
 
 (sys.test 'while-next
-    (let (i 0 total 0)
+    (let (i (box 0) total (box 0))
         (def rv
-            (while (< i 20)
-                (set! i i.inc)
-                (when (mod i 3)
-                    (next (list 'next i total)))
-                (set! total (+ total i))
-                (list i total)))
+            (while (< i.val 20)
+                (i.set! i.val.inc)
+                (when (mod i.val 3)
+                    (next (list 'next i.val total.val)))
+                (total.set! (+ total.val i.val))
+                (list i.val total.val)))
         (= rv '(next 20 63))))
 
 (sys.test 'while-last
-    (let (i 0 total 0)
+    (let (i (box 0) total (box 0))
         (def rv
-            (while (< i 20)
-                (set! i i.inc)
-                (when (> total 30)
-                    (last (list 'last i total)))
-                (set! total (+ total i))
-                (list i total)))
+            (while (< i.val 20)
+                (i.set! i.val.inc)
+                (when (> total.val 30)
+                    (last (list 'last i.val total.val)))
+                (total.set! (+ total.val i.val))
+                (list i.val total.val)))
         (= rv '(last 9 36))))
 
 (sys.test 'for
     (= 210
-        (for (i 0 total 0) (<= i 20) (set! i i.inc)
-            (set! total (+ total i))
-            total)))
+        (for (i (box 0) total (box 0)) (<= i.val 20) (i.set! i.val.inc)
+            (total.set! (+ total.val i.val))
+            total.val)))
 
 (sys.test 'for-next
     (= 110
-        (for (i 0 total 0) (<= i 20) (set! i i.inc)
-            (when (mod i 2)
+        (for (i (box 0) total (box 0)) (<= i.val 20) (i.set! i.val.inc)
+            (when (mod i.val 2)
                 (next total))
-            (set! total (+ total i))
-            total)))
+            (total.set! (+ total.val i.val))
+            total.val)))
 
 (sys.test 'for-redo
     (= 220
-        (for (i 0 total 0) (<= i 20) (set! i i.inc)
-            (when (mod total 2)
-                (set! total total.inc)
+        (for (i (box 0) total (box 0)) (<= i.val 20) (i.set! i.val.inc)
+            (when (mod total.val 2)
+                (total.set! total.val.inc)
                 (redo total))
-            (set! total (+ total i))
-            total)))
+            (total.set! (+ total.val i))
+            total.val)))
 
 (sys.test 'for-last
     (= 105
-        (for (i 0 total 0) (<= i 20) (set! i i.inc)
-            (when (> total 100)
+        (for (i (box 0) total (box 0)) (<= i.val 20) (i.set! i.val.inc)
+            (when (> total.val 100)
                 (last total))
-            (set! total (+ total i))
-            total)))
+            (total.set! (+ total.val i.val))
+            total.val)))
 
 (sys.test 'each
-    (let (items (range 1 5) total 0)
+    (let (items (range 1 5) total (box 0))
         (each n items
-            (set! total (+ total n)))
-        (= total 15)))
+            (total.set! (+ total.val n)))
+        (= total.val 15)))
 
 (sys.test 'each-vector
-    (let (items (apply vector (range 1 5) (:)) total 0)
+    (let (items (apply vector (range 1 5) (:)) total (box 0))
         (each n items
-            (set! total (+ total n)))
-        (= total 15)))
+            (total.set! (+ total.val n)))
+        (= total.val 15)))
 
 (sys.test 'each-table
-    (let (items (: x 1 y 2 z 3 u 4 v 5) total 0)
+    (let (items (: x 1 y 2 z 3 u 4 v 5) total (box 0))
         (each n items
-            (set! total (+ total n.val)))
+            (total.set! (+ total.val n.val)))
         (= total 15)))
 
 (sys.test '_
@@ -245,11 +242,11 @@
             (xs.map (resend 'type)))))
 
 (sys.test 'promise
-    (let (count 0)
+    (let (count (box 0))
         (def p
             (promise
                 (seq
-                    (set! count (+ 1 count))
+                    (count.set! count.val.inc)
                     (* 3 4))))
         (and
             (= 'promise p.type)
