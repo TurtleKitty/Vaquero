@@ -57,8 +57,8 @@ END
 (define vaquero-compiled-dir  "~/.vaquero/compiled")
 
 (define genv #f)
-(define g-has? #f)
-(define g-get  #f)
+(define g-has? (lambda (name) #f))
+(define g-get  (lambda (name) not-found))
 
 (include "read_expand_cache")
 (include "utils")
