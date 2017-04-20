@@ -11,7 +11,7 @@
                          (or
                             (eq? (car x) 'def)
                             (and (eq? (car x) 'proc) (symbol? (cadr x)))
-                            (eq? (car x) 'macro))))
+                            (eq? (car x) 'op))))
                 seq)))
     (define names (get-names seq))
     (define haz? (vaquero-send-env env 'has? top-cont top-err))
@@ -57,7 +57,7 @@
             ((quote)    (vaquero-compile-quote code))
             ((if)       (vaquero-compile-if code))
             ((seq)      (vaquero-compile-seq code))
-            ((macro)    (vaquero-compile-macro code))
+            ((op)       (vaquero-compile-op code))
             ((lambda)   (vaquero-compile-lambda code))
             ((proc)     (vaquero-compile-proc code))
             ((let)      (vaquero-compile-let code))
@@ -230,7 +230,7 @@
             (frag
                 (cont (make-vaquero-proc code env formals bodies))))))
 
-(define (vaquero-compile-macro code)
+(define (vaquero-compile-op code)
     (define name (cadr code))
     (define formals (caddr code))
     (define bodies (cdddr code))

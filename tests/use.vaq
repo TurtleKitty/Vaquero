@@ -2,7 +2,7 @@
 ; use
 
 (use foreigner "modules/proc.vaq")
-(use m "modules/macro.vaq")
+(use m "modules/op.vaq")
 
 ; two-part factorial
 (use mx "modules/x.vaq")
@@ -15,7 +15,7 @@
     (let ()
         (= (foreigner.go 1 2) '(foreigner 1 2))))
 
-(sys.test 'use-macro-file
+(sys.test 'use-op-file
     (let ()
         (and
             (= (m.quote-xyz 1 2 3) '(1 2 3))
@@ -33,7 +33,7 @@
       (import importer foo bar baz)
       (= 6 (baz foo bar))))
 
-(sys.test 'import-macro
+(sys.test 'import-op
    (let ()
       (import importer bax quux)
       (= (bax "x") '("x" "x" "x"))
@@ -45,15 +45,15 @@
         (use foreigner-2 "https://raw.githubusercontent.com/TurtleKitty/Vaquero/master/tests/modules/proc.vaq")
         (= (foreigner-2.go 1 2) '(foreigner 1 2))))
 
-(sys.test 'use-macro-https
+(sys.test 'use-op-https
     (let ()
-        (use m2 "https://raw.githubusercontent.com/TurtleKitty/Vaquero/master/tests/modules/macro.vaq")
+        (use m2 "https://raw.githubusercontent.com/TurtleKitty/Vaquero/master/tests/modules/op.vaq")
         (and
             (= (m2.quote-xyz 1 2 3) '(1 2 3))
             (= (send (m2.calc-xyz 1 2 3) 'code) '(proc (v) (* v 17)))
             (= ((m2.calc-xyz 1 2 3) 4 ) 68))))
 
-(macro github (name sym)
+(op github (name sym)
    (def txt sym.to-text)
    (def xs (txt.split "/"))
    (def user xs.0)
@@ -68,9 +68,9 @@
       (github p-hub turtlekitty/vaquero/tests/modules/proc)
       (= (p-hub.go 1 2) '(foreigner 1 2))))
 
-(sys.test 'use-macro-github
+(sys.test 'use-op-github
    (let ()
-      (github m-hub turtlekitty/vaquero/tests/modules/macro)
+      (github m-hub turtlekitty/vaquero/tests/modules/op)
       (and
          (= (m-hub.quote-xyz 1 2 3) '(1 2 3))
          (= (send (m-hub.calc-xyz 1 2 3) 'code) '(proc (v) (* v 17)))

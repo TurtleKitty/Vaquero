@@ -1,7 +1,7 @@
 
 ; global environment
 
-(macro thunk ()
+(op thunk ()
     (list 'lambda () (pair 'seq rest)))
 
 (proc isa? (thing type)
@@ -51,12 +51,12 @@
 (proc <= (x y)
     (not (> x y)))
 
-(macro and (x)
+(op and (x)
     (if rest
         (list 'if x (and.apply rest null) 'false)
         (list 'send x ''to-bool)))
 
-(macro or (x)
+(op or (x)
     (def stub (gensym))
     (list 'seq
         (list 'def stub x)
@@ -121,7 +121,7 @@
                     (proc () (funz.head (apply funz.tail.head rest opt)))
                     (compose funz.head (apply compose funz.tail null)))))) rest))
 
-(macro loop (name vars)
+(op loop (name vars)
    (proc sep (x y xs names vals)
       (if xs.empty?
          (pair (send (pair x names) 'reverse) (send (pair y vals) 'reverse))
@@ -141,7 +141,7 @@
       (list 'def name lambda-form)
       (list (list 'send name ''apply) args 'null)))
 
-(macro : () ; table macro
+(op : () ; table op
     (pair 'table
         (if (pair? rest)
             (if (= (mod rest.size 2) 0)
@@ -153,7 +153,7 @@
                 (error 'args-fail %(: @rest) "(: ...) requires an even number of arguments"))
             ())))
 
-(macro cond ()
+(op cond ()
     (def default
         (if (opt.get 'default)
             (opt.get 'default)
@@ -165,7 +165,7 @@
                 (list 'if pred conseq (go remaining.0 remaining.1 remaining.tail.tail))
                 (list 'if pred conseq default)))))
 
-(macro qq (expr)
+(op qq (expr)
     (proc constant? (expr)
         (if (pair? expr)
             (= expr.head 'quote)
@@ -215,13 +215,13 @@
                     expr)))
     (expand-quasiquote expr 0))
 
-(macro when (pred)
+(op when (pred)
     (qq
         (if (unq pred)
             (seq (unqs rest))
             null)))
 
-(macro case (val)
+(op case (val)
     (def default
         (if (opt.get 'default)
             (opt.get 'default)
@@ -239,7 +239,7 @@
                                 (list 'if pred conseq (go remaining.0 remaining.1 remaining.tail.tail))
                                 (list 'if pred conseq default)))))))))
 
-(macro while (pred body)
+(op while (pred body)
     ; call (next <value>) to skip the rest of the bodies and go to the next loop (continue)
     ;     if predicate evals false, <value> will be returned from the while expression
     ; call (last <value>) to terminate the loop and return said value (break)
@@ -258,7 +258,7 @@
                             $rv))))
             ($jump null)))))
 
-(macro _ (body)
+(op _ (body)
     (def uscore (gensym))
     (def bodies (pair body rest))
     (proc rename (form)
@@ -273,7 +273,7 @@
         (lambda ((unq uscore))
             (seq (unqs (rename bodies))))))
 
-(macro ensure (thnk)
+(op ensure (thnk)
     (def v (gensym))
     %(guard
         (proc (e k)
@@ -284,8 +284,8 @@
                 ($thnk)
                 $v))))
 
-(macro test ()
-    'this-macro-not-yet-implemented) ; FIXME
+(op test ()
+    'not-implemented-yet) ; FIXME
 
 (proc box (value)
    (def the-box (vector value))
@@ -299,13 +299,13 @@
       auto: '(val)
    ))
 
-(macro qw ()
+(op qw ()
     (pair 'list (rest.map (lambda (x) x.to-text))))
 
-(macro everywhere ()
-    %(seq @rest (macro-eval @rest)))
+(op everywhere ()
+    %(seq @rest (compile-eval @rest)))
 
-(macro with-gensyms (gs)
+(op with-gensyms (gs)
     (def pairs (gs.map (_ (list _ '(gensym)))))
     (def lets
         (loop go (x pairs.head xs pairs.tail)
@@ -314,14 +314,14 @@
                 x)))
     %(let $lets @rest))
 
-(macro chain (obj)
+(op chain (obj)
     (loop go (init obj cmd rest.head cmds rest.tail)
         (def form %((send $init (quote $(send cmd 'head))) @(send cmd 'tail)))
         (if cmds
             (go form cmds.head cmds.tail)
             form)))
 
-(macro for (init pred update body)
+(op for (init pred update body)
     (def bodies (pair body rest))
     (with-gensyms (jump rv tmp kont)
         %(gate
@@ -339,7 +339,7 @@
                                 $rv))))
                 ($jump null)))))
 
-(macro each (name arg body)
+(op each (name arg body)
     (def bodies (pair body rest))
     (with-gensyms (xs jump)
         (qq
@@ -355,7 +355,7 @@
             acc.reverse
             (go (+ i step) (pair i acc)))))
 
-(macro matrix ()
+(op matrix ()
     ; (matrix ((0 0 1) (0 0 2)) ((0 1 1) (0 2 1)))
     ;     -> (vector: (vector: (vector: 0 0 1) (vector: 0 0 2)) (vector: (vector: 0 1 1) (vector: 0 2 1)))
     (qq
@@ -366,7 +366,7 @@
                           (qq (matrix (unqs _)))
                           _)))))))
 
-(macro gen (name body)
+(op gen (name body)
     (def opt-arity (if opt.arity opt.arity 5))
     (qq
         (def (unq name)
@@ -407,12 +407,12 @@
                     'arity $opt-arity
                     (unq 'auto:) '(view)))))) ; not sure why (unq (quote keyword:)) works, but I'll take it
 
-(macro spec (name args pred body)
+(op spec (name args pred body)
     (qq ((send (unq name) 'add-clause!)
             (proc (unq args) (unq pred))
             (proc (unq args) (unqs (pair body rest))))))
 
-(macro assert (predicate)
+(op assert (predicate)
     (with-gensyms (testy result)
         (qq
             (let ((unq testy) (quote (unq predicate)) (unq result) (unq predicate))
@@ -532,7 +532,7 @@
                 'parse json-in
                 'stringify json-out)))
 
-(macro promise (expr) ; lazy evaluation
+(op promise (expr) ; lazy evaluation
     (def result (gensym))
     %(let ($result (box null))
         (object
@@ -566,8 +566,8 @@
         (object 'type type 'unseal unseal resend: %(($obj @forward)) default: obj.default))
     sealed)
 
-(macro alias (name new-alias)
-    %(macro $new-alias ()
+(op alias (name new-alias)
+    %(op $new-alias ()
         %($'$name @rest)))
 
 (proc any? (f xs)

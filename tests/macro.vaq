@@ -1,22 +1,22 @@
 
 ; macro expansion
 
-(sys.test 'simple-macro
+(sys.test 'simple-op
     (let ()
-        (macro foo (x y) (list 'list x y))
+        (op foo (x y) (list 'list x y))
         (= (foo 1 2) '(1 2))))
 
-(sys.test 'macro-object
+(sys.test 'op-object
     (let ()
-        (macro brat (x)
+        (op brat (x)
             (def foo (object 'a x))
             foo.a)
         (= (brat 1) 1)))
 
-(sys.test 'macro-writing-macro
+(sys.test 'op-writing-op
     (let ()
-        (macro mac-on-mac (name body)
-            (list 'macro name '(x y)
+        (op mac-on-mac (name body)
+            (list 'op name '(x y)
                 (list
                     'list
                     '(quote quote)
@@ -27,36 +27,36 @@
             (= (boo 1 2) '(1 2 3))
             (= (blorg 4 5) '(4 5 meow)))))
 
-(sys.test 'macro-eval
+(sys.test 'compile-eval
     (let ()
-        (macro-eval
+        (compile-eval
             (def xyz 23) 
             (proc bar (x) (* x x)))
-        (macro foo (v) 
+        (op foo (v) 
             %(list $v $xyz $(bar v)))
         (= (foo 7)
           '(7 23 49))))
 
-(sys.test 'macro-with-internal-procedure
+(sys.test 'op-with-internal-procedure
     (let ()
-        (macro qux (foon ball)
+        (op qux (foon ball)
             (proc bar (x y)
                 (list (- x y) (* x y)))
             %(list '$(bar foon ball) '$(bar ball foon)))
         (= (qux 2 3) '((-1 6) (1 6)))))
 
-(sys.test 'macro-with-internal-macro
+(sys.test 'op-with-internal-op
     (let ()
-        (macro bob (n)
+        (op bob (n)
             (loop go (x n totes 0)
                 (if x.zero?
                     totes
                     (go x.dec (+ x totes)))))
         (= (bob 5) 15)))
 
-(sys.test 'runtime-macro ; muhahahaha
+(sys.test 'runtime-op ; muhahahaha
     (wall ()
-        (macro screw-with-proc (f) 
+        (op screw-with-proc (f) 
             (list (list 'proc '(x) (list '* 10 f.code.tail.tail.head)) 3)) 
         (proc foo (x) (* x x)) 
         (proc bar (x) (+ x x)) 

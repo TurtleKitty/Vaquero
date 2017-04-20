@@ -1,9 +1,9 @@
 
 (define (vaquero-eval code env)
-    (define macro-env
+    (define compile-env
         (vaquero-environment env))
     (define prog
-        (vaquero-compile (vaquero-expand code macro-env)))
+        (vaquero-compile (vaquero-expand code compile-env)))
     (prog env top-cont top-err))
 
 (define (vaquero-apply obj xs opts cont err)

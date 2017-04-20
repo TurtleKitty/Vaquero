@@ -1,5 +1,5 @@
 
-; global prelude macros and procs
+; global prelude ops and procs
 
 (proc mahproc (x y)
     (* x y 10))
@@ -283,7 +283,7 @@
                 (def x 1)
                 (proc sq (x) (* x x)))
 
-            (macro foo ()
+            (op foo ()
                 %(def bar $(+ x (sq 7))))
 
             (foo)
