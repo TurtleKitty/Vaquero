@@ -26,7 +26,7 @@
         ((hash-table? obj)
             (let ((t (htr obj 'type)))
                 (case t
-                    ((env)    (vaquero-send-env obj msg cont err))
+                    ((env)   (vaquero-send-env obj msg cont err))
                     ((table) (vaquero-send-table obj msg cont err))
                     ((lambda proc operator) (vaquero-send-proc obj msg cont err))
                     (else (vaquero-send-object obj msg cont err)))))
@@ -678,25 +678,33 @@
 (define (vaquero-send-env obj msg cont err)
     (define msgs '(view to-text def! has? get pairs lookup parent extend eval expand))
     (define undefineds (list not-found will-exist 'null))
+    (define vars (htr obj 'vars))
+    (define (env-default msg)
+        (lookup obj msg
+            (lambda (val)
+               (if (eq? val not-found)
+                  (err (vaquero-error-object 'message-not-understood '(send obj msg) "Message not understood.") cont)
+                  val))
+            err))
     (case msg
         ((get has? to-bool keys values pairs)
-            (vaquero-send-table (htr obj 'vars) msg cont err))
+            (vaquero-send-table vars msg cont err))
         ((type) (cont 'env))
         ((view to-text)
             (cont
                 (cons (string->keyword "env")
-                      (cdr (vaquero-view (htr obj 'vars))))))
+                      (cdr (vaquero-view vars)))))
         ((autos) (cont '(view to-text to-bool keys values pairs)))
         ((resends) (cont '()))
-        ((default) (cont default-default))
+        ((default) (cont env-default))
         ((def!)
             (cont
                 (vaquero-proc
                     primitive-type
                     'env
                     (lambda (args opts cont err)
-                        (define getter (vaquero-send-table (htr obj 'vars) 'get  top-cont err))
-                        (define setter (vaquero-send-table (htr obj 'vars) 'set! top-cont err))
+                        (define getter (vaquero-send-table vars 'get  top-cont err))
+                        (define setter (vaquero-send-table vars 'set! top-cont err))
                         (if (null? args)
                            (cont 'null)
                            (let loop ((def-name (car args)) (def-val (cadr args)) (the-rest (cddr args)))
@@ -744,7 +752,7 @@
                     (vaquero-expand code obj))))
         ((messages) (cont msgs))
         ((responds?) (cont (lambda (msg) (if (member msg msgs) #t #f))))
-        (else (idk obj msg cont err))))
+        (else (cont (env-default msg)))))
 
 (define (vaquero-send-vector obj msg cont err)
     (define msgs '(view to-bool to-text to-list pairs size clone has? set! apply fold reduce map filter sort))
