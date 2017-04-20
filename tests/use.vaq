@@ -11,41 +11,41 @@
 (use importer "modules/imports.vaq")
 
 
-(test 'use-proc-file
+(test use-proc-file
     (let ()
         (= (foreigner.go 1 2) '(foreigner 1 2))))
 
-(test 'use-op-file
+(test use-op-file
     (let ()
         (and
             (= (m.quote-xyz 1 2 3) '(1 2 3))
             (= (send (m.calc-xyz 1 2 3) 'code) '(proc (v) (* v 17)))
             (= ((m.calc-xyz 1 2 3) 4 ) 68))))
 
-(test 'use-mutually-recursive
+(test use-mutually-recursive
    (let ()
       (and
          (= 120 (mx.f 5))
          (= 120 (my.f 6)))))
 
-(test 'import-proc
+(test import-proc
    (let ()
       (import importer foo bar baz)
       (= 6 (baz foo bar))))
 
-(test 'import-op
+(test import-op
    (let ()
       (import importer bax quux)
       (= (bax "x") '("x" "x" "x"))
       (= (bax '(2 3 5)) '((2 3 5) (2 3 5) (2 3 5)))
       (= (quux 23) 230)))
 
-(test 'use-proc-https
+(test use-proc-https
     (let () 
         (use foreigner-2 "https://raw.githubusercontent.com/TurtleKitty/Vaquero/master/tests/modules/proc.vaq")
         (= (foreigner-2.go 1 2) '(foreigner 1 2))))
 
-(test 'use-op-https
+(test use-op-https
     (let ()
         (use m2 "https://raw.githubusercontent.com/TurtleKitty/Vaquero/master/tests/modules/op.vaq")
         (and
@@ -63,12 +63,12 @@
    (def uri (cat "https://raw.githubusercontent.com" user repo "master" module-path with: "/"))
    %(use $name $uri))
 
-(test 'use-proc-github
+(test use-proc-github
    (let () 
       (github p-hub turtlekitty/vaquero/tests/modules/proc)
       (= (p-hub.go 1 2) '(foreigner 1 2))))
 
-(test 'use-op-github
+(test use-op-github
    (let ()
       (github m-hub turtlekitty/vaquero/tests/modules/op)
       (and

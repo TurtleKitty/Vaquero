@@ -286,7 +286,7 @@
 
 (op test (name expr)
    %(let (ok $expr)
-      (say (list $name (if ok 'ok 'FAIL)))))
+      (say (list (quote $name) (if ok 'ok 'FAIL)))))
 
 (proc box (value)
    (def the-box (vector value))

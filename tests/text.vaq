@@ -9,48 +9,48 @@
 (def fb "  foonballardy!!!  \n")
 (def complicated "foo: x&1 bar : y&2 baz:z&3 quux :u&4, quakz: v&5")
 
-(test 'text-type (= str.type 'text))
-(test 'text-true (= str.to-bool true))
-(test 'text-false (= empty.to-bool false))
-(test 'text-to-symbol (= str.to-symbol 'vaquero))
-(test 'text-to-int (= one.to-number 1))
-(test 'text-to-real (= pi.to-number 3.14))
-(test 'text-split (= '("foo" "bar" "baz") (fbb.split "[.]")))
-(test 'text-set! (= "2" (seq (one.set! 0 \2) one)))
-(test 'text-uc   (= "VAQUERO" str.uc))
-(test 'text-lc   (= "yuck" yuck.lc))
-(test 'text-take (= "va" (str.take 2)))
-(test 'text-drop (= "quero" (str.drop 2)))
-(test 'text-trim (= fb.trim "foonballardy!!!"))
-(test 'text-ltrim (= fb.ltrim "foonballardy!!!  \n"))
-(test 'text-rtrim (= fb.rtrim "  foonballardy!!!"))
-(test 'text-lpad (= "   vaquero" (str.lpad \space 10)))
-(test 'text-rpad (= "vaquero   " (str.rpad \space 10)))
-(test 'text-chomp (= fb.chomp "  foonballardy!!!  "))
-(test 'text-index (= (fb.index "!") 14))
+(test text-type (= str.type 'text))
+(test text-true (= str.to-bool true))
+(test text-false (= empty.to-bool false))
+(test text-to-symbol (= str.to-symbol 'vaquero))
+(test text-to-int (= one.to-number 1))
+(test text-to-real (= pi.to-number 3.14))
+(test text-split (= '("foo" "bar" "baz") (fbb.split "[.]")))
+(test text-set! (= "2" (seq (one.set! 0 \2) one)))
+(test text-uc   (= "VAQUERO" str.uc))
+(test text-lc   (= "yuck" yuck.lc))
+(test text-take (= "va" (str.take 2)))
+(test text-drop (= "quero" (str.drop 2)))
+(test text-trim (= fb.trim "foonballardy!!!"))
+(test text-ltrim (= fb.ltrim "foonballardy!!!  \n"))
+(test text-rtrim (= fb.rtrim "  foonballardy!!!"))
+(test text-lpad (= "   vaquero" (str.lpad \space 10)))
+(test text-rpad (= "vaquero   " (str.rpad \space 10)))
+(test text-chomp (= fb.chomp "  foonballardy!!!  "))
+(test text-index (= (fb.index "!") 14))
 
-(test 'text-regex-match-case-sensitive
+(test text-regex-match-case-sensitive
     (and 
         (str.match "vaquero")
         (not (str.match "VAQUERO"))))
 
-(test 'text-regex-match-case-insensitive
+(test text-regex-match-case-insensitive
     (str.match "VAQUERO" flags: "i"))
 
-(test 'text-regex-split
+(test text-regex-split
     (= '("wah" "wah" "fuh")
         (wwf.split "_+\\d+_+")))
 
-(test 'text-regex-capture
+(test text-regex-capture
     (=
         '(("foo: x&1" "foo" "x&1" "x" "1") ("bar : y&2" "bar" "y&2" "y" "2") ("baz:z&3" "baz" "z&3" "z" "3") ("quux :u&4" "quux" "u&4" "u" "4") ("quakz: v&5" "quakz" "v&5" "v" "5"))
         (complicated.capture (text: ((\w+)\s*:\s*((\w+)&(\d+)))))))
 
-(test 'text-regex-replace
+(test text-regex-replace
     (= "blah_23_wah_42___fuh"
         (wwf.replace "wah" "blah")))
 
-(test 'text-regex-replace-all
+(test text-regex-replace-all
     (= "blah_23_blah_42___fuh"
         (wwf.replace "wah" "blah" flags: "g")))
 

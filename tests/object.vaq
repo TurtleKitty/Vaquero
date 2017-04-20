@@ -4,13 +4,13 @@
 (def bareobj (object))
 (def simp (object 'a 1 'b 2))
 
-(test 'obj-type (= simp.type 'object))
-(test 'message-send (and (= simp.a 1) (= simp.b 2)))
-(test 'object-responds? (and (simp.responds? 'a) (not (simp.responds? 'c))))
-(test 'object-messages (= (simp.messages.sort <) '(a b)))
+(test obj-type (= simp.type 'object))
+(test message-send (and (= simp.a 1) (= simp.b 2)))
+(test object-responds? (and (simp.responds? 'a) (not (simp.responds? 'c))))
+(test object-messages (= (simp.messages.sort <) '(a b)))
 
-(test 'obj-true (= true simp.to-bool))
-(test 'obj-false (= false bareobj.to-bool))
+(test obj-true (= true simp.to-bool))
+(test obj-false (= false bareobj.to-bool))
 
 ; autoexec
 
@@ -22,9 +22,9 @@
             'thunkle (lambda () (* otto.var 10))
             auto: '(var thunky thunkle))))
 
-(test 'auto-basic (= otto.var 3))
-(test 'auto-set! (seq otto.thunky (= otto.var 4)))
-(test 'auto-info (= otto.thunkle (* 10 otto.var)))
+(test auto-basic (= otto.var 3))
+(test auto-set! (seq otto.thunky (= otto.var 4)))
+(test auto-info (= otto.thunkle (* 10 otto.var)))
 
 
 ; resend
@@ -36,9 +36,9 @@
             (list simp 'a 'b)
             (list otto 'c 'thunkle))))
 
-(test 'resend-basic (= resender.d 4))
-(test 'resend-simple (= resender.a 1))
-(test 'resend-auto (= resender.thunkle (* 10 otto.var)))
+(test resend-basic (= resender.d 4))
+(test resend-simple (= resender.a 1))
+(test resend-auto (= resender.thunkle (* 10 otto.var)))
 
 
 ; default
@@ -48,9 +48,9 @@
         'e 5
         default: (lambda (msg) (send resender msg))))
 
-(test 'default-basic (= defaulter.e 5))
-(test 'default-parent (= defaulter.d 4))
-(test 'default-ancestor (= defaulter.a 1))
-(test 'default-resend (= defaulter.thunkle (* 10 otto.var)))
+(test default-basic (= defaulter.e 5))
+(test default-parent (= defaulter.d 4))
+(test default-ancestor (= defaulter.a 1))
+(test default-resend (= defaulter.thunkle (* 10 otto.var)))
 
 

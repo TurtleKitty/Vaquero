@@ -4,70 +4,70 @@
 (proc mahproc (x y)
     (* x y 10))
 
-(test 'proc
+(test proc
     (= 120 (mahproc 3 4)))
 
-(test ':
+(test :
     (= (table 'x 1 'y 2) (: x 1 y 2)))
 
-(test 'null?
+(test null?
     (null? null))
 
-(test 'isa?
+(test isa?
     (= true (isa? mahproc 'proc)))
 
-(test 'proc?
+(test proc?
     (proc? mahproc))
 
-(test 'bool?
+(test bool?
     (bool? false))
 
-(test 'symbol?
+(test symbol?
     (symbol? 'foo))
 
-(test 'num?
+(test num?
     (and (num? 0) (num? 3.14159)))
 
-(test 'int?
+(test int?
     (int? 23))
 
-(test 'rune?
+(test rune?
     (rune? \x))
 
-(test 'text?
+(test text?
     (text? "foo"))
 
-(test 'pair?
+(test pair?
     (and
         (pair? '(1 . 2))
         (pair? (pair 1 2))))
 
-(test 'list?
+(test list?
     (list? (list 1)))
 
-(test 'vector?
+(test vector?
     (vector? (vector 2 3)))
 
-(test 'table?
+(test table?
     (table? (: x 1 y 2)))
 
-(test 'box
+(test box
    (= '(0 7)
       (let (x (box 0))
          (def y x.val)
          (x.set! 7)
          (list y x.val))))
 
-(test 'append
+(test append
     (= '(1 2 3 4 5) (append '(1 2) '(3) '(4 5))))
 
-(test 'papply
+(test papply
     (=
         '(partially applied list 1 2 3)
         (let (x (papply list 'partially 'applied 'list))
             (x 1 2 3))))
 
-(test 'compose
+(test compose
     (let ()
         (proc f (xs) (xs.map (_ (* _ _))))
         (proc g (xs) (xs.map (_ (+ _ 10))))
@@ -77,7 +77,7 @@
             (= '(11 14 19 26 35 46 59)
                 ((compose g f range) 1 7)))))
 
-(test 'cond
+(test cond
     ((thunk
         (proc foo (x)
             (cond
@@ -91,7 +91,7 @@
             (= 6    (foo 2))
             (= 9    (foo 3))))))
 
-(test 'qq
+(test qq
     ((thunk
         (def x 1)
         (def y 'foo)
@@ -105,14 +105,14 @@
             (= (qq (x (unq x) y (unq y) z (unq z))) '(x 1 y foo z (2 3)))
             (= (qq (x (unq x) y (unq y) z (unqs z))) '(x 1 y foo z 2 3))))))
 
-(test 'when
+(test when
     (let ()
         (proc foo (x)
             (when (> x 10) 'is-a-biggun))
         (=  (list (foo 0) (foo 9) (foo 23) (foo 42) (foo 153))
            '(null null is-a-biggun is-a-biggun is-a-biggun))))
 
-(test 'chain
+(test chain
     (let ()
         (def xs (range 0 10))
         (proc foo (x) (* x x))
@@ -123,7 +123,7 @@
                 (filter bar)
                 (sort >)))))
 
-(test 'case
+(test case
     (let ()
         (proc foo (x)
             (case x
@@ -138,7 +138,7 @@
             (= 9    (foo 3))
             (= 16   (foo 4)))))
 
-(test 'while
+(test while
     (let (i (box 0) total (box 0))
         (def rv
             (while (< i.val 20)
@@ -147,7 +147,7 @@
                 (list i.val total.val)))
         (= rv '(20 190))))
 
-(test 'while-next
+(test while-next
     (let (i (box 0) total (box 0))
         (def rv
             (while (< i.val 20)
@@ -158,7 +158,7 @@
                 (list i.val total.val)))
         (= rv '(next 20 63))))
 
-(test 'while-last
+(test while-last
     (let (i (box 0) total (box 0))
         (def rv
             (while (< i.val 20)
@@ -169,13 +169,13 @@
                 (list i.val total.val)))
         (= rv '(last 9 36))))
 
-(test 'for
+(test for
     (= 210
         (for (i (box 0) total (box 0)) (<= i.val 20) (i.set! i.val.inc)
             (total.set! (+ total.val i.val))
             total.val)))
 
-(test 'for-next
+(test for-next
     (= 110
         (for (i (box 0) total (box 0)) (<= i.val 20) (i.set! i.val.inc)
             (when (mod i.val 2)
@@ -183,7 +183,7 @@
             (total.set! (+ total.val i.val))
             total.val)))
 
-(test 'for-redo
+(test for-redo
     (= 220
         (for (i (box 0) total (box 0)) (<= i.val 20) (i.set! i.val.inc)
             (when (mod total.val 2)
@@ -192,7 +192,7 @@
             (total.set! (+ total.val i.val))
             total.val)))
 
-(test 'for-last
+(test for-last
     (= 105
         (for (i (box 0) total (box 0)) (<= i.val 20) (i.set! i.val.inc)
             (when (> total.val 100)
@@ -200,38 +200,38 @@
             (total.set! (+ total.val i.val))
             total.val)))
 
-(test 'each
+(test each
     (let (items (range 1 5) total (box 0))
         (each n items
             (total.set! (+ total.val n)))
         (= total.val 15)))
 
-(test 'each-vector
+(test each-vector
     (let (items (apply vector (range 1 5) (:)) total (box 0))
         (each n items
             (total.set! (+ total.val n)))
         (= total.val 15)))
 
-(test 'each-table
+(test each-table
     (let (items (: x 1 y 2 z 3 u 4 v 5) total (box 0))
         (each n items
             (total.set! (+ total.val n.val)))
         (= total.val 15)))
 
-(test '_
+(test _
     (= '(2 4 9)
         (list
             ((_ (+ _ _)) 1)
             ((_ (* 2 _)) 2)
             ((_ (* _ _)) 3))))
 
-(test 'resend
+(test resend
     (=
         '(int rune text symbol number number)
         (let (xs (list 1 \2 "3" 'four 1/5 6.4))
             (xs.map (resend 'type)))))
 
-(test 'promise
+(test promise
     (let (count (box 0))
         (def p
             (promise
@@ -244,7 +244,7 @@
             (= 12 p.value)
             (= 1 count.val))))
 
-(test 'seal-unseal
+(test seal-unseal
     (let ()
         (def r (: x 1 y 2))
         (def sr (seal r))
@@ -276,7 +276,7 @@
                 false)
             (send (sfoo.unseal "foonballardy") 'code))))
 
-(test 'everywhere
+(test everywhere
     (= '(50 50)
         (let ()
             (everywhere
@@ -292,7 +292,7 @@
 
             (list bar baz))))
 
-(test 'generic-procedures
+(test generic-procedures
     (= '(murakami 4 -4 1 5 16 6 ("1" "2" "3" "4" "5" "6" "7"))
         (let ()
             (gen nosuke 'murakami arity: 7) ; default case
@@ -327,26 +327,26 @@
                 (nosuke 1 2 3)
                 (nosuke 1 2 3 4 5 6 7)))))
 
-(test 'ndx
+(test ndx
     ((thunk
         (def roll (ndx 10 6)) ; fireball!
         (and (>= roll 10) (<= roll 60)))))
 
-(test 'cat
+(test cat
     (and
         (=  "nulltrue x foobarbaz"
             (cat null true \space \x \space 'foo "bar" '(\b \a \z)))
         (=  "null/true/x/foo/bar/baz"
             (cat null true \x 'foo "bar" '(\b \a \z) with: "/"))))
 
-(test 'alias
+(test alias
     (= 100
         (let ()
             (alias lambda fn)
             (def f (fn (x) (* 10 x)))
             (f 10))))
 
-(test 'any?
+(test any?
     (let (xs '(1 1 1) ys '(1 1 0) zs '(0 0 0))
         (proc is-1 (x) (= x 1))
         (and
@@ -354,7 +354,7 @@
             (any? is-1 ys)
             (not (any? is-1 zs)))))
 
-(test 'every?
+(test every?
     (let (xs '(1 1 1) ys '(1 1 0) zs '(0 0 0))
         (proc is-1 (x) (= x 1))
         (and
@@ -362,7 +362,7 @@
             (not (every? is-1 ys))
             (not (every? is-1 zs)))))
 
-(test 'map
+(test map
     (let ()
         (def xs '(1 2 3))
         (def ys '(4 5 6))
@@ -372,7 +372,7 @@
         (= '(35 56 81)
            (map bam! xs ys zs))))
 
-(test 'fold
+(test fold
     (let ()
         (def xs '(1 2 3))
         (def ys '(4 5 6))
@@ -382,7 +382,7 @@
         (= 45
            (fold zap! 0 xs ys zs))))
 
-(test 'zip
+(test zip
     (let ()
         (def xs '(a b c))
         (def ys '(1 2 3))
