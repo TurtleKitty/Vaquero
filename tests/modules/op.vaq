@@ -1,12 +1,12 @@
 
-(macro quote-xyz (x y z)
+(op quote-xyz (x y z)
     (list 'quote (list x y z)))
 
 (export 
     quote-xyz
     calc-xyz)
 
-(macro calc-xyz (x y z)
+(op calc-xyz (x y z)
     (list 'proc (list 'v)
         (list '* 'v (+ x (* 2 y) (* 4 z)))))
 

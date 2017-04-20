@@ -5,9 +5,9 @@
 (def bar 3)
 (def baz (lambda (x y) (* x y)))
 
-(macro bax (x)
+(op bax (x)
    (list 'list x x x))
 
-(macro quux (n)
+(op quux (n)
    (* 10 n))
 
