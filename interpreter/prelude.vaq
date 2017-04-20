@@ -284,8 +284,9 @@
                 ($thnk)
                 $v))))
 
-(op test ()
-    'not-implemented-yet) ; FIXME
+(op test (name expr)
+   %(let (ok $expr)
+      (say (list $name (if ok 'ok 'FAIL)))))
 
 (proc box (value)
    (def the-box (vector value))

@@ -1,14 +1,14 @@
 
 ; primitives
 
-(sys.test 'primitive-type (= pair.type 'proc))
-(sys.test 'primitive-view (= pair.view 'primitive-procedure))
-(sys.test 'primitive-code (= pair.code '0xDEADBEEF))
-(sys.test 'primitive-true (= pair.to-bool true))
-(sys.test 'primitive-env (= pair.env 'global))
-(sys.test 'primitive-arity (= pair.arity 2))
-(sys.test 'primitive-variadic (= +.arity '*))
-(sys.test 'primitive-apply (= (+.apply '(1 2 3) null) 6))
+(test 'primitive-type (= pair.type 'proc))
+(test 'primitive-view (= pair.view 'primitive-procedure))
+(test 'primitive-code (= pair.code '0xDEADBEEF))
+(test 'primitive-true (= pair.to-bool true))
+(test 'primitive-env (= pair.env 'global))
+(test 'primitive-arity (= pair.arity 2))
+(test 'primitive-variadic (= +.arity '*))
+(test 'primitive-apply (= (+.apply '(1 2 3) null) 6))
 
 
 ; procedures
@@ -19,13 +19,13 @@
             (+ x y opt.z)
             (+ x y))))
 
-(sys.test 'proc-type (= foo.type 'proc))
-(sys.test 'proc-view (= foo.view %(proc (x y) $(send "..." 'to-symbol))))
-(sys.test 'proc-code (= foo.code '(proc (x y) (if opt.z (+ x y opt.z) (+ x y)))))
-(sys.test 'proc-true (= foo.to-bool true))
-(sys.test 'proc-env (is? foo.env env))
-(sys.test 'proc-arity (= foo.arity 2))
-(sys.test 'proc-opt   (= 6 (foo 1 z: 3 2)))
-(sys.test 'proc-apply (= 3 (foo.apply '(1 2) null)))
-(sys.test 'proc-apply-opt (= 6 (foo.apply '(1 2) (: z 3))))
+(test 'proc-type (= foo.type 'proc))
+(test 'proc-view (= foo.view %(proc (x y) $(send "..." 'to-symbol))))
+(test 'proc-code (= foo.code '(proc (x y) (if opt.z (+ x y opt.z) (+ x y)))))
+(test 'proc-true (= foo.to-bool true))
+(test 'proc-env (is? foo.env env))
+(test 'proc-arity (= foo.arity 2))
+(test 'proc-opt   (= 6 (foo 1 z: 3 2)))
+(test 'proc-apply (= 3 (foo.apply '(1 2) null)))
+(test 'proc-apply-opt (= 6 (foo.apply '(1 2) (: z 3))))
 

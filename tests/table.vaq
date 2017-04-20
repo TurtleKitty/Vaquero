@@ -8,58 +8,58 @@
 (def deep-1 (: x 2 y (: foo 3 bar (: baz 5))))
 (def deep-2 (: x 2 y (: foo 3 bar (: baz 5))))
 
-(sys.test 'table-type (= simp.type 'table))
-(sys.test 'table-true (= true simp.to-bool))
-(sys.test 'table-false (= false barerec.to-bool))
+(test 'table-type (= simp.type 'table))
+(test 'table-true (= true simp.to-bool))
+(test 'table-false (= false barerec.to-bool))
 
-(sys.test 'table-equality (= deep-1 deep-2))
+(test 'table-equality (= deep-1 deep-2))
 
-(sys.test 'message-send (and (= simp.x 2) (= simp.y 3)))
-(sys.test 'table-apply (= 2 (simp 'x)))
+(test 'message-send (and (= simp.x 2) (= simp.y 3)))
+(test 'table-apply (= 2 (simp 'x)))
 
-(sys.test 'table-view
+(test 'table-view
     (= (list 'table: 'foo 23) rec-one.view))
 
 ; primitive messages
 
-(sys.test 'table-has? (simp.has? 'x))
-(sys.test 'table-get (= 2 (simp.get 'x)))
-(sys.test 'table-put (= 5 (send (simp.put 'z 5) 'z)))
+(test 'table-has? (simp.has? 'x))
+(test 'table-get (= 2 (simp.get 'x)))
+(test 'table-put (= 5 (send (simp.put 'z 5) 'z)))
 
-(sys.test 'table-set!
+(test 'table-set!
     (= 7
         (seq
             (simp.set! 'z 7)
             simp.z)))
 
-(sys.test 'table-rm
+(test 'table-rm
     (seq
         (def noob (simp.rm 'z 5))
         (and (simp.has? 'z) (not (noob.has? 'z)))))
 
-(sys.test 'table-del!
+(test 'table-del!
     (= false
         (seq
             (simp.del! 'z)
             (simp.has? 'z))))
 
-(sys.test 'table-size (= simp.size 2))
+(test 'table-size (= simp.size 2))
 
-(sys.test 'table-keys (= '(x y) (simp.keys.sort <))) 
+(test 'table-keys (= '(x y) (simp.keys.sort <))) 
 
-(sys.test 'table-values
+(test 'table-values
     (= '(2 3)
         (simp.values.sort <)))
 
-(sys.test 'table-pairs
+(test 'table-pairs
     (= (list '(x . 2) '(y . 3))
        (simp.pairs.sort (lambda (a b) (< a.tail b.tail)))))
 
-(sys.test 'table-to-list
+(test 'table-to-list
     (= (list '(x . 2) '(y . 3))
        (simp.to-list.sort (lambda (a b) (< a.tail b.tail)))))
 
-(sys.test 'table-merge ; table equality is broken...
+(test 'table-merge ; table equality is broken...
     (seq
         (def r1 (: x 1 y 2))
         (def r2 (: y 5 z 8))
@@ -69,24 +69,24 @@
 
 (def yor (: a 1 b 2 c 3 d 4 e 5))
 
-(sys.test 'table-fold
+(test 'table-fold
     (= 15
        (yor.fold 0 (lambda (total kv) (+ total kv.val)))))
 
-(sys.test 'table-reduce
+(test 'table-reduce
     (= '(total . 120)
        (yor.reduce
             '(total . 1)
             (lambda (total kv) (pair 'total (* total.val kv.val))))))
 
-(sys.test 'table-map
+(test 'table-map
     (let ()
         (proc square-pair (p)
             (pair p.key (* p.val p.val)))
         (def noob (yor.map square-pair))
         (= '(1 4 9 16 25) (noob.values.sort <))))
 
-(sys.test 'table-filter
+(test 'table-filter
     (let ()
         (proc kill4 (p)
             (!= p.val 4))

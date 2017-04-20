@@ -1,5 +1,5 @@
 
-(sys.test 'dotted-pairs
+(test 'dotted-pairs
     (= 
         (quote ((1 . 2) (1 2 3) (1 2 3) (1 2 3 . 4) (1 2 3 . 4) (1 2 3 4 5)))
         (list
@@ -10,12 +10,12 @@
             (quote (1 . (2 . (3 . 4))))
             (quote (1 2 3 . (4 5))))))
 
-(sys.test 'quote
+(test 'quote
     (and
         (= 'foo (quote foo))
         (= '(1 2) (quote (1 2)))))
 
-(sys.test 'quasiquote
+(test 'quasiquote
     (let (foo 1 bar '(1 2) baz '(3 4 5))
         (and
             (= (list 'foo bar 3 4 5)
@@ -23,26 +23,26 @@
             (= (list 'foo bar 3 4 5)
               `(foo ,bar @baz)))))
 
-(sys.test 'rune-literal
+(test 'rune-literal
     (= \f (send "foo" 0)))
 
-(sys.test 'pair-literal
+(test 'pair-literal
     (= (pair 'x 'y)
        '(x . y)))
 
-(sys.test 'vector-literal
+(test 'vector-literal
     (= (vector 1 2 (list 3 4 5))
        (vector: 1 2 (3 4 5))))
 
-(sys.test 'matrix-literal
+(test 'matrix-literal
     (= (matrix (1 2) (3 4))
        (# (1 2) (3 4))))
 
-(sys.test 'table-literal
+(test 'table-literal
     (= (table 'x 1 'y (list 'a 2))
        (table: x 1 y (a 2))))
 
-(sys.test 'text-literal
+(test 'text-literal
     (let ()
         (def t1 (text: Hello, world!   ))
         (= t1 "Hello, world!")
@@ -60,7 +60,7 @@ ladies!
             (= t2 "Hello,\nladies!\n\n:]")
             (= t3 "(sub (forms (ftw)))"))))
 
-(sys.test 'template-literal
+(test 'template-literal
     (let (x 2 y 3)
         (= 
             (template: x: {{ x }} y: {{ y }} (z: {{ (+ x y) }})      )

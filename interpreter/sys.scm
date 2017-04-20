@@ -190,9 +190,6 @@
 (define sys
     (vaquero-object
         (list
-            'stdin    (current-input-port)
-            'stdout   (current-output-port)
-            'stderr   (current-error-port)
             'opt      (cdr global-arg-pair)
             'rest     (car global-arg-pair)
             'view     'operating-system-interface
@@ -209,67 +206,6 @@
                     'null)
             'shell (lambda (cmd)
                 (read-all (process cmd)))
-            'read
-                (vaquero-proc
-                    primitive-type
-                    'sys
-                    (lambda (args opts cont err)
-                        (vaquero-send sys 'stdin
-                            (lambda (in)
-                                (cont (vaquero-read in)))
-                            err)))
-            'write
-                (vaquero-proc
-                    primitive-type
-                    'sys
-                    (lambda (args opts cont err)
-                        (vaquero-send sys 'stdout
-                            (lambda (out)
-                                (vaquero-write (car args) out)
-                                (cont 'null))
-                            err)))
-            'print
-                (vaquero-proc
-                    primitive-type
-                    'sys
-                    (lambda (args opts cont err)
-                        (vaquero-send sys 'stdout
-                            (lambda (out)
-                                (vaquero-print (car args) out)
-                                (cont 'null))
-                            err)))
-            'say
-                (vaquero-proc
-                    primitive-type
-                    'sys
-                    (lambda (args opts cont err)
-                        (vaquero-send sys 'print
-                            (lambda (printer)
-                                (vaquero-apply printer args 'null
-                                    (lambda (x)
-                                        (newline)
-                                        (cont 'null))
-                                    err))
-                            err)))
-            'log
-                (vaquero-proc
-                    primitive-type
-                    'sys
-                    (lambda (args opts cont err)
-                        (vaquero-send sys 'stderr
-                            (lambda (stderr)
-                                (vaquero-write (car args) stderr)
-                                (newline stderr)
-                                (cont 'null))
-                            err)))
-            'test
-                (lambda (test-name ok)
-                    (vaquero-send sys 'stdout
-                        (lambda (out)
-                            (vaquero-write (list test-name (if ok 'ok 'FAIL)) out)
-                            (newline out)
-                            'null)
-                        top-err))
             '64764 (lambda () (display "\n    **** COMMODORE 64 BASIC V2 ****\n\n 64K RAM SYSTEM  38911 BASIC BYTES FREE\n\n") 'READY.)
             'launch-the-missile fire-missile)
         '(ts 64764 launch-the-missile)

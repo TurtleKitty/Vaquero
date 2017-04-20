@@ -1,17 +1,17 @@
 
 ; booleans
 
-(sys.test 'true
+(test 'true
     (and (= true.type 'bool)
           (= (null? true) false)
           (= true.to-bool true)))
 
-(sys.test 'false
+(test 'false
     (and (= false.type 'bool)
           (= (null? false) false)
           (= false.to-bool false)))
 
-(sys.test 'and
+(test 'and
     (if (and 1 1)
         (if (not (and 1 0))
             (if (not (and 0 1))
@@ -22,7 +22,7 @@
             false)
         false))
 
-(sys.test 'or
+(test 'or
     (if (or 1 1)
         (if (or 1 0)
             (if (or 0 1)
@@ -33,7 +33,7 @@
             false)
         false))
 
-(sys.test 'not
+(test 'not
     (and
         (= (not true) false)
         (= (not false) true)))

@@ -20,6 +20,31 @@
             (map setem! fs))
         (define primitives
             (list
+                (cons 'stdin  (current-input-port))
+                (cons 'stdout (current-output-port))
+                (cons 'stderr (current-error-port))
+                (cons 'read
+                   (lambda ()
+                      (vaquero-read (current-input-port))))
+                (cons 'write
+                   (lambda (out)
+                       (vaquero-write out (current-output-port))
+                       'null))
+                (cons 'print
+                   (lambda (out)
+                       (vaquero-print out (current-output-port))
+                       'null))
+                (cons 'say
+                   (lambda (out)
+                       (vaquero-print out (current-output-port))
+                       (newline (current-output-port))
+                       'null))
+                (cons 'log
+                   (lambda (out)
+                       (define stderr (current-error-port))
+                       (vaquero-write out stderr)
+                       (newline stderr)
+                       'null))
                 (cons 'global? holy?)
                 (cons 'is? eq?)
                 (cons '+ +)
@@ -140,12 +165,6 @@
                                 (if (< l 1)
                                     ""
                                     (string-join strings joiner))))))
-                (cons 'debug
-                    (lambda (crap)
-                        (define stderr (current-error-port))
-                        (vaquero-write crap stderr)
-                        (newline stderr)
-                        'null))
                 (cons 'FILE_NOT_FOUND 'neither-true-nor-false)
                 (cons 'T_PAAMAYIM_NEKUDOTAYIM (quote ::))))
         (fill-prelude primitives)

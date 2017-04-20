@@ -3,30 +3,30 @@
 (def fb "   foonballardy!!!   ")
 (def lines "uno\ndos\ntres")
 
-(sys.test 'stream-type (= sys.stdout.type 'stream))
-(sys.test 'stream-to-bool (= sys.stdout.to-bool true))
-(sys.test 'input? (and sys.stdin.input? (not sys.stdout.input?)))
-(sys.test 'output? (and (not sys.stdin.output?) sys.stdout.output?))
-(sys.test 'open?
+(test 'stream-type (= sys.stdout.type 'stream))
+(test 'stream-to-bool (= sys.stdout.to-bool true))
+(test 'input? (and sys.stdin.input? (not sys.stdout.input?)))
+(test 'output? (and (not sys.stdin.output?) sys.stdout.output?))
+(test 'open?
     (let (p fb.to-stream)
         (def was? p.open?)
         p.close
         (and was? (not p.open?))))
 
-(sys.test 'stream-to-list
+(test 'stream-to-list
     (let (p lines.to-stream)
         (= '("uno" "dos" "tres") p.to-list)))
 
-(sys.test 'stream-read-text
+(test 'stream-read-text
     (= lines.to-stream.read-text lines))
 
-(sys.test 'stream-to-text
+(test 'stream-to-text
     (= lines.to-stream.to-text lines))
 
-(sys.test 'stream-read-vaquero
+(test 'stream-read-vaquero
     (= '((foo (bar baz)) (quux 2 3)) sexprs.to-stream.read-vaquero))
 
-(sys.test 'stream-read
+(test 'stream-read
     (let (p sexprs.to-stream)
         (def first p.read)
         (def second p.read)
@@ -34,14 +34,14 @@
             (= first '(foo (bar baz)))
             (= second '(quux 2 3)))))
 
-(sys.test 'stream-read-rune
+(test 'stream-read-rune
     (let (p fb.trim.to-stream)
         (def r1 p.read-rune)
         (def r2 p.read-rune)
         (def r3 p.read-rune)
         (and (= r1 \f) (= r2 \o) (= r3 \o))))
 
-(sys.test 'stream-peek-rune
+(test 'stream-peek-rune
     (let (p fb.trim.to-stream)
         (def r1 p.peek-rune)
         (def r2 p.peek-rune)
@@ -49,7 +49,7 @@
         (def r4 p.peek-rune)
         (and (= r1 \f) (= r2 \f) (= r3 \f) (= r4 \o))))
 
-(sys.test 'stream-assert-rune
+(test 'stream-assert-rune
     (let (p fb.trim.to-stream)
         (def r1 (p.assert-rune "fo"))
         (def r2 (p.assert-rune "fo"))
@@ -61,44 +61,44 @@
                     (p.assert-rune "fo")))
         (and (= r1 \f) (= r2 \o) (= r3 \o) (= r4 'error))))
 
-(sys.test 'stream-read-line
+(test 'stream-read-line
     (let (p lines.to-stream)
         (def uno p.read-line)
         (def dos p.read-line)
         (def tres p.read-line)
         (and (= uno "uno") (= dos "dos") (= tres "tres"))))
 
-(sys.test 'stream-skip
+(test 'stream-skip
     (let (p fb.to-stream)
         (p.skip 5)
         (= \o p.peek-rune)))
 
-(sys.test 'stream-skip-while
+(test 'stream-skip-while
     (let (p fb.to-stream)
         (p.skip-while " ")
         (= \f p.peek-rune)))
 
-(sys.test 'stream-skip-until
+(test 'stream-skip-until
     (let (p fb.to-stream)
         (p.skip-until "b")
         (= \b p.peek-rune)))
 
-(sys.test 'stream-read-token
+(test 'stream-read-token
     (let (p fb.trim.to-stream)
         (def token (p.read-token 4))
         (= token "foon")))
 
-(sys.test 'stream-read-token-while
+(test 'stream-read-token-while
     (let (p fb.trim.to-stream)
         (def token (p.read-token-while "abdflnory"))
         (= token "foonballardy")))
 
-(sys.test 'stream-read-token-until
+(test 'stream-read-token-until
     (let (p fb.trim.to-stream)
         (def token (p.read-token-until "!"))
         (= token "foonballardy")))
 
-(sys.test 'stream-read-token-if
+(test 'stream-read-token-if
     (let (p fb.trim.to-stream)
         (def tokener (_ (and _.alpha? (!= _ \r))))
         (def token
