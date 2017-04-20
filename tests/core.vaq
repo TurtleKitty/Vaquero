@@ -246,9 +246,9 @@
 
 (sys.test 'wall
     (let (x 1 y 2 z 3)
-        (wall (x y) ; new environment with passed parameters
-            (def got-x (= x 1))
-            (def got-y (= y 2))
+        (wall (x (+ x y z) y (* y z)) ; new environment with passed parameters
+            (def got-x (= x 6))
+            (def got-y (= y 6))
             (def no-z  (not (env.has? 'z)))
             (and got-x got-y no-z))))
 

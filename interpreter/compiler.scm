@@ -245,7 +245,7 @@
                 name
                 thing))))
 
-(define (vaquero-compile-let code)
+(define (vaquero-compile-new-env code wall-off)
    (define args (cadr code))
    (define arg-pairs
       (if (null? args)
@@ -268,7 +268,7 @@
       (let-vals-c
          env
          (lambda (vals)
-            (define noob (vaquero-environment env))
+            (define noob (vaquero-environment (if wall-off #f env)))
             (if (null? args)
                (expr-c noob cont err)
                (vaquero-send noob 'def!
@@ -287,27 +287,11 @@
                        err)))
          err)))
 
+(define (vaquero-compile-let code)
+   (vaquero-compile-new-env code #f))
+
 (define (vaquero-compile-wall code)
-    (define args (cadr code))
-    (define exprs (cddr code))
-    (define expr-c (vaquero-seq-subcontractor exprs #t))
-    ; create new env and copy args
-    (frag
-        (define noob (vaquero-environment #f))
-        (vaquero-send noob 'def!
-            (lambda (def!)
-                (let loop ((travellers args))
-                    (if (pair? travellers)
-                        (let ((x (car travellers)) (xs (cdr travellers)))
-                            (lookup env x
-                                (lambda (v)
-                                    (vaquero-apply def! (list x v) 'null
-                                       (lambda (v)
-                                          (loop xs))
-                                       err))
-                                err))
-                        (expr-c noob cont err))))
-                    err)))
+   (vaquero-compile-new-env code #t))
 
 (define (vaquero-compile-gate code)
     (define exprs (cdr code))

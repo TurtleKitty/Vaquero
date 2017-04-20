@@ -148,7 +148,7 @@
     ((vaquero-compile-lambda (vaquero-parse code)) (local-env) identity identity))
 
 (define blessed
-    '(def quote if seq macro lambda proc wall gate capture guard fail env opt rest return))
+    '(def quote if seq macro lambda proc let wall gate capture guard fail env opt rest return))
 
 (define (holy? name)
     (or (member name blessed)
