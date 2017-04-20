@@ -51,6 +51,13 @@
 (sys.test 'table?
     (table? (: x 1 y 2)))
 
+(sys.test 'box
+   (= '(0 7)
+      (let (x (box 0))
+         (def y x.val)
+         (x.set! 7)
+         (list y x.val))))
+
 (sys.test 'append
     (= '(1 2 3 4 5) (append '(1 2) '(3) '(4 5))))
 
@@ -69,23 +76,6 @@
                 ((compose f g range) 1 7))
             (= '(11 14 19 26 35 46 59)
                 ((compose g f range) 1 7)))))
-
-(sys.test 'let
-    ((lambda ()
-        (def foo
-            (loop go (n 0)
-                (if (= n 10)
-                    n
-                    (go (+ n 1)))))
-        (= foo 10))))
-
-(sys.test 'let-seq
-    (= '(2 . 3)
-        ((lambda ()
-            (let (x (vector 1) y (vector 2))
-                (x.set! 0 2)
-                (y.set! 0 3)
-                (pair x.0 y.0))))))
 
 (sys.test 'cond
     ((thunk
@@ -199,14 +189,14 @@
             (when (mod total.val 2)
                 (total.set! total.val.inc)
                 (redo total))
-            (total.set! (+ total.val i))
+            (total.set! (+ total.val i.val))
             total.val)))
 
 (sys.test 'for-last
     (= 105
         (for (i (box 0) total (box 0)) (<= i.val 20) (i.set! i.val.inc)
             (when (> total.val 100)
-                (last total))
+                (last total.val))
             (total.set! (+ total.val i.val))
             total.val)))
 
@@ -226,7 +216,7 @@
     (let (items (: x 1 y 2 z 3 u 4 v 5) total (box 0))
         (each n items
             (total.set! (+ total.val n.val)))
-        (= total 15)))
+        (= total.val 15)))
 
 (sys.test '_
     (= '(2 4 9)
@@ -252,7 +242,7 @@
             (= 'promise p.type)
             (= 12 p.value)
             (= 12 p.value)
-            (= 1 count))))
+            (= 1 count.val))))
 
 (sys.test 'seal-unseal
     (let ()
@@ -280,9 +270,6 @@
             (seq (r.set! 'x 2) true)
             (= sr.x 2)
             (= str.x 2)
-            (seq (foo.env.set! 'x 2) true)
-            (= 6 (foo 3))
-            (= 6 (sfoo 3))
             (guard
                 handler
                 (sfoo.unseal "password?")

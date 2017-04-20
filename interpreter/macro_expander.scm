@@ -140,13 +140,14 @@
        (lambda (e cont)
            (debug 'import-error e)
            (exit)))
-   (define package (lookup env package-name top-cont import-err))
+   (define package  (lookup env package-name top-cont import-err))
    (define def-env! (vaquero-send-atomic env 'def!))
-   (let loop ((import (car import-names)) (imports (cdr import-names)))
-      (vaquero-apply def-env! (list import (vaquero-send-object package import top-cont import-err))
-         (lambda (v)
-            (if (null? imports)
-               code
-               (loop (car imports) (cdr imports))))
-         import-err)))
+   (define yargs
+      (let loop ((import (car import-names)) (imports (cdr import-names)) (rval '()))
+         (define imp-val (vaquero-send-object package import top-cont import-err))
+         (define nu-rv (cons import (cons imp-val rval)))
+         (if (null? imports)
+            nu-rv
+            (loop (car imports) (cdr imports) nu-rv))))
+   (vaquero-apply def-env! yargs 'null (lambda (v) code) import-err))
 

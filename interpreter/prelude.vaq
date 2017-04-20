@@ -2,7 +2,7 @@
 ; global environment
 
 (macro thunk ()
-    (pair 'lambda (pair () (pair 'seq rest))))
+    (list 'lambda () (pair 'seq rest)))
 
 (proc isa? (thing type)
     (= thing.type type))
@@ -290,11 +290,12 @@
 (proc box (value)
    (def the-box (vector value))
    (object
+      'type 'box
       'set! (lambda (v)
                (seq
                   (the-box.set! 0 v)
                   v))
-      'val  (lambda () (the-box.0))
+      'val  (lambda () the-box.0)
       auto: '(val)
    ))
 
@@ -369,7 +370,7 @@
     (def opt-arity (if opt.arity opt.arity 5))
     (qq
         (def (unq name)
-            (let (default (proc () (unqs (pair body rest)))
+            (let (default (box (proc () (unqs (pair body rest))))
                   clauses (vector.apply ((send (range 0 $opt-arity) 'map) (_ ())) (:)))
                 (proc add-clause! (pred body)
                     (def idx pred.arity)
@@ -377,14 +378,14 @@
                         idx
                         (pair (pair pred body) (clauses idx))))
                 (proc set-default! (body)
-                    (set! default body))
+                    (default.set! body))
                 (proc gen-apply (args options)
                     (def arity args.size)
                     (loop go (n arity)
                         (def cs (clauses n))
                         (proc n-zero ()
                             (if n.zero?
-                                (default.apply args options)
+                                (default.val.apply args options)
                                 (go n.dec)))
                         (if (not (pair? cs))
                             (n-zero)
@@ -396,7 +397,7 @@
                                         (n-zero)))))))
                 (proc view ()
                     (send
-                        (pair clauses (pair 'default default))
+                        (pair clauses (pair 'default default.val))
                         'view))
                 (object
                     'add-clause! add-clause!
@@ -533,17 +534,17 @@
 
 (macro promise (expr) ; lazy evaluation
     (def result (gensym))
-    %(let ($result false)
+    %(let ($result (box null))
         (object
             auto: '(value)
             'type 'promise
             'view '(promise $expr)
             'value (lambda ()
-                        (if $result
-                            $result
+                        (if (is? (send $result (quote val)) null)
                             (seq
-                                (set! $result $expr)
-                                $result))))))
+                                ((send $result (quote set!)) $expr)
+                                (send $result (quote val)))
+                            (send $result (quote val)))))))
 
 (proc seal (obj) 
     (def hidden (if opt.hide opt.hide ()))

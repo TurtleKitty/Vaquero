@@ -42,16 +42,16 @@
 
 (sys.test 'use-proc-https
     (let () 
-        (use foreigner "https://raw.githubusercontent.com/TurtleKitty/Vaquero/master/tests/modules/proc.vaq")
-        (= (foreigner.go 1 2) '(foreigner 1 2))))
+        (use foreigner-2 "https://raw.githubusercontent.com/TurtleKitty/Vaquero/master/tests/modules/proc.vaq")
+        (= (foreigner-2.go 1 2) '(foreigner 1 2))))
 
 (sys.test 'use-macro-https
-    ((proc ()
-        (use m "https://raw.githubusercontent.com/TurtleKitty/Vaquero/master/tests/modules/macro.vaq")
+    (let ()
+        (use m2 "https://raw.githubusercontent.com/TurtleKitty/Vaquero/master/tests/modules/macro.vaq")
         (and
-            (= (m.quote-xyz 1 2 3) '(1 2 3))
-            (= (send (m.calc-xyz 1 2 3) 'code) '(proc (v) (* v 17)))
-            (= ((m.calc-xyz 1 2 3) 4 ) 68)))))
+            (= (m2.quote-xyz 1 2 3) '(1 2 3))
+            (= (send (m2.calc-xyz 1 2 3) 'code) '(proc (v) (* v 17)))
+            (= ((m2.calc-xyz 1 2 3) 4 ) 68))))
 
 (macro github (name sym)
    (def txt sym.to-text)
@@ -65,14 +65,14 @@
 
 (sys.test 'use-proc-github
    (let () 
-      (github p turtlekitty/vaquero/tests/modules/proc)
-      (= (p.go 1 2) '(foreigner 1 2))))
+      (github p-hub turtlekitty/vaquero/tests/modules/proc)
+      (= (p-hub.go 1 2) '(foreigner 1 2))))
 
 (sys.test 'use-macro-github
    (let ()
-      (github m turtlekitty/vaquero/tests/modules/macro)
+      (github m-hub turtlekitty/vaquero/tests/modules/macro)
       (and
-         (= (m.quote-xyz 1 2 3) '(1 2 3))
-         (= (send (m.calc-xyz 1 2 3) 'code) '(proc (v) (* v 17)))
-         (= ((m.calc-xyz 1 2 3) 4 ) 68))))
+         (= (m-hub.quote-xyz 1 2 3) '(1 2 3))
+         (= (send (m-hub.calc-xyz 1 2 3) 'code) '(proc (v) (* v 17)))
+         (= ((m-hub.calc-xyz 1 2 3) 4 ) 68))))
 

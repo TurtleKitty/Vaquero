@@ -236,26 +236,21 @@
         (and (= x.0 3) (= y 12)))))
                 
 (sys.test 'let
-   (def x 7 y 13)
-   (and
-      (= '(2 . 3)
-         (let (x (box 1) y (box 2))
-            (x.set! 2)
-            (y.set! 3)
-            (pair x.0 y.0)))
-      (= x 7)
-      (= y 13)))
+   (let (x 7 y 13)
+      (and
+         (= '(2 . 3)
+            (let (x 2 y 3)
+               (pair x y)))
+         (= x 7)
+         (= y 13))))
 
 (sys.test 'wall
-    ((proc ()
-        (def x 1)
-        (def y 2)
-        (def z 3)
+    (let (x 1 y 2 z 3)
         (wall (x y) ; new environment with passed parameters
             (def got-x (= x 1))
             (def got-y (= y 2))
             (def no-z  (not (env.has? 'z)))
-            (and got-x got-y no-z)))))
+            (and got-x got-y no-z))))
 
 (sys.test 'unicode
     (seq

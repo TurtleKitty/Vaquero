@@ -1,5 +1,0 @@
-
-
-(lib (x y) (list 'foonballardy x y opt.foon))
-
-
