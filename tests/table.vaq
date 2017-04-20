@@ -5,9 +5,14 @@
 (def simp (table 'x 2 'y 3))
 (def rec-one (: foo 23))
 
+(def deep-1 (: x 2 y (: foo 3 bar (: baz 5))))
+(def deep-2 (: x 2 y (: foo 3 bar (: baz 5))))
+
 (sys.test 'table-type (= simp.type 'table))
 (sys.test 'table-true (= true simp.to-bool))
 (sys.test 'table-false (= false barerec.to-bool))
+
+(sys.test 'table-equality (= deep-1 deep-2))
 
 (sys.test 'message-send (and (= simp.x 2) (= simp.y 3)))
 (sys.test 'table-apply (= 2 (simp 'x)))

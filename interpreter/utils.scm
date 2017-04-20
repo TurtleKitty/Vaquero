@@ -81,7 +81,7 @@
                         ((table)
                             (let ((x-pairs (sort-symbol-alist (hash-table->alist (htr x 'vars))))
                                   (y-pairs (sort-symbol-alist (hash-table->alist (htr y 'vars)))))
-                                (equal? x-pairs y-pairs)))
+                                (map vaquero-equal? x-pairs y-pairs)))
                         (else (no-way))))))
         (else
             (equal? x y))))
