@@ -146,6 +146,18 @@
                         #f
                         #f
                         #f))
+                (cons 'physics
+                    (vaquero-object
+                        (list
+                           'c   299792458
+                           'g   9.80665
+                           'G   6.67408e-11
+                           'h   6.626070040e-34
+                           'Na  6.022140857e23
+                        )
+                        #f
+                        #f
+                        #f))
                 (cons 'gensym vaquero-gensym)
                 (cons 'uuid uuid-v4)
                 (cons 'cat
