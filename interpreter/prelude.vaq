@@ -631,6 +631,16 @@
         default: (append (flatten xs.head)
                          (flatten xs.tail))))
 
+(op bind (names)
+   ; FIXME expand to destructure trees as well as lists
+   (def expr-val (gensym))
+   (proc define (name n)
+      %(def $name (send $expr-val $n)))
+   (def defz (map define names (range 0 names.size.dec))) 
+   %(seq
+      (def $expr-val (seq @rest))
+      @defz))
+
  
 ; reserving for future use
 

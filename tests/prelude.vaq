@@ -390,4 +390,8 @@
         (= '((a 1 x) (b 2 y) (c 3 z))
            (zip xs ys zs))))
 
- 
+(test bind
+   (let ()
+      (bind (a b c) '(2 3 5))
+      (and (= a 2) (= b 3) (= c 5))))
+
