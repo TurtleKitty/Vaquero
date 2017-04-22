@@ -432,7 +432,7 @@
             (go m.dec (+ total (dx))))))
 
 (proc repl (e in out err)
-    (out.print "(vaquero) ")
+    (out.print "vaquero> ")
     (def input in.read)
     (def result (e.eval input))
     (out.say result)

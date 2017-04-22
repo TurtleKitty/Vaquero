@@ -11,7 +11,7 @@
                         (map (lambda (f) (vaquero-view (vaquero-send-atomic ex f))) '(name to-text form))
                         (vaquero-view ex)))
                 (loop env)))
-        (display "(vaquero) ")
+        (display "vaquero> ")
         (let ((expr (vaquero-read stdin)))
             (if (eof-object? expr)
                 (exit)
