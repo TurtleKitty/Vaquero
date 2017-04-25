@@ -432,17 +432,19 @@
             (go m.dec (+ total (dx))))))
 
 (proc repl (e in out err)
-    (out.print "vaquero> ")
-    (def input in.read)
-    (def result (e.eval input))
-    (out.say result)
-    (repl e in out err))
+   (out.print "vaquero> ")
+   (def input in.read)
+   (when (isa? input 'EOF)
+      (return "End Of Line."))
+   (def result (e.eval input))
+   (out.say result)
+   (repl e in out err))
 
 (proc parse (s)
-    s.to-stream.read-vaquero)
+   s.to-stream.read-vaquero)
 
 (proc resend (msg)
-    (lambda (obj) (send obj msg)))
+   (lambda (obj) (send obj msg)))
 
 (def json
     (let ()
