@@ -204,9 +204,12 @@
 
 (define (the-end v) (exit))
 
-(define (vaquero-run program)
+(define (compile-and-apply-prog program cont err)
    (define compiled-scheme-lambda (vaquero-compile program))
    (define compiled-vaquero-lambda
       (compiled-scheme-lambda (global-env) top-cont top-err))
-   (vaquero-apply compiled-vaquero-lambda (list sys) 'null the-end top-err))
+   (vaquero-apply compiled-vaquero-lambda (list sys) 'null cont err))
+
+(define (vaquero-run program)
+   (compile-and-apply-prog program the-end top-err))
 

@@ -58,7 +58,12 @@
                                 (loop (car fs) (cdr fs))))))
                 ((compile)
                     (let ((expanded (read-expand-cache-prog (fname) (cli-env))))
-                        (debug "Wrote compiled file to " (get-vaquero-expanded-path (locate-path))))) ; FIXME precompile too
+                        (define linked (vaquero-link expanded))
+                        (define cpath (get-vaquero-compiled-path (locate-path)))
+                        (define save-file (open-output-file cpath))
+                        (vaquero-write linked save-file)
+                        (close-output-port save-file)
+                        (debug "Wrote compiled file to " cpath)))
                 ((expand)
                     (begin
                         (pp
