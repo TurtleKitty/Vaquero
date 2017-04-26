@@ -676,7 +676,7 @@
         (else (idk obj msg cont err))))
 
 (define (vaquero-send-env obj msg cont err)
-    (define msgs '(view to-text def! has? get pairs lookup parent extend eval expand))
+    (define msgs '(view to-text def! has? get pairs lookup parent extend expand eval load))
     (define undefineds (list not-found will-exist 'null))
     (define vars (htr obj 'vars))
     (define (env-default msg)
@@ -750,6 +750,10 @@
             (cont
                 (lambda (code)
                     (vaquero-expand code obj))))
+        ((load)
+            (cont
+               (lambda (stream)
+                   (vaquero-eval (vaquero-read-file stream) obj))))
         ((messages) (cont msgs))
         ((responds?) (cont (lambda (msg) (if (member msg msgs) #t #f))))
         (else (cont (env-default msg)))))
@@ -874,23 +878,23 @@
     (define msgs
         '(view to-bool input? output? open? close
           ready? read read-rune peek-rune read-line read-text assert-rune skip skip-while skip-until
-          read-token read-token-while read-token-until read-token-if to-list to-text read-vaquero))
+          read-token read-token-while read-token-until read-token-if to-list to-text read-seq))
     (case msg
         ((ready? autos read read-rune peek-rune read-line read-text assert-rune skip skip-while skip-until
-          read-token read-token-while read-token-until read-token-if to-list to-text read-vaquero
+          read-token read-token-while read-token-until read-token-if to-list to-text read-seq
           messages responds?)
             (if (port-closed? obj)
                 (err (vaquero-error-object 'input-stream-closed `(send ,obj ,msg) "Input stream closed.") cont)
                 (cont 
                     (case msg
-                        ((autos) '(view to-text to-bool to-list ready? input? output? open? read read-rune peek-rune read-line read-text read-vaquero)) 
+                        ((autos) '(view to-text to-bool to-list ready? input? output? open? read read-rune peek-rune read-line read-text read-seq))
                         ((ready?) (char-ready? obj))
                         ((read) (vaquero-read obj))
                         ((read-rune) (read-char obj))
                         ((peek-rune) (peek-char obj))
                         ((read-line) (read-line obj))
                         ((read-text to-text) (read-string #f obj))
-                        ((read-vaquero) (vaquero-read-file obj))
+                        ((read-seq) (vaquero-read-file obj))
                         ((assert-rune)
                             (vaquero-proc
                                 primitive-type

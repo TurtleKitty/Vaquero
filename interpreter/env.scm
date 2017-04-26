@@ -219,7 +219,7 @@
                         (write expanded)))
                 expanded)))
     (define prelude-c
-        (vaquero-seq-subcontractor expanded-prelude #t))
+        (vaquero-compile expanded-prelude))
     (define full
         (prelude-c
                 this-env

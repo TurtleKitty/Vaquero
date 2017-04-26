@@ -23,8 +23,8 @@
 (test stream-to-text
     (= lines.to-stream.to-text lines))
 
-(test stream-read-vaquero
-    (= '((foo (bar baz)) (quux 2 3)) sexprs.to-stream.read-vaquero))
+(test stream-read-seq
+    (= '(seq (foo (bar baz)) (quux 2 3)) sexprs.to-stream.read-seq))
 
 (test stream-read
     (let (p sexprs.to-stream)

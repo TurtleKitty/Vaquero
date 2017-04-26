@@ -63,9 +63,8 @@
 
 (define (vaquero-read-expand path env)
     (define form
-        (cons 'seq
-            (vaquero-read-file
-                (open-input-file path))))
+         (vaquero-read-file
+             (open-input-file path)))
     (vaquero-expand form env))
 
 (define (read-expand-cache-prog path env)

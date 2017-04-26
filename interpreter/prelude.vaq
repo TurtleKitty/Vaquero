@@ -441,7 +441,7 @@
    (repl e in out err))
 
 (proc parse (s)
-   s.to-stream.read-vaquero)
+   s.to-stream.read-seq)
 
 (proc resend (msg)
    (lambda (obj) (send obj msg)))

@@ -178,7 +178,7 @@
                 (reverse code)
                 (loop (vaquero-read port) (cons noob code)))))
     (close-input-port port)
-    program)
+    (cons 'seq program))
 
 (define (vaquero-cli-args xs)
     (define (rval args opts)
