@@ -236,7 +236,7 @@
     (define bodies (cdddr code))
     (frag
         (let ((thing (make-vaquero-proc code env formals bodies)))
-            (hts! thing 'type 'operator)
+            (hts! thing 'type 'op)
             (mutate!
                 env
                 (lambda (null)

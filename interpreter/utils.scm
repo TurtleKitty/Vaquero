@@ -77,7 +77,7 @@
                 (if (not (eq? xt yt))
                     #f
                     (case xt
-                        ((env lambda proc operator) (eq? x y))
+                        ((env lambda proc op) (eq? x y))
                         ((table)
                             (let ((x-pairs (sort-symbol-alist (hash-table->alist (htr x 'vars))))
                                   (y-pairs (sort-symbol-alist (hash-table->alist (htr y 'vars)))))

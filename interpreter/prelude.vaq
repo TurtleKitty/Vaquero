@@ -18,8 +18,8 @@
         (isa? thing 'lambda)
         (isa? thing 'proc)))
 
-(proc operator? (thing)
-    (isa? thing 'operator))
+(proc op? (thing)
+    (isa? thing 'op))
 
 (proc symbol? (thing)
     (isa? thing 'symbol))

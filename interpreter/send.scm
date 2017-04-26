@@ -28,7 +28,7 @@
                 (case t
                     ((env)   (vaquero-send-env obj msg cont err))
                     ((table) (vaquero-send-table obj msg cont err))
-                    ((lambda proc operator) (vaquero-send-proc obj msg cont err))
+                    ((lambda proc op) (vaquero-send-proc obj msg cont err))
                     (else (vaquero-send-object obj msg cont err)))))
         ((eof-object? obj) (vaquero-send-eof obj msg cont err))
         (else (wtf))))
