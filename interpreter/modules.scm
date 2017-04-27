@@ -70,7 +70,7 @@
    `(proc ,proc-name ()
       (if ((send ,mod-env (quote has?)) (quote ,object-name))
          ((send ,mod-env (quote get)) (quote ,object-name))
-         (seq
+         (gate
             ; begin body
             ,@body
             ; end body
