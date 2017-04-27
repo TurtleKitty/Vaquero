@@ -268,7 +268,7 @@
       (let-vals-c
          env
          (lambda (vals)
-            (define noob (vaquero-environment (if wall-off #f env)))
+            (define noob (vaquero-environment (if wall-off 'null env)))
             (if (null? args)
                (expr-c noob cont err)
                (vaquero-send noob 'def!

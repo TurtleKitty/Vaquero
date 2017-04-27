@@ -741,7 +741,8 @@
                             (if (eq? '() left)
                                 (extend obj names vals cont err)
                                 (loop (cons (car left) names) (cons (cadr left) vals) (cddr args))))))))
-        ((parent) (cont (htr obj 'parent)))
+        ((parent)
+            (cont (htr obj 'parent)))
         ((eval)
             (cont
                 (lambda (code)

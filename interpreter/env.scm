@@ -1,6 +1,6 @@
 
 (define (local-env)
-    (vaquero-environment #f))
+    (vaquero-environment 'null))
 
 (define (cli-env)
     (define lenv (local-env))
