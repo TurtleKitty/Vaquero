@@ -466,8 +466,8 @@
                     (if next.whitespace?
                         (seq p.read-rune (go p.peek-rune items))
                         (case next
-                            (\])     (seq p.read-rune items.reverse)
-                            (\,)     (seq p.read-rune (go p.peek-rune items))
+                            ("]")     (seq p.read-rune items.reverse)
+                            (",")     (seq p.read-rune (go p.peek-rune items))
                             default:
                                 (let (item (reader p))
                                     (go p.peek-rune (items.cons item)))))))
@@ -479,8 +479,8 @@
                     (if next.whitespace?
                         (seq p.read-rune (go p.peek-rune items))
                         (case next
-                            (\})  (seq p.read-rune items)
-                            (\,)  (seq p.read-rune (go p.peek-rune items))
+                            ("}")  (seq p.read-rune items)
+                            (",")  (seq p.read-rune (go p.peek-rune items))
                             default:
                                 (let (key (send (reader p) 'to-symbol))
                                     (p.skip-while " :\t\n")
@@ -496,12 +496,12 @@
                         p.read-rune
                         (reader p))
                     (case next
-                        (\")     (read-text p)
-                        (\[)     (read-array p)
-                        (\])     (error 'json-read-error txt "Unexpected ] !")
-                        (\{)     (read-object p)
-                        (\})     (error 'json-read-error txt "Unexpected } !")
-                        (\- \0 \1 \2 \3 \4 \5 \6 \7 \8 \9)
+                        ("\"")    (read-text p)
+                        ("[")     (read-array p)
+                        ("]")     (error 'json-read-error txt "Unexpected ] !")
+                        ("{")     (read-object p)
+                        ("}")     (error 'json-read-error txt "Unexpected } !")
+                        ("-" "0" "1" "2" "3" "4" "5" "6" "7" "8" "9")
                             (read-num p)
                         default:
                             (let (this-guy (read-symbol p))
@@ -518,12 +518,12 @@
                     (bool? thing)   thing.to-text
                     (num? thing)    thing.to-text
                     (symbol? thing) (json-out thing.to-text)
-                    (text? thing)   (cat \" (thing.replace "\"" "\\\"" flags: "g") \")
+                    (text? thing)   (cat "\"" (thing.replace "\"" "\\\"" flags: "g") "\"")
                     (rune? thing)   (json-out (text thing))
                     (vector? thing) (json-out thing.to-list)
-                    (table? thing) (cat \{ (comma-fy (thing.to-list.map (lambda (kv) (cat (json-out kv.key.to-text) \: (json-out kv.val))))) \})
-                    (list? thing)   (cat \[ (comma-fy (thing.map json-out)) \])
-                    (pair? thing)   (cat \[ (json-out thing.head) \, (json-out thing.tail) \])
+                    (table? thing) (cat "{" (comma-fy (thing.to-list.map (lambda (kv) (cat (json-out kv.key.to-text) ":" (json-out kv.val))))) "}")
+                    (list? thing)   (cat "[" (comma-fy (thing.map json-out)) "]")
+                    (pair? thing)   (cat "[" (json-out thing.head) "," (json-out thing.tail) "]")
                     default: 
                         (if (thing.responds? 'to-json)
                             thing.to-json
