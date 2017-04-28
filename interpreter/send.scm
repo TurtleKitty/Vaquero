@@ -498,6 +498,19 @@
                         (apply obj args)))))
         (idk obj msg cont err)))
 
+(define (vaquero-table-view obj vars label)
+   (cons
+      (string->keyword label)
+      (fold
+         (lambda (p xs)
+            (define key (car p))
+            (define val (cdr p))
+            (if (eq? obj val)
+               xs
+               (cons key (cons (vaquero-view val) xs))))
+         '()
+         (hash-table->alist vars))))
+
 (define (vaquero-send-table obj msg cont err)
     (define msgs
         '(view size clone to-bool get put set! rm del! has? apply keys values pairs to-list to-opt to-text merge fold reduce map filter))
@@ -512,16 +525,11 @@
                 (case msg
                     ((type) 'table)
                     ((view to-text)
-                        (let ((keys (htks vars)))
-                            (cons
-                                (string->keyword "table")
-                                (fold
-                                    (lambda (p xs)
-                                        (cons (car p) (cons (vaquero-view (cdr p)) xs)))
-                                    '()
-                                    (hash-table->alist vars)))))
-                    ((size) (hash-table-size vars))
-                    ((autos) '(view size clone to-bool to-list to-text keys values pairs))
+                         (vaquero-table-view obj vars "table"))
+                    ((size)
+                         (hash-table-size vars))
+                    ((autos)
+                         '(view size clone to-bool to-list to-text keys values pairs))
                     ((resends) '())
                     ((default) rdefault)
                     ((clone)
@@ -691,9 +699,7 @@
             (vaquero-send-table vars msg cont err))
         ((type) (cont 'env))
         ((view to-text)
-            (cont
-                (cons (string->keyword "env")
-                      (cdr (vaquero-view vars)))))
+            (vaquero-table-view obj (htr vars 'vars) "env"))
         ((autos) (cont '(view to-text to-bool keys values pairs)))
         ((resends) (cont '()))
         ((default) (cont env-default))
