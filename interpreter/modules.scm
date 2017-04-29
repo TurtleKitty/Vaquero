@@ -71,20 +71,21 @@
       (if ((send ,mod-env (quote has?)) (quote ,object-name))
          ((send ,mod-env (quote get)) (quote ,object-name))
          (gate
-            ; begin body
-            ,@body
-            ; end body
-            (def ,object-name
-               (apply object (pair 'type (pair 'module
-                  ((proc ,loop-name (,expo ,expos ,rval)
-                     (def nu-rval (pair ,expo (pair ((send env 'lookup) ,expo) ,rval)))
-                     (if ,expos
-                        (,loop-name (send ,expos 'head) (send ,expos 'tail) nu-rval)
-                        nu-rval)) (send vaquero-internal-exports 'head) (send vaquero-internal-exports 'tail) ()))) (table)))
+            (let ()
+               ; begin body
+               ,@body
+               ; end body
+               (def ,object-name
+                  (apply object (pair 'type (pair 'module
+                     ((proc ,loop-name (,expo ,expos ,rval)
+                        (def nu-rval (pair ,expo (pair ((send env 'lookup) ,expo) ,rval)))
+                        (if ,expos
+                           (,loop-name (send ,expos 'head) (send ,expos 'tail) nu-rval)
+                           nu-rval)) (send vaquero-internal-exports 'head) (send vaquero-internal-exports 'tail) ()))) (table)))
 
-            ((send ,mod-env (quote def!)) (quote ,object-name) ,object-name)
+               ((send ,mod-env (quote def!)) (quote ,object-name) ,object-name)
 
-            ,object-name))))
+               ,object-name)))))
 
 (define (vaquero-link prog)
    (define sys-UUID        (uuid-ify "sys" (uuid-v4)))
