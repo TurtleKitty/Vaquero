@@ -99,9 +99,11 @@
    (define main-program (transform-uses prog))
    `(lambda (,sys-UUID)
       (let ()
-         (def ,module-env-UUID env)
-
-         ,@modules
+         ((send env 'merge!)
+            (wall ()
+               (def ,module-env-UUID env)
+               ,@modules
+               ,module-env-UUID))
 
          (proc ,main-UUID (sys)
             ; begin main program

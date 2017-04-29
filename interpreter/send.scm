@@ -684,14 +684,14 @@
         (else (idk obj msg cont err))))
 
 (define (vaquero-send-env obj msg cont err)
-    (define msgs '(view to-text def! has? get pairs lookup parent extend expand eval load))
+    (define msgs '(view to-text def! merge! has? get pairs lookup parent extend expand eval load))
     (define undefineds (list not-found will-exist 'null))
     (define vars (htr obj 'vars))
     (define (env-default msg)
         (lookup obj msg
             (lambda (val)
                (if (eq? val not-found)
-                  (err (vaquero-error-object 'message-not-understood '(send obj msg) "Message not understood.") cont)
+                  (err (vaquero-error-object 'message-not-understood `(send ,obj ,msg) "Message not understood.") cont)
                   val))
             err))
     (case msg
@@ -721,7 +721,29 @@
                                     (if (null? the-rest)
                                        (cont def-val)
                                        (loop (car the-rest) (cadr the-rest) (cddr the-rest))))
-                                 (err (vaquero-error-object 'name-already-defined `(def ,def-name ,def-val) "environment: name is already defined.") cont))))))))
+                                 (err (vaquero-error-object 'name-already-defined `(def ,def-name ,def-val) "env: name is already defined.") cont))))))))
+        ((merge!)
+            (cont
+               (vaquero-proc
+                  primitive-type
+                  'env
+                  (lambda (args opts cont err)
+                     (define (arg-fail form)
+                        (err (vaquero-error-object 'argument-fail form "env: merge! requires an environment as an argument.") cont))
+                     (if (not (pair? args))
+                        (arg-fail '(env.merge!))
+                        (let ((other-env (car args)))
+                           (if (not (eq? 'env (vaquero-send-atomic other-env 'type)))
+                              (arg-fail '(env.merge! WAT))
+                              (let ((def-this (vaquero-send-atomic obj 'def!))
+                                    (other-vars (hash-table->alist (htr (htr other-env 'vars) 'vars))))
+                                 (if (not (pair? other-vars))
+                                    (cont obj)
+                                    (let loop ((v (car other-vars)) (vs (cdr other-vars)) (flat '()))
+                                       (define nu-flat (cons (car v) (cons (cdr v) flat)))
+                                       (if (pair? vs)
+                                          (loop (car vs) (cdr vs) nu-flat)
+                                          (vaquero-apply def-this nu-flat 'null (lambda (x) (cont obj)) err))))))))))))
         ((lookup)
             (cont
                 (vaquero-proc

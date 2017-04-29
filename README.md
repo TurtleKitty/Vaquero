@@ -6,11 +6,10 @@ Vaquero is a scripting language for cowboy coders.
 Features:
 
     * tail-call optimization
-    * immutable global environment
-    * classless object machinery designed for composition and delegation
     * delimited lexical scope
-    * first-class environments
+    * first-class immutable environments
     * first-class delimited continuations
+    * classless object machinery designed for composition and delegation
     * restartable exceptions
     * object capability security on operating system interfaces
     * macros
