@@ -52,7 +52,45 @@
     (vaquero-send obj 'to-bool cont err))
 
 (define (vaquero-view obj)
-    (vaquero-send-atomic obj 'view))
+   (define visited '())
+   (define (helper obj)
+      (define obj-type (vaquero-type obj))
+      (if (member obj-type '(pair list vector table env))
+         (let ((seen (member obj visited eq?)))
+            (if seen
+               'cyclical-reference
+               (begin 
+                  (set! visited (cons obj visited))
+                  (case obj-type
+                     ((pair)
+                        (cons (helper (car obj)) (helper (cdr obj))))
+                     ((list)
+                        (map helper obj))
+                     ((vector)
+                        (let* ((size (vector-length obj)) (noob (make-vector (+ size 1))))
+                           (vector-set! noob 0 'vector)
+                           (let loop ((i 0))
+                              (if (= i size)
+                                 noob
+                                 (begin
+                                    (vector-set! noob (+ i 1) (helper (vector-ref obj i)))
+                                    (loop (+ i 1)))))))
+                     ((table)
+                        (apply vector (cons 'table
+                           (fold
+                              (lambda (p xs)
+                                 (cons (helper (car p)) (cons (helper (cdr p)) xs)))
+                              '()
+                              (hash-table->alist (htr obj 'vars))))))
+                     ((env)
+                        (apply vector (cons 'env
+                           (fold
+                              (lambda (p xs)
+                                 (cons (helper (car p)) (cons (helper (cdr p)) xs)))
+                              '()
+                              (hash-table->alist (htr (htr obj 'vars) 'vars))))))))))
+         (vaquero-send-atomic obj 'view)))
+   (helper obj))
 
 (define (sort-symbol-alist ps)
     (sort ps

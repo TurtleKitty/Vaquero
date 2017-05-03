@@ -308,7 +308,7 @@
                     ((autos) '(view empty? to-bool to-text to-list to-vector to-table head tail key val size reverse))
                     ((resends) '())
                     ((default) ldefault)
-                    ((view) (map vaquero-view obj))
+                    ((view) (vaquero-view obj))
                     ((to-text) (apply string obj))
                     ((to-bool) #t)
                     ((to-list) obj)
@@ -429,7 +429,7 @@
         (cont 
             (case msg
                 ((type) 'pair)
-                ((view to-text) (cons (vaquero-view (car obj)) (vaquero-view (cdr obj))))
+                ((view to-text) (vaquero-view obj))
                 ((autos) '(view empty? to-bool to-text to-list to-table head tail key val size))
                 ((resends) '())
                 ((default) default-default)
@@ -476,19 +476,6 @@
                         (apply obj args)))))
         (idk obj msg cont err)))
 
-(define (vaquero-table-view obj vars label)
-   (cons
-      (string->keyword label)
-      (fold
-         (lambda (p xs)
-            (define key (car p))
-            (define val (cdr p))
-            (if (eq? obj val)
-               (cons key (cons 'cyclical-reference xs))
-               (cons key (cons (vaquero-view val) xs))))
-         '()
-         (hash-table->alist vars))))
-
 (define (vaquero-send-table obj msg cont err)
     (define msgs
         '(view size clone to-bool get put set! rm del! has? apply keys values pairs to-list to-opt to-text merge fold reduce map filter))
@@ -503,7 +490,7 @@
                 (case msg
                     ((type) 'table)
                     ((view to-text)
-                         (vaquero-table-view obj vars "table"))
+                         (vaquero-view obj))
                     ((size)
                          (hash-table-size vars))
                     ((autos)
@@ -627,7 +614,7 @@
             (vaquero-send (htr resends msg) msg cont err)
             (case msg
                 ((type) (cont 'object))
-                ((view) (cont `(,(if (hte? fields 'type) (htr fields 'type) 'object) ,@(get-msgs))))
+                ((view) (cont (apply vector `(,(if (hte? fields 'type) (htr fields 'type) 'object) ,@(get-msgs)))))
                 ((to-text) (cont "object"))
                 ((to-bool) (cont (not (eq? 0 (length (hash-table-keys fields))))))
                 ((responds?) (cont (lambda (x) (hte? fields x))))
@@ -677,7 +664,7 @@
             (vaquero-send-table vars msg cont err))
         ((type) (cont 'env))
         ((view to-text)
-            (vaquero-table-view obj (htr vars 'vars) "env"))
+            (vaquero-view obj))
         ((autos) (cont '(view to-text to-bool keys values pairs)))
         ((resends) (cont '()))
         ((default) (cont env-default))
@@ -766,7 +753,7 @@
         (else (cont (env-default msg)))))
 
 (define (vaquero-send-vector obj msg cont err)
-    (define msgs '(view to-bool to-text to-list pairs size clone has? set! apply fold reduce map filter sort))
+    (define msgs '(view to-bool to-text to-list pairs size clone has? get set! apply fold reduce map filter sort))
     (define (vdefault msg)
         (if (number? msg)
             (if (> (vector-length obj) msg)
@@ -774,7 +761,7 @@
                 (err (vaquero-error-object 'out-of-bounds `(,obj ,msg) "vector: index out of bounds.") cont))
             (idk obj msg cont err)))
     (case msg
-        ((type view autos resends default to-bool to-text to-list pairs size clone has? set! apply messages responds?)
+        ((type view autos resends default to-bool to-text to-list pairs size clone has? get set! apply messages responds?)
             (cont 
                 (case msg
                     ((type) 'vector)
@@ -795,6 +782,13 @@
                                     obj)
                                 #t
                                 #f)))
+                    ((get)
+                        (lambda (idx)
+                            (if (not (number? idx))
+                                (err (vaquero-error-object 'not-a-number `(,obj ,idx) "vector: get requires a number as its argument.") cont)
+                                (if (> idx (vector-length obj))
+                                    (err (vaquero-error-object 'out-of-bounds `(,obj ,msg) "vector: index out of bounds.") cont)
+                                    (vector-ref obj idx)))))
                     ((set!)
                         (lambda (idx val)
                             (if (not (number? idx))
