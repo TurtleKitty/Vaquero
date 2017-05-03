@@ -86,6 +86,29 @@
         (else
             (equal? x y))))
 
+(define (vaquero-type obj)
+    (cond
+        ((boolean? obj)   'bool)
+        ((symbol? obj)    'symbol)
+        ((number? obj)    'number)
+        ((char? obj)      'rune)
+        ((string? obj)    'text)
+        ((null? obj)      'empty)
+        ((list? obj)      'list)
+        ((pair? obj)      'pair)
+        ((procedure? obj) 'primitive)
+        ((vector? obj)    'vector)
+        ((port? obj)      'stream)
+        ((hash-table? obj)
+            (let ((t (htr obj 'type)))
+                (case t
+                    ((env)            'env)
+                    ((table)          'table)
+                    ((lambda proc op) 'proc)
+                    (else             'object))))
+        ((eof-object? obj) 'eof)
+        (else 'WTF)))
+
 (define (vaquero-type-ord x)
     (cond
         ((vaquero-bool? x) 1)
