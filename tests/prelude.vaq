@@ -366,7 +366,7 @@
     (let ()
         (def xs '(1 2 3))
         (def ys '(4 5 6))
-        (def zs (vector: 7 8 9))
+        (def zs #(vector 7 8 9))
         (proc bam! (x y z)
             (* (+ x y) z))
         (= '(35 56 81)
@@ -376,7 +376,7 @@
     (let ()
         (def xs '(1 2 3))
         (def ys '(4 5 6))
-        (def zs '(vector: 7 8 9))
+        (def zs #(vector 7 8 9))
         (proc zap! (x y z acc)
             (+ x y z acc))
         (= 45

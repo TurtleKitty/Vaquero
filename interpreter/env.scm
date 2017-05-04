@@ -66,6 +66,7 @@
                 (cons 'list? list?)
                 (cons 'option? keyword?)
                 (cons 'syntax-ok? (lambda (form) (check-vaquero-syntax (list form))))
+                (cons 'rune (lambda (x) (string-ref x 0)))
                 (cons 'vector
                     (vaquero-proc
                         primitive-type
@@ -80,19 +81,6 @@
                                         v)
                                     (apply vector args))))))
                 (cons 'vector? vector?)
-                (cons 'text
-                    (vaquero-proc
-                        primitive-type
-                        'global
-                        (lambda (args opts cont err)
-                            (define size ((vaquero-send-atomic opts 'get) 'size))
-                            (define init ((vaquero-send-atomic opts 'get) 'init))
-                            (cont
-                                (if (integer? size)
-                                    (let ((s (make-string size (if (char? init) init #\space))))
-                                        (vector-map (lambda (i x) (string-set! s i x)) (list->vector args))
-                                        s)
-                                    (apply string args))))))
                 (cons 'text? string?)
                 (cons 'rand random)
                 (cons 'table

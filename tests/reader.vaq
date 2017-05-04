@@ -30,24 +30,24 @@
 
 (test vector-literal
     (= (vector 1 2 (list 3 4 5))
-       #vector(1 2 (3 4 5))))
+       #(vector 1 2 (3 4 5))))
 
 (test table-literal
     (= (table 'x 1 'y (list 'a 2))
-       #table(x 1 y (a 2))))
+       #(table x 1 y (a 2))))
 
 (test text-literal
     (let ()
-        (def t1 #text(Hello, world!   ))
+        (def t1 #(text Hello, world!   ))
         (def t2
-            #text(
+            #(text
 Hello,
 ladies!
 
 :]
 
             ))
-        (def t3 #text((sub (forms (ftw)))))
+        (def t3 #(text (sub (forms (ftw)))))
         (and
             (= t1 "Hello, world!")
             (= t2 "Hello,\nladies!\n\n:]")
@@ -56,6 +56,6 @@ ladies!
 (test template-literal
     (let (x 2 y 3)
         (= 
-            #template(x: {{ x }} y: {{ y }} (z: {{ (+ x y) }})      )
+            #(template x: {{ x }} y: {{ y }} (z: {{ (+ x y) }})      )
             "x: 2 y: 3 (z: 5)")))
 

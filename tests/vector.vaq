@@ -30,10 +30,10 @@
 (test vector-map
     (= (vick.map
             (lambda (x) (* 10 x)))
-            '(vector: 80 60 70 50 30 0 90)))
+            #(vector 80 60 70 50 30 0 90)))
 
-(test vector-filter (= (vick.filter (lambda (x) (> x 5))) '(vector: 8 6 7 9)))
-(test vector-sort-< (= (vick.sort <) '(vector: 0 3 5 6 7 8 9)))
-(test vector-sort-> (= (vick.sort >) '(vector: 9 8 7 6 5 3 0)))
+(test vector-filter (= (vick.filter (lambda (x) (> x 5))) #(vector 8 6 7 9)))
+(test vector-sort-< (= (vick.sort <) #(vector 0 3 5 6 7 8 9)))
+(test vector-sort-> (= (vick.sort >) #(vector 9 8 7 6 5 3 0)))
 
 

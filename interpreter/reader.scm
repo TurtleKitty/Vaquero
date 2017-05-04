@@ -21,24 +21,11 @@
         (case token
             ((#\()
                 (let ((t (read-char port)) (peek-a-boo (peek-char port)))
-                    (cond
-                        ((eq? peek-a-boo #\))
-                            (read-char port)
-                            '())
-                        (else
-                            (let ((head (vaquero-reader port)))
-                                (if (keyword? head)
-                                    (let ((kw (keyword->symbol head)))
-                                        (case kw
-                                            ((rune)     (vaquero-rune-literal port))
-                                            ((vector)   (vaquero-read-vector port))
-                                            ((table)    (vaquero-read-table port))
-                                            ((text)     (vaquero-read-text port))
-                                            ((template) (vaquero-read-template port))
-                                            ((doc)      (vaquero-read-rem port) (vaquero-reader port))
-                                            ((rem)      (vaquero-read-rem port) (vaquero-reader port))
-                                            (else       (cons head (vaquero-read-list port)))))
-                                    (cons head (vaquero-read-list port))))))))
+                    (if (eq? peek-a-boo #\))
+                        (begin
+                           (read-char port)
+                           '())
+                        (vaquero-read-list port))))
             ((#\)) (vaquero-error "read error: unexpected \")\"!\n"))
             ((#\') (vaquero-read-quote port))
             ((#\%) (vaquero-read-quasiquote port))
@@ -50,34 +37,27 @@
             ((#\|) (vaquero-read-funky port))
             (else (read port)))))
 
+(define (vaquero-read-error-handler e kont)
+   (debug 'read-error
+      (if (and (hash-table? e) (eq? (vaquero-send-atomic e 'type) 'error))
+          (map (lambda (f) (vaquero-view (vaquero-send-atomic e f))) '(name form to-text))
+          (vaquero-view e)))
+   (exit))
+
 (define (vaquero-read-structure port)
    (read-char port) ; ditch the #
-   (let loop ((token (peek-char port)) (acc '()))
-      (cond
-         ((eof-object? token)
-            (vaquero-error "read error: unexpected EOF in structure literal!\n"))
-         ((char-whitespace? token)
-            (vaquero-error "read error: unexpected whitespace in structure literal!\n"))
-         ((eq? token #\()
-            (read-char port) ; ditch the lparen
-            (let ((key (apply string (reverse acc))))
-               (case (string->symbol key)
-                  ((vector)   (vaquero-read-vector port))
-                  ((table)    (vaquero-read-table port))
-                  ((text)     (vaquero-read-text port))
-                  ((template) (vaquero-read-template port))
-                  ((doc)      (vaquero-read-rem port) (vaquero-reader port))
-                  ((rem)      (vaquero-read-rem port) (vaquero-reader port))
-                  (else       (vaquero-error (string-join (list "read error: unknown structure type: " key "\n") ""))))))
-         ((eq? token #\))
-            (vaquero-error "read error: unexpected ) in structure literal!\n"))
-         (else
-            (let ((new-acc (cons (read-char port) acc)))
-               (loop (peek-char port) new-acc))))))
-
-(define (vaquero-read-pair port)
-    (define xs (vaquero-read-list port))
-    (cons (car xs) (cadr xs)))
+   (read-char port) ; ditch the (
+   (let ((type (read port))) ; read the symbol in head
+      (if (not (symbol? type))
+         (vaquero-error "read error: structures must begin with a type symbol!")
+         (if (holy? type)
+            (let ((funk (glookup type)) (args (vaquero-read-list port)))
+               (vaquero-apply funk args my-empty-table identity vaquero-read-error-handler))
+            (case type
+               ((text)     (vaquero-read-text port))
+               ((template) (vaquero-read-template port))
+               ((doc)      (vaquero-read-doc port) (vaquero-reader port))
+               (else       (vaquero-error (string-join (list "read error: unknown structure type:" (symbol->string type) "is not defined in the global environment.\n") " "))))))))
 
 (define (vaquero-read-list port)
    ; lparen already swallowed
@@ -242,7 +222,7 @@
     (read-line port)
     'null)
 
-(define (vaquero-read-rem port)
+(define (vaquero-read-doc port)
     (vaquero-read-list port)
     'null)
 

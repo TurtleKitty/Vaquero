@@ -17,9 +17,6 @@
 (test message-send (and (= simp.x 2) (= simp.y 3)))
 (test table-apply (= 2 (simp 'x)))
 
-(test table-view
-    (= (list 'table: 'foo 23) rec-one.view))
-
 ; primitive messages
 
 (test table-has? (simp.has? 'x))

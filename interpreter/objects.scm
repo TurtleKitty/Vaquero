@@ -34,7 +34,7 @@
             (tset! 'formals formals)
             (tset! 'arity (length formals)))
         (begin
-            (tset! 'formals 'null)
+            (tset! 'formals '())
             (tset! 'arity 0)))
     this)
 

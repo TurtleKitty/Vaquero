@@ -44,7 +44,7 @@
 (test text-regex-capture
     (=
         '(("foo: x&1" "foo" "x&1" "x" "1") ("bar : y&2" "bar" "y&2" "y" "2") ("baz:z&3" "baz" "z&3" "z" "3") ("quux :u&4" "quux" "u&4" "u" "4") ("quakz: v&5" "quakz" "v&5" "v" "5"))
-        (complicated.capture (text: ((\w+)\s*:\s*((\w+)&(\d+)))))))
+        (complicated.capture #(text ((\w+)\s*:\s*((\w+)&(\d+)))))))
 
 (test text-regex-replace
     (= "blah_23_wah_42___fuh"

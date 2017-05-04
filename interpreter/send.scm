@@ -120,7 +120,7 @@
         ((default) (cont default-default))
         ((view)
             (cont
-                (list 'rune: 
+                (vector 'rune 
                     (case obj
                         ((#\space) "space")
                         ((#\newline) "lf")
