@@ -567,7 +567,10 @@
                 obj
                 (error 'ACCESS-DENIED sealed "WRONG!!!"))))
     (def sealed
-        (object 'type type 'unseal unseal resend: %(($obj @forward)) default: obj.default))
+        (object
+            'type type
+            'unseal unseal
+            resend: %(($obj @forward))))
     sealed)
 
 (op alias (name new-alias)

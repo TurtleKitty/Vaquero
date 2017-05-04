@@ -1,10 +1,5 @@
 
-(define default-default
-    (vaquero-proc
-        primitive-type
-        'proc
-        (lambda (args opts cont err)
-             (err (vaquero-error-object 'message-not-understood '(send obj msg) "Message not understood.") cont))))
+(define vaquero-universal-messages '(type view messages autos answers? to-bool to-text))
 
 (define (vaquero-send obj msg cont err)
    (define obj-type (vaquero-type obj))
@@ -14,12 +9,15 @@
 (define (vaquero-send-atomic obj msg)
     (vaquero-send obj msg top-cont top-err))
 
+(define (vaquero-answerer msgs)
+   (define msgs+ (append msgs vaquero-universal-messages))
+   (lambda (msg)
+      (if (member msg msgs+) #t #f)))
+
 (define (vaquero-send-symbol obj msg cont err)
     (define msgs '(view to-text to-bool))
     (case msg
         ((autos) (cont '(view to-bool to-text)))
-        ((resends) (cont '()))
-        ((default) (cont default-default))
         ((view) (cont obj))
         ((to-symbol)
             (cont
@@ -37,7 +35,7 @@
                         ((type) (cont 'symbol))
                         ((to-bool) (cont #t))
                         ((messages) (cont msgs))
-                        ((responds?) (cont (lambda (msg) (if (member msg msgs) #t #f))))
+                        ((answers?) (cont (vaquero-answerer msgs)))
                         (else (idk obj msg cont err))))))))
 
 (define (vaquero-send-bool obj msg cont err)
@@ -45,14 +43,12 @@
     (case msg
         ((type) (cont 'bool))
         ((autos) (cont '(view to-bool to-text to-symbol)))
-        ((resends) (cont '()))
-        ((default) (cont default-default))
         ((to-bool) (cont obj))
         ((view to-symbol) (cont (if obj 'true 'false)))
         ((to-text) (cont (if obj "true" "false")))
         ((not) (cont (not obj)))
         ((messages) (cont msgs))
-        ((responds?) (cont (lambda (msg) (if (member msg msgs) #t #f))))
+        ((answers?) (cont (vaquero-answerer msgs)))
         (else (idk obj msg cont err))))
 
 (define (vaquero-send-null obj msg cont err)
@@ -61,7 +57,7 @@
         ((to-bool) (cont #f))
         ((apply) (err (vaquero-error-object 'null-is-not-applicable '(null ...) "Null can not be used as a procedure.") cont))
         ((messages) (cont msgs))
-        ((responds?) (cont (lambda (msg) #t)))
+        ((answers?) (cont (lambda (msg) #t)))
         (else (cont 'null))))
 
 (define (vaquero-send-number obj msg cont err)
@@ -73,8 +69,6 @@
         ((to-bool) (cont (not (= obj 0))))
         ((to-text) (cont (number->string obj)))
         ((view to-number) (cont obj))
-        ((resends) (cont '()))
-        ((default) (cont default-default))
         (else
             (cond
                 ((integer? obj) (vaquero-send-int obj msg cont err))
@@ -95,7 +89,7 @@
         ((round) (cont obj))
         ((truncate) (cont obj))
         ((messages) (cont msgs))
-        ((responds?) (cont (lambda (msg) (if (member msg msgs) #t #f))))
+        ((answers?) (cont (vaquero-answerer msgs)))
         (else (idk obj msg cont err))))
  
 (define (vaquero-send-real obj msg cont err)
@@ -108,7 +102,7 @@
         ((truncate) (cont (inexact->exact (truncate obj))))
         ((autos) (cont '(view to-bool to-text zero? pos? neg? abs floor ceil round truncate)))
         ((messages) (cont msgs))
-        ((responds?) (cont (lambda (msg) (if (member msg msgs) #t #f))))
+        ((answers?) (cont (vaquero-answerer msgs)))
         (else (idk obj msg cont err))))
 
 (define (vaquero-send-rune obj msg cont err)
@@ -116,8 +110,6 @@
     (case msg
         ((type) (cont 'rune))
         ((autos) (cont '(view code to-bool to-rune to-text to-number alpha? digit? whitespace? uc? lc? uc lc)))
-        ((resends) (cont '()))
-        ((default) (cont default-default))
         ((view)
             (cont
                 (vector 'rune 
@@ -140,7 +132,7 @@
         ((to-text) (cont (string obj)))
         ((to-rune) (cont obj))
         ((messages) (cont msgs))
-        ((responds?) (cont (lambda (msg) (if (member msg msgs) #t #f))))
+        ((answers?) (cont (lambda (msg) (if (member msg msgs) #t #f))))
         (else (idk obj msg cont err))))
 
 (define (vaquero-send-text obj msg cont err)
@@ -156,15 +148,14 @@
                     (lambda (x) (not (eq? x 'g)))
                     (map string->symbol (string-split flags "")))))
         (apply irregex opts))
+    (define me-answers? (vaquero-answerer msgs))
     (case msg
-        ((type view autos resends default clone to-bool to-symbol to-keyword to-number to-list to-text to-stream size chomp index uc lc take drop trim ltrim rtrim lpad rpad messages responds?)
+        ((type view autos clone to-bool to-symbol to-keyword to-number to-list to-text to-stream size chomp index uc lc take drop trim ltrim rtrim lpad rpad)
             (cont
                 (case msg
                     ((type) 'text)
                     ((view) obj)
                     ((autos) '(view to-bool to-symbol to-text to-keyword to-number to-list to-stream size chomp ltrim rtrim trim))
-                    ((resends) '())
-                    ((default) default-default)
                     ((clone) (string-copy obj))
                     ((to-bool) (not (eq? (string-length obj) 0)))
                     ((to-symbol) (string->symbol obj))
@@ -187,11 +178,11 @@
                     ((index) (lambda (which) (substring-index which obj)))
                     ((size) (string-length obj))
                     ((messages) msgs)
-                    ((responds?)
+                    ((answers?)
                         (lambda (msg)
                             (or
                                 (and (number? msg) (> (string-length obj) msg))
-                                (if (member msg msgs) #t #f)))))))
+                                (me-answers? msg)))))))
         ((split)
             (cont
                 (vaquero-proc
@@ -274,13 +265,11 @@
 
 (define (vaquero-send-empty obj msg cont err)
     (case msg
-        ((type empty? autos resends default view to-bool to-text to-list head tail key val car cdr size)
+        ((type empty? autos view to-bool to-text to-list head tail key val car cdr size)
             (cont
                 (case msg
                     ((type) 'list)
                     ((autos) '(view empty? to-bool to-text to-list head tail key val size))
-                    ((resends) '())
-                    ((default) default-default)
                     ((empty?) #t)
                     ((to-bool) #f)
                     ((view to-list) '())
@@ -291,7 +280,7 @@
 
 (define (vaquero-send-list obj msg cont err)
     (define msgs
-        '(type empty? view to-bool to-list to-text to-vector to-table head key car tail val cdr cons
+        '(empty? to-list to-vector to-table head key car tail val cdr cons
           size reverse has? append take drop apply fold reduce each map filter sort))
     (define (ldefault msg)
         (if (number? msg)
@@ -300,14 +289,12 @@
                 (err (vaquero-error-object 'out-of-bounds `(,obj ,msg) "list: index out of bounds.") cont))
             (idk obj msg cont err)))
     (case msg
-        ((type autos resends default empty? view to-bool to-list to-text to-vector head key car tail val cdr cons size reverse has? append take drop apply messages responds?)
+        ((empty? type view to-bool to-list to-text to-vector head key car tail val cdr cons size reverse has? append take drop apply messages answers?)
             (cont
                 (case msg
                     ((type) 'list)
                     ((empty?) #f)
                     ((autos) '(view empty? to-bool to-text to-list to-vector to-table head tail key val size reverse))
-                    ((resends) '())
-                    ((default) ldefault)
                     ((view) (vaquero-view obj))
                     ((to-text) (apply string obj))
                     ((to-bool) #t)
@@ -328,11 +315,11 @@
                     ((take) (lambda (n) (take obj n)))
                     ((drop) (lambda (n) (drop obj n)))
                     ((messages) msgs)
-                    ((responds?)
+                    ((answers?)
                         (lambda (msg)
                             (or
                                 (and (number? msg) (> (length obj) msg))
-                                (if (member msg msgs) #t #f))))
+                                ((vaquero-answerer msgs) msg))))
                     ((apply)
                         (vaquero-proc
                             primitive-type
@@ -424,15 +411,13 @@
 (define (vaquero-send-pair obj msg cont err)
     (define msgs
         '(empty? view to-text to-bool to-list to-table head key car tail val cdr cons size clone))
-    (define msgs+ (append msgs '(messages responds? type)))
+    (define msgs+ (append msgs '(messages answers? type)))
     (if (member msg msgs+)
         (cont 
             (case msg
                 ((type) 'pair)
                 ((view to-text) (vaquero-view obj))
                 ((autos) '(view empty? to-bool to-text to-list to-table head tail key val size))
-                ((resends) '())
-                ((default) default-default)
                 ((to-bool) #t)
                 ((to-list) (list (car obj) (cdr obj)))
                 ((to-table) (vaquero-table (car obj) (cdr obj)))
@@ -442,14 +427,12 @@
                 ((size) 2)
                 ((clone) (cons (car obj) (cdr obj)))
                 ((messages) msgs)
-                ((responds?)
-                    (lambda (msg)
-                        (if (member msg msgs) #t #f)))))
+                ((answers?) (vaquero-answerer msgs))))
         (idk obj msg cont err)))
 
 (define (vaquero-send-primitive obj msg cont err)
     (define msgs '(view code to-bool to-text env arity apply))
-    (define msgs+ (append msgs '(messages responds? type autos resends default)))
+    (define msgs+ (append msgs '(messages answers? type autos)))
     (if (member msg msgs+)
         (cont 
             (case msg
@@ -459,8 +442,6 @@
                 ((to-bool) #t)
                 ((to-text) "0xDEADBEEF")
                 ((autos) '(view code to-bool to-text env arity))
-                ((resends) '())
-                ((default) default-default)
                 ((env) 'global)
                 ((arity)
                     (let ((pinfo (procedure-information obj)))
@@ -468,9 +449,7 @@
                             (sub1 (length pinfo))
                             '*)))
                 ((messages) msgs)
-                ((responds?)
-                    (lambda (msg)
-                        (if (member msg msgs) #t #f)))
+                ((answers?) (vaquero-answerer msgs))
                 ((apply)
                     (lambda (args opts)
                         (apply obj args)))))
@@ -485,7 +464,7 @@
             (htr vars msg)
             'null))
     (case msg
-        ((type view size autos resends default clone to-bool get put set! rm del! has? apply keys values pairs to-list to-opt to-text merge messages responds?)
+        ((type view size autos clone to-bool get put set! rm del! has? apply keys values pairs to-list to-opt to-text merge messages answers?)
             (cont
                 (case msg
                     ((type) 'table)
@@ -495,8 +474,6 @@
                          (hash-table-size vars))
                     ((autos)
                          '(view size clone to-bool to-list to-text keys values pairs))
-                    ((resends) '())
-                    ((default) rdefault)
                     ((clone)
                         (let ((noob (vaquero-table)))
                             (hts! noob 'vars (hash-table-copy vars))
@@ -557,11 +534,11 @@
                             '()
                             (hash-table->alist vars)))
                     ((messages) msgs)
-                    ((responds?)
+                    ((answers?)
                         (lambda (msg)
                             (or 
                                 (hte? vars msg)
-                                (if (member msg msgs) #t #f))))
+                                ((vaquero-answerer msgs) msg))))
                     ((merge)
                         (lambda (other)
                             (define nuvars (hash-table-merge (htr other 'vars) vars))
@@ -620,11 +597,9 @@
       (apply vector (cons type the-view)))
    (case msg
       ; unshadowable reflection messages
-      ((responds?) (cont (lambda (x) (hte? fields x))))
+      ((answers?)  (cont (vaquero-answerer (get-msgs))))
       ((messages)  (cont (get-msgs)))
       ((autos)     (cont (hash-table-keys autos)))
-      ((resends)   (cont (hash-table-keys resends)))
-      ((default)   (cont (htr obj 'default)))
       ((view)      (cont (vaquero-object-view obj)))
       (else
          (if (hte? fields msg)
@@ -658,10 +633,8 @@
                             (err (vaquero-error-object 'arity `((send ,obj apply) ,args) "proc.apply requires 2 arguments!") cont)
                             (vaquero-apply obj (car args) (cadr args) cont err))))))
         ((messages) (cont msgs))
-        ((responds?) (cont (lambda (msg) (if (member msg msgs) #t #f))))
+        ((answers?) (cont (vaquero-answerer msgs)))
         ((autos) (cont '(view to-bool to-text arity code env formals)))
-        ((resends) (cont '()))
-        ((default) (cont default-default))
         (else (idk obj msg cont err))))
 
 (define (vaquero-send-env obj msg cont err)
@@ -682,8 +655,6 @@
         ((view to-text)
             (vaquero-view obj))
         ((autos) (cont '(view to-text to-bool keys values pairs)))
-        ((resends) (cont '()))
-        ((default) (cont env-default))
         ((def!)
             (cont
                 (vaquero-proc
@@ -765,7 +736,7 @@
                (lambda (stream)
                    (vaquero-eval (vaquero-read-file stream) obj))))
         ((messages) (cont msgs))
-        ((responds?) (cont (lambda (msg) (if (member msg msgs) #t #f))))
+        ((answers?) (cont (vaquero-answerer msgs)))
         (else (cont (env-default msg)))))
 
 (define (vaquero-send-vector obj msg cont err)
@@ -777,7 +748,7 @@
                 (err (vaquero-error-object 'out-of-bounds `(,obj ,msg) "vector: index out of bounds.") cont))
             (idk obj msg cont err)))
     (case msg
-        ((type view autos resends default to-bool to-text to-list pairs size clone has? get set! apply messages responds?)
+        ((type view autos to-bool to-text to-list pairs size clone has? get set! apply messages answers?)
             (cont 
                 (case msg
                     ((type) 'vector)
@@ -786,8 +757,6 @@
                     ((to-list) (vector->list obj))
                     ((to-text) (apply string (vector->list obj)))
                     ((autos) '(view to-text to-bool to-list size pairs clone))
-                    ((resends) '())
-                    ((default) vdefault)
                     ((pairs) (vector->list (vector-map (lambda (i x) (cons i x)) obj)))
                     ((size) (vector-length obj))
                     ((clone) (vector-copy obj))
@@ -815,11 +784,11 @@
                                         (vector-set! obj idx val)
                                         obj)))))
                     ((messages) msgs)
-                    ((responds?)
+                    ((answers?)
                         (lambda (msg)
                             (or
                                 (and (number? msg) (> (vector-length obj) msg))
-                                (if (member msg msgs) #t #f))))
+                                ((vaquero-answers msgs) msg))))
                     ((apply)
                         (vaquero-proc
                             primitive-type
@@ -874,15 +843,13 @@
 
 (define (vaquero-send-stream obj msg cont err)
     (case msg
-        ((type view resends default to-bool to-stream input? output? open?)
+        ((type view to-bool to-stream input? output? open?)
             (cont 
                 (case msg
                     ((type) 'stream)
                     ((view to-text) obj)
                     ((to-bool) #t)
                     ((to-stream) obj)
-                    ((resends) '())
-                    ((default) (cont default-default))
                     ((input?) (input-port? obj))
                     ((output?) (output-port? obj))
                     ((open?) (not (port-closed? obj))))))
@@ -899,7 +866,7 @@
     (case msg
         ((ready? autos read read-rune peek-rune read-line read-text assert-rune skip skip-while skip-until
           read-token read-token-while read-token-until read-token-if to-list to-text read-seq
-          messages responds?)
+          messages answers?)
             (if (port-closed? obj)
                 (err (vaquero-error-object 'input-stream-closed `(send ,obj ,msg) "Input stream closed.") cont)
                 (cont 
@@ -989,16 +956,14 @@
                                                             err))
                                                     err)))))))
                         ((messages) msgs)
-                        ((responds?)
-                            (lambda (msg)
-                                (if (member msg msgs) #t #f)))
+                        ((answers?) (vaquero-answerer msgs))
                         ((to-list read-lines) (read-lines obj))))))
         ((close) (close-input-port obj) (cont 'null))
         (else (idk msg obj cont err))))
 
 (define (vaquero-send-output-stream obj msg cont err)
     (define msgs
-        '(view to-bool input? output? open? write print say nl flush close))
+        '(input? output? open? write print say nl flush close))
     (case msg
         ((write print say nl autos)
             (if (port-closed? obj)
@@ -1021,25 +986,23 @@
                                 'null))
                         ((nl) (newline obj) 'null)))))
         ((messages) (cont msgs))
-        ((responds?)
-            (cont
-                (lambda (msg)
-                    (if (member msg msgs) #t #f))))
+        ((answers?) (cont (vaquero-answerer msgs)))
         ((flush) (flush-output obj) (cont 'null))
         ((close) (close-output-port obj) (cont 'null))
         (else (idk msg obj cont err))))
 
 (define (vaquero-send-eof obj msg cont err)
-    (case msg
-        ((type) (cont 'EOF))
-        ((view) (cont 'EOF))
-        ((to-bool) (cont #f))
-        ((to-text) (cont "END OF LINE."))
-        ((autos) '(view to-text to-bool))
-        ((resends) '())
-        ((default) (cont default-default))
-        ((apply) (err (vaquero-error-object 'eof-is-not-applicable '(EOF ...) "EOF objects can not be used as procedures.") cont))
-        (else (idk msg obj cont err))))
+   (define msgs '())
+   (case msg
+      ((type) (cont 'EOF))
+      ((view) (cont 'EOF))
+      ((to-bool) (cont #f))
+      ((to-text) (cont "END OF LINE."))
+      ((autos) '(view to-text to-bool))
+      ((apply) (err (vaquero-error-object 'eof-is-not-applicable '(EOF ...) "EOF objects can not be used as procedures.") cont))
+      ((messages) (cont msgs))
+      ((answers?) (cont (vaquero-answerer msgs)))
+      (else (idk msg obj cont err))))
 
 (define (vaquero-send-wtf obj msg cont err)
    (err (vaquero-error-object 'wtf-was-that? `(send ,obj ,msg) "Unknown object!")))

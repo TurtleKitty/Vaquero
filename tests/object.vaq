@@ -6,7 +6,7 @@
 
 (test obj-type (= simp.type 'object))
 (test message-send (and (= simp.a 1) (= simp.b 2)))
-(test object-responds? (and (simp.responds? 'a) (not (simp.responds? 'c))))
+(test object-answers? (and (simp.answers? 'a) (not (simp.answers? 'c))))
 (test object-messages (= (simp.messages.sort <) '(a b)))
 
 (test obj-true (= true simp.to-bool))
