@@ -292,7 +292,7 @@
    (def the-box (vector value))
    (object
       'type 'box
-      'view (lambda () (list 'box the-box.0.view))
+      'view (lambda () (list the-box.0))
       'set! (lambda (v)
                (seq
                   (the-box.set! 0 v)
