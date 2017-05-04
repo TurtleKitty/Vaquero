@@ -53,16 +53,6 @@
             (= (send (m2.calc-xyz 1 2 3) 'code) '(proc (v) (* v 17)))
             (= ((m2.calc-xyz 1 2 3) 4 ) 68))))
 
-(op github (name sym)
-   (def txt sym.to-text)
-   (def xs (txt.split "/"))
-   (def user xs.0)
-   (def repo xs.1)
-   (def module-path
-      (cat (cat.apply (xs.drop 2) (: with "/")) ".vaq"))
-   (def uri (cat "https://raw.githubusercontent.com" user repo "master" module-path with: "/"))
-   %(use $name $uri))
-
 (test use-proc-github
    (let () 
       (github p-hub turtlekitty/vaquero/tests/modules/proc)
