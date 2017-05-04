@@ -2,124 +2,124 @@
 ; global environment
 
 (op thunk ()
-    (list 'lambda () (pair 'seq rest)))
+   (list 'lambda () (pair 'seq rest)))
 
 (proc isa? (thing type)
-    (= thing.type type))
+   (= thing.type type))
 
 (proc bool? (thing)
-    (isa? thing 'bool))
+   (isa? thing 'bool))
 
 (proc lambda? (thing)
-    (isa? thing 'lambda))
+   (isa? thing 'lambda))
 
 (proc proc? (thing)
-    (or
-        (isa? thing 'lambda)
-        (isa? thing 'proc)))
+   (or
+      (isa? thing 'lambda)
+      (isa? thing 'proc)))
 
 (proc op? (thing)
-    (isa? thing 'op))
+   (isa? thing 'op))
 
 (proc symbol? (thing)
-    (isa? thing 'symbol))
+   (isa? thing 'symbol))
 
 (proc stream? (thing)
-    (isa? thing 'stream))
+   (isa? thing 'stream))
 
 (proc socket? (thing)
-    (isa? thing 'socket))
+   (isa? thing 'socket))
 
 (proc null? (thing)
-    (is? thing null))
+   (is? thing null))
 
 (proc table? (thing)
-    (isa? thing 'table))
+   (isa? thing 'table))
 
 (proc eof? (x)
-    (isa? x 'EOF))
+   (isa? x 'EOF))
 
 (proc not (x)
-    x.to-bool.not)
+   x.to-bool.not)
 
 (proc != (x y)
-    (not (= x y)))
+   (not (= x y)))
 
 (proc >= (x y)
-    (not (< x y)))
+   (not (< x y)))
 
 (proc <= (x y)
-    (not (> x y)))
+   (not (> x y)))
 
 (op and (x)
-    (if rest
-        (list 'if x (and.apply rest null) 'false)
-        (list 'send x ''to-bool)))
+   (if rest
+      (list 'if x (and.apply rest null) 'false)
+      (list 'send x ''to-bool)))
 
 (op or (x)
-    (def stub (gensym))
-    (list 'seq
-        (list 'def stub x)
-        (list 'if stub stub (if rest (or.apply rest null) 'false))))
+   (def stub (gensym))
+   (list 'seq
+      (list 'def stub x)
+      (list 'if stub stub (if rest (or.apply rest null) 'false))))
 
 (proc and? (x)
-    (if x
-        (if rest
-            (and?.apply rest null)
-            true)
-        false))
+   (if x
+      (if rest
+         (and?.apply rest null)
+         true)
+      false))
 
 (proc or? (x)
-    (if x
-        x
-        (if rest
-            (or?.apply rest null)
-            false)))
+   (if x
+      x
+      (if rest
+         (or?.apply rest null)
+         false)))
 
 (proc nand ()
-    (not (and?.apply rest null)))
+   (not (and?.apply rest null)))
 
 (proc nor ()
-    (not (or?.apply rest null)))
+   (not (or?.apply rest null)))
 
 (proc xor (x y)
-    (nor (and? x y) (nor x y)))
+   (nor (and? x y) (nor x y)))
 
 (proc identity (x) x)
 
 (proc append (xs ys)
-    (def rv (xs.append ys))
-    (if rest
-        (append.apply (pair rv rest) null)
-        rv))
+   (def rv (xs.append ys))
+   (if rest
+      (append.apply (pair rv rest) null)
+      rv))
 
 (proc apply (f args options)
-    (f.apply args options))
+   (f.apply args options))
 
 (proc papply (f)
-    ((lambda (cargs)
-        (proc ()
-            (f.apply (append cargs rest) opt))) rest))
+   ((lambda (cargs)
+      (proc ()
+         (f.apply (append cargs rest) opt))) rest))
 
 (proc error (name form message)
-    (fail
-        (object 'type 'error
-                'name name
-                'form form
-                'view (list 'error name form message)
-                'message message
-                'to-text message)))
+   (fail
+      (object 'type 'error
+              'name name
+              'form form
+              'view (list 'error name form message)
+              'message message
+              'to-text message)))
 
 (proc compose ()
-    ((proc (funz)
-        (def s funz.size)
-        (if (= s 0)
-            (error 'too-few-args %(compose @rest) "(compose ...) requires at least one argument.  It prefers more than one.")
-            (if (= s 1)
-                rest.head
-                (if (= s 2)
-                    (proc () (funz.head (apply funz.tail.head rest opt)))
-                    (compose funz.head (apply compose funz.tail null)))))) rest))
+   ((proc (funz)
+      (def s funz.size)
+      (if (= s 0)
+         (error 'too-few-args %(compose @rest) "(compose ...) requires at least one argument.  It prefers more than one.")
+         (if (= s 1)
+            rest.head
+            (if (= s 2)
+               (proc () (funz.head (apply funz.tail.head rest opt)))
+               (compose funz.head (apply compose funz.tail null)))))) rest))
 
 (op loop (name vars)
    (proc sep (x y xs names vals)
@@ -142,147 +142,147 @@
       (list (list 'send name ''apply) args 'null)))
 
 (op : () ; table op
-    (pair 'table
-        (if (pair? rest)
-            (if (= (mod rest.size 2) 0)
-                (loop go (k rest.head v rest.1 xs rest.tail.tail acc ())
-                    (def noob (pair (list 'quote k) (pair v acc)))
-                    (if (pair? xs)
-                        (go xs.head xs.tail.head xs.tail.tail noob)
-                        noob))
-                (error 'args-fail %(: @rest) "(: ...) requires an even number of arguments"))
+   (pair 'table
+      (if (pair? rest)
+         (if (= (mod rest.size 2) 0)
+            (loop go (k rest.head v rest.1 xs rest.tail.tail acc ())
+               (def noob (pair (list 'quote k) (pair v acc)))
+               (if (pair? xs)
+                  (go xs.head xs.tail.head xs.tail.tail noob)
+                  noob))
+            (error 'args-fail %(: @rest) "(: ...) requires an even number of arguments"))
             ())))
 
 (op cond ()
-    (def default
-        (if (opt.get 'default)
-            (opt.get 'default)
-            (list 'error ''cond-no-matching-clause (list 'pair ''cond (list 'quote rest)) "(cond... ) form fell through!")))
-    (if (< rest.size 2)
-        (error 'syntax-error (pair 'cond rest) "(cond ...) should have at least one predicate and consequent.")
-        (loop go (pred rest.0 conseq rest.1 remaining rest.tail.tail)
-            (if remaining
-                (list 'if pred conseq (go remaining.0 remaining.1 remaining.tail.tail))
-                (list 'if pred conseq default)))))
+   (def default
+      (if (opt.get 'default)
+         (opt.get 'default)
+         (list 'error ''cond-no-matching-clause (list 'pair ''cond (list 'quote rest)) "(cond... ) form fell through!")))
+   (if (< rest.size 2)
+      (error 'syntax-error (pair 'cond rest) "(cond ...) should have at least one predicate and consequent.")
+      (loop go (pred rest.0 conseq rest.1 remaining rest.tail.tail)
+         (if remaining
+            (list 'if pred conseq (go remaining.0 remaining.1 remaining.tail.tail))
+            (list 'if pred conseq default)))))
 
 (op qq (expr)
-    (proc constant? (expr)
-        (if (pair? expr)
-            (= expr.head 'quote)
-            (send (= 'symbol expr.type) 'not)))
-    (proc combine-skeletons (left right expr)
-        (cond
-            (and (constant? left) (constant? right))
-                (if (and (= (env.eval left)  expr.head)
-                         (= (env.eval right) expr.tail))
-                    (list 'quote expr)
-                    (list 'quote (pair (env.eval left) (env.eval right))))
-            (= right ())
-                (list 'list left)
-            (and (pair? right) (= right.head 'list))
-                (pair 'list (pair left right.tail))
-            default: (list 'pair left right)))
-    (proc expand-quasiquote (expr nesting)
-        (cond
-            (send (pair? expr) 'not)
-                (if (constant? expr)
-                    expr
-                    (list 'quote expr))
-            (and (is? expr.head 'unq) (= expr.size 2))
-                (if nesting.zero?
-                    expr.1
-                    (combine-skeletons
-                        ''unq
-                        (expand-quasiquote expr.tail nesting.dec)
-                        expr))
-            (and (is? expr.head 'qq) (= expr.size 2))
-                (combine-skeletons
-                    ''qq
-                    (expand-quasiquote expr.tail nesting.inc)
-                    expr)
-            (and (pair? expr.head) (= expr.head.head 'unqs) (= expr.head.size 2))
-                (if (= nesting 0)
-                    (list (list 'send expr.head.1 ''append)
-                          (expand-quasiquote expr.tail nesting))
-                    (combine-skeletons
-                        (expand-quasiquote expr.head nesting.dec)
-                        (expand-quasiquote expr.tail nesting)
-                        expr))
-            default:
-                (combine-skeletons
-                    (expand-quasiquote expr.head nesting)
-                    (expand-quasiquote expr.tail nesting)
-                    expr)))
-    (expand-quasiquote expr 0))
+   (proc constant? (expr)
+      (if (pair? expr)
+         (= expr.head 'quote)
+         (send (= 'symbol expr.type) 'not)))
+   (proc combine-skeletons (left right expr)
+      (cond
+         (and (constant? left) (constant? right))
+            (if (and (= (env.eval left)  expr.head)
+                     (= (env.eval right) expr.tail))
+               (list 'quote expr)
+               (list 'quote (pair (env.eval left) (env.eval right))))
+         (= right ())
+            (list 'list left)
+         (and (pair? right) (= right.head 'list))
+            (pair 'list (pair left right.tail))
+         default: (list 'pair left right)))
+   (proc expand-quasiquote (expr nesting)
+      (cond
+         (send (pair? expr) 'not)
+            (if (constant? expr)
+               expr
+               (list 'quote expr))
+         (and (is? expr.head 'unq) (= expr.size 2))
+            (if nesting.zero?
+               expr.1
+               (combine-skeletons
+                  ''unq
+                  (expand-quasiquote expr.tail nesting.dec)
+                  expr))
+         (and (is? expr.head 'qq) (= expr.size 2))
+            (combine-skeletons
+               ''qq
+               (expand-quasiquote expr.tail nesting.inc)
+               expr)
+         (and (pair? expr.head) (= expr.head.head 'unqs) (= expr.head.size 2))
+            (if (= nesting 0)
+               (list (list 'send expr.head.1 ''append)
+                    (expand-quasiquote expr.tail nesting))
+               (combine-skeletons
+                  (expand-quasiquote expr.head nesting.dec)
+                  (expand-quasiquote expr.tail nesting)
+                  expr))
+         default:
+            (combine-skeletons
+               (expand-quasiquote expr.head nesting)
+               (expand-quasiquote expr.tail nesting)
+               expr)))
+   (expand-quasiquote expr 0))
 
 (op when (pred)
-    (qq
-        (if (unq pred)
-            (seq (unqs rest))
-            null)))
+   (qq
+      (if (unq pred)
+         (seq (unqs rest))
+         null)))
 
 (op case (val)
-    (def default
-        (if (opt.get 'default)
-            (opt.get 'default)
-            (list 'error ''case-no-matching-clause (list 'pair ''case (list 'quote rest)) "(case ...) form fell through!")))
-    (if (< rest.size 2)
-        (error 'syntax-error (pair 'case rest) "(case ...) should have at least one predicate and consequent.")
-        (seq
-            (def cval (gensym))
-            (qq
-                (let ((unq cval) (unq val))
-                    (unq
-                        (loop go (set rest.0 conseq rest.1 remaining rest.tail.tail)
-                            (def pred (qq ((send (quote (unq set)) 'has?) (unq cval))))
-                            (if remaining
-                                (list 'if pred conseq (go remaining.0 remaining.1 remaining.tail.tail))
-                                (list 'if pred conseq default)))))))))
+   (def default
+      (if (opt.get 'default)
+         (opt.get 'default)
+         (list 'error ''case-no-matching-clause (list 'pair ''case (list 'quote rest)) "(case ...) form fell through!")))
+   (if (< rest.size 2)
+      (error 'syntax-error (pair 'case rest) "(case ...) should have at least one predicate and consequent.")
+      (seq
+         (def cval (gensym))
+         (qq
+            (let ((unq cval) (unq val))
+               (unq
+                  (loop go (set rest.0 conseq rest.1 remaining rest.tail.tail)
+                     (def pred (qq ((send (quote (unq set)) 'has?) (unq cval))))
+                     (if remaining
+                        (list 'if pred conseq (go remaining.0 remaining.1 remaining.tail.tail))
+                        (list 'if pred conseq default)))))))))
 
 (op while (pred body)
-    ; call (next <value>) to skip the rest of the bodies and go to the next loop (continue)
-    ;     if predicate evals false, <value> will be returned from the while expression
-    ; call (last <value>) to terminate the loop and return said value (break)
-    (def jump (gensym))
-    (def rv (gensym))
-    (def kont (gensym))
-    %(gate
-        ((thunk
-            (def $jump
-                (lambda ($rv)
-                    (seq
-                        (proc next (v) (capture $kont ($jump v)))
-                        (proc last (v) (capture $kont v))
-                        (if $pred
-                            ($jump (seq @(pair body rest)))
-                            $rv))))
-            ($jump null)))))
+   ; call (next <value>) to skip the rest of the bodies and go to the next loop (continue)
+   ;     if predicate evals false, <value> will be returned from the while expression
+   ; call (last <value>) to terminate the loop and return said value (break)
+   (def jump (gensym))
+   (def rv (gensym))
+   (def kont (gensym))
+   %(gate
+      ((thunk
+         (def $jump
+            (lambda ($rv)
+               (seq
+                  (proc next (v) (capture $kont ($jump v)))
+                  (proc last (v) (capture $kont v))
+                  (if $pred
+                     ($jump (seq @(pair body rest)))
+                     $rv))))
+         ($jump null)))))
 
 (op _ (body)
-    (def uscore (gensym))
-    (def bodies (pair body rest))
-    (proc rename (form)
-        (if (pair? form)
-            (if (= form.head '_)
-                form
-                (form.map rename))
-            (if (= form '_)
-                uscore
-                form)))
-    (qq
-        (lambda ((unq uscore))
-            (seq (unqs (rename bodies))))))
+   (def uscore (gensym))
+   (def bodies (pair body rest))
+   (proc rename (form)
+      (if (pair? form)
+         (if (= form.head '_)
+            form
+            (form.map rename))
+         (if (= form '_)
+            uscore
+            form)))
+   (qq
+      (lambda ((unq uscore))
+         (seq (unqs (rename bodies))))))
 
 (op ensure (thnk)
-    (def v (gensym))
-    %(guard
-        (proc (e k)
+   (def v (gensym))
+   %(guard
+      (proc (e k)
+         ($thnk)
+         (fail e)) 
+      (gate
+         (let ($v (seq @rest))
             ($thnk)
-            (fail e)) 
-        (gate
-            (let ($v (seq @rest))
-                ($thnk)
-                $v))))
+            $v))))
 
 (op test (name expr)
    %(let (ok $expr)
@@ -298,139 +298,138 @@
                   (the-box.set! 0 v)
                   v))
       'val  (lambda () the-box.0)
-      auto: '(val view)
-   ))
+      auto: '(val view)))
 
 (op qw ()
-    (pair 'list (rest.map (lambda (x) x.to-text))))
+   (pair 'list (rest.map (lambda (x) x.to-text))))
 
 (op everywhere ()
-    %(seq @rest (compile-eval @rest)))
+   %(seq @rest (compile-eval @rest)))
 
 (op with-gensyms (gs)
-    (def pairs (gs.map (_ (list _ '(gensym)))))
-    (def lets
-        (loop go (x pairs.head xs pairs.tail)
-            (if xs
-                (go (x.append xs.head) xs.tail)
-                x)))
-    %(let $lets @rest))
+   (def pairs (gs.map (_ (list _ '(gensym)))))
+   (def lets
+      (loop go (x pairs.head xs pairs.tail)
+         (if xs
+            (go (x.append xs.head) xs.tail)
+            x)))
+   %(let $lets @rest))
 
 (op chain (obj)
-    (loop go (init obj cmd rest.head cmds rest.tail)
-        (def form %((send $init (quote $(send cmd 'head))) @(send cmd 'tail)))
-        (if cmds
-            (go form cmds.head cmds.tail)
-            form)))
+   (loop go (init obj cmd rest.head cmds rest.tail)
+      (def form %((send $init (quote $(send cmd 'head))) @(send cmd 'tail)))
+      (if cmds
+         (go form cmds.head cmds.tail)
+         form)))
 
 (op for (init pred update body)
-    (def bodies (pair body rest))
-    (with-gensyms (jump rv tmp kont)
-        %(gate
-            (let $init
-                (def $jump
-                    (lambda ($rv)
-                        (seq
-                            (proc redo (v) (last ($jump v)))
-                            (proc next (v) (seq $update (redo v)))
-                            (proc last (v) (capture $kont v))
-                            (if $pred
-                                (let ($tmp (seq @bodies))
-                                    $update
-                                    ($jump $tmp))
-                                $rv))))
-                ($jump null)))))
+   (def bodies (pair body rest))
+   (with-gensyms (jump rv tmp kont)
+      %(gate
+         (let $init
+            (def $jump
+               (lambda ($rv)
+                  (seq
+                      (proc redo (v) (last ($jump v)))
+                      (proc next (v) (seq $update (redo v)))
+                      (proc last (v) (capture $kont v))
+                      (if $pred
+                         (let ($tmp (seq @bodies))
+                            $update
+                            ($jump $tmp))
+                         $rv))))
+            ($jump null)))))
 
 (op each (name arg body)
-    (def bodies (pair body rest))
-    (with-gensyms (xs jump)
-        (qq
-            (let ((unq xs) (send (unq arg) 'to-list))
-                (proc (unq jump) ((unq name))
-                    (unqs bodies))
-                ((send (unq xs) 'each) (unq jump))))))
+   (def bodies (pair body rest))
+   (with-gensyms (xs jump)
+      (qq
+         (let ((unq xs) (send (unq arg) 'to-list))
+            (proc (unq jump) ((unq name))
+               (unqs bodies))
+            ((send (unq xs) 'each) (unq jump))))))
 
 (proc range (start end)
-    (def step (if opt.step opt.step 1))
-    (loop go (i start acc ())
-        (if (> i end)
-            acc.reverse
-            (go (+ i step) (pair i acc)))))
+   (def step (if opt.step opt.step 1))
+   (loop go (i start acc ())
+      (if (> i end)
+         acc.reverse
+         (go (+ i step) (pair i acc)))))
 
 (op matrix ()
-    ; (matrix ((0 0 1) (0 0 2)) ((0 1 1) (0 2 1)))
-    ;     -> (vector: (vector: (vector: 0 0 1) (vector: 0 0 2)) (vector: (vector: 0 1 1) (vector: 0 2 1)))
-    (qq
-        (vector
-            (unqs
-                (rest.map
-                    (_ (if (pair? _)
-                          (qq (matrix (unqs _)))
-                          _)))))))
+   ; (matrix ((0 0 1) (0 0 2)) ((0 1 1) (0 2 1)))
+   ;     -> (vector: (vector: (vector: 0 0 1) (vector: 0 0 2)) (vector: (vector: 0 1 1) (vector: 0 2 1)))
+   (qq
+      (vector
+         (unqs
+            (rest.map
+               (_ (if (pair? _)
+                    (qq (matrix (unqs _)))
+                   _)))))))
 
 (op gen (name body)
-    (def opt-arity (if opt.arity opt.arity 5))
-    (qq
-        (def (unq name)
-            (let (default (box (proc () (unqs (pair body rest))))
-                  clauses (vector.apply ((send (range 0 $opt-arity) 'map) (_ ())) (:)))
-                (proc add-clause! (pred body)
-                    (def idx pred.arity)
-                    (clauses.set!
-                        idx
-                        (pair (pair pred body) (clauses idx))))
-                (proc set-default! (body)
-                    (default.set! body))
-                (proc gen-apply (args options)
-                    (def arity args.size)
-                    (loop go (n arity)
-                        (def cs (clauses n))
-                        (proc n-zero ()
-                            (if n.zero?
-                                (default.val.apply args options)
-                                (go n.dec)))
-                        (if (not (pair? cs))
-                            (n-zero)
-                            (loop jump (x cs.head xs cs.tail)
-                                (if (x.head.apply args options)
-                                    (x.tail.apply args options)
-                                    (if (pair? xs)
-                                        (jump xs.head xs.tail)
-                                        (n-zero)))))))
-                (proc view ()
-                    (send
-                        (pair clauses (pair 'default default.val))
-                        'view))
-                (object
-                    'add-clause! add-clause!
-                    'set-default! set-default!
-                    'apply gen-apply
-                    'view view
-                    'arity $opt-arity
-                    (unq 'auto:) '(view)))))) ; not sure why (unq (quote keyword:)) works, but I'll take it
+   (def opt-arity (if opt.arity opt.arity 5))
+   (qq
+      (def (unq name)
+         (let (default (box (proc () (unqs (pair body rest))))
+               clauses (vector.apply ((send (range 0 $opt-arity) 'map) (_ ())) (:)))
+            (proc add-clause! (pred body)
+               (def idx pred.arity)
+               (clauses.set!
+                  idx
+                  (pair (pair pred body) (clauses idx))))
+            (proc set-default! (body)
+               (default.set! body))
+            (proc gen-apply (args options)
+               (def arity args.size)
+               (loop go (n arity)
+                  (def cs (clauses n))
+                  (proc n-zero ()
+                     (if n.zero?
+                        (default.val.apply args options)
+                        (go n.dec)))
+                  (if (not (pair? cs))
+                     (n-zero)
+                     (loop jump (x cs.head xs cs.tail)
+                        (if (x.head.apply args options)
+                           (x.tail.apply args options)
+                           (if (pair? xs)
+                              (jump xs.head xs.tail)
+                              (n-zero)))))))
+            (proc view ()
+               (send
+                  (pair clauses (pair 'default default.val))
+                  'view))
+            (object
+               'add-clause! add-clause!
+               'set-default! set-default!
+               'apply gen-apply
+               'view view
+               'arity $opt-arity
+               (unq 'auto:) '(view)))))) ; not sure why (unq (quote keyword:)) works, but I'll take it
 
 (op spec (name args pred body)
-    (qq ((send (unq name) 'add-clause!)
-            (proc (unq args) (unq pred))
-            (proc (unq args) (unqs (pair body rest))))))
+   (qq ((send (unq name) 'add-clause!)
+          (proc (unq args) (unq pred))
+          (proc (unq args) (unqs (pair body rest))))))
 
 (op assert (predicate)
-    (with-gensyms (testy result)
-        (qq
-            (let ((unq testy) (quote (unq predicate)) (unq result) (unq predicate))
-                (if (send (unq result) 'to-bool)
-                    true
-                    (error 'assertion-failed (unq testy) "(assert ...) FAIL"))))))
+   (with-gensyms (testy result)
+      (qq
+         (let ((unq testy) (quote (unq predicate)) (unq result) (unq predicate))
+            (if (send (unq result) 'to-bool)
+               true
+               (error 'assertion-failed (unq testy) "(assert ...) FAIL"))))))
 
 (proc ndx (n x)
-    (when (or (< n 0) (< x 0))
-        (error 'type-error %(ndx $n $x) "usage: (ndx n x) : n and x must be integers greater than zero."))
-    (proc dx ()
-        (+ 1 (rand x)))
-    (loop go (m n total 0)
-        (if m.zero?
-            total
-            (go m.dec (+ total (dx))))))
+   (when (or (< n 0) (< x 0))
+      (error 'type-error %(ndx $n $x) "usage: (ndx n x) : n and x must be integers greater than zero."))
+   (proc dx ()
+      (+ 1 (rand x)))
+   (loop go (m n total 0)
+      (if m.zero?
+         total
+         (go m.dec (+ total (dx))))))
 
 (proc repl (e in out err)
    (out.print "vaquero> ")
@@ -448,194 +447,195 @@
    (lambda (obj) (send obj msg)))
 
 (def json
-    (let ()
-        (def syms '(true false null))
-        (proc json-in (txt)
-            (rem: this parser is pretty good at accepting valid JSON.
-                  It's less good at rejecting invalid JSON.  Rough draft.)
-            (proc read-num (p)
-                p.read.to-number)
-            (proc read-text (p)
-                p.read)
-            (proc read-symbol (p)
-                p.read.to-symbol)
-            (proc read-array (p)
-                p.read-rune ; discard opening [
-                (loop go (next p.peek-rune items ())
-                    (when (eof? next)
-                        (error 'json-read-error items "Unexpected EOF in JSON array!"))
-                    (if next.whitespace?
-                        (seq p.read-rune (go p.peek-rune items))
-                        (case next
-                            ("]")     (seq p.read-rune items.reverse)
-                            (",")     (seq p.read-rune (go p.peek-rune items))
-                            default:
-                                (let (item (reader p))
-                                    (go p.peek-rune (items.cons item)))))))
-            (proc read-object (p)
-                p.read-rune ; discard opening {
-                (loop go (next p.peek-rune items (table))
-                    (when (eof? next)
-                        (error 'json-read-error items "Unexpected EOF in JSON object!"))
-                    (if next.whitespace?
-                        (seq p.read-rune (go p.peek-rune items))
-                        (case next
-                            ("}")  (seq p.read-rune items)
-                            (",")  (seq p.read-rune (go p.peek-rune items))
-                            default:
-                                (let (key (send (reader p) 'to-symbol))
-                                    (p.skip-while " :\t\n")
-                                    (let (val (reader p))
-                                        (items.set! key val)
-                                        (go p.peek-rune items)))))))
-            (proc reader (p)
-                (def next p.peek-rune)
-                (when (eof? next)
-                    (return next))
-                (if next.whitespace?
-                    (seq
-                        p.read-rune
-                        (reader p))
-                    (case next
-                        ("\"")    (read-text p)
-                        ("[")     (read-array p)
-                        ("]")     (error 'json-read-error txt "Unexpected ] !")
-                        ("{")     (read-object p)
-                        ("}")     (error 'json-read-error txt "Unexpected } !")
-                        ("-" "0" "1" "2" "3" "4" "5" "6" "7" "8" "9")
-                            (read-num p)
-                        default:
-                            (let (this-guy (read-symbol p))
-                                (if (not (syms.has? this-guy))
-                                    (error 'json-read-error this-guy "Unquoted string!")
-                                    this-guy)))))
-            (reader txt.to-stream))
+   (let ()
+      (def syms '(true false null))
 
-            (proc json-out (thing)
-                (proc comma-fy (xs)
-                    (cat.apply xs (: with ",")))
-                (cond
-                    (null? thing)   thing.to-text
-                    (bool? thing)   thing.to-text
-                    (num? thing)    thing.to-text
-                    (symbol? thing) (json-out thing.to-text)
-                    (text? thing)   (cat "\"" (thing.replace "\"" "\\\"" flags: "g") "\"")
-                    (rune? thing)   (json-out (text thing))
-                    (vector? thing) (json-out thing.to-list)
-                    (table? thing) (cat "{" (comma-fy (thing.to-list.map (lambda (kv) (cat (json-out kv.key.to-text) ":" (json-out kv.val))))) "}")
-                    (list? thing)   (cat "[" (comma-fy (thing.map json-out)) "]")
-                    (pair? thing)   (cat "[" (json-out thing.head) "," (json-out thing.tail) "]")
-                    default: 
-                        (if (thing.responds? 'to-json)
-                            thing.to-json
-                            (error 'json-write-error thing "json.write - unknown-type"))))
+      (proc json-in (txt)
+         #(doc this parser is pretty good at accepting valid JSON.
+               It is less good at rejecting invalid JSON.  Rough draft.)
+         (proc read-num (p)
+            p.read.to-number)
+         (proc read-text (p)
+            p.read)
+         (proc read-symbol (p)
+            p.read.to-symbol)
+         (proc read-array (p)
+            p.read-rune ; discard opening [
+            (loop go (next p.peek-rune items ())
+               (when (eof? next)
+                  (error 'json-read-error items "Unexpected EOF in JSON array!"))
+               (if next.whitespace?
+                   (seq p.read-rune (go p.peek-rune items))
+                   (case next
+                      ("]")     (seq p.read-rune items.reverse)
+                      (",")     (seq p.read-rune (go p.peek-rune items))
+                      default:
+                         (let (item (reader p))
+                             (go p.peek-rune (items.cons item)))))))
+         (proc read-object (p)
+            p.read-rune ; discard opening {
+            (loop go (next p.peek-rune items (table))
+               (when (eof? next)
+                  (error 'json-read-error items "Unexpected EOF in JSON object!"))
+               (if next.whitespace?
+                  (seq p.read-rune (go p.peek-rune items))
+                  (case next
+                     ("}")  (seq p.read-rune items)
+                     (",")  (seq p.read-rune (go p.peek-rune items))
+                     default:
+                        (let (key (send (reader p) 'to-symbol))
+                           (p.skip-while " :\t\n")
+                           (let (val (reader p))
+                              (items.set! key val)
+                              (go p.peek-rune items)))))))
+         (proc reader (p)
+            (def next p.peek-rune)
+            (when (eof? next)
+               (return next))
+            (if next.whitespace?
+               (seq
+                  p.read-rune
+                  (reader p))
+               (case next
+                  ("\"")    (read-text p)
+                  ("[")     (read-array p)
+                  ("]")     (error 'json-read-error txt "Unexpected ] !")
+                  ("{")     (read-object p)
+                  ("}")     (error 'json-read-error txt "Unexpected } !")
+                  ("-" "0" "1" "2" "3" "4" "5" "6" "7" "8" "9")
+                      (read-num p)
+                  default:
+                     (let (this-guy (read-symbol p))
+                        (if (not (syms.has? this-guy))
+                           (error 'json-read-error this-guy "Unquoted string!")
+                           this-guy)))))
+         (reader txt.to-stream))
 
-            (object
-                'read json-in
-                'write json-out
-                'parse json-in
-                'stringify json-out)))
+         (proc json-out (thing)
+            (proc comma-fy (xs)
+               (cat.apply xs (: with ",")))
+            (cond
+               (null? thing)   thing.to-text
+               (bool? thing)   thing.to-text
+               (num? thing)    thing.to-text
+               (symbol? thing) (json-out thing.to-text)
+               (text? thing)   (cat "\"" (thing.replace "\"" "\\\"" flags: "g") "\"")
+               (rune? thing)   (json-out (text thing))
+               (vector? thing) (json-out thing.to-list)
+               (table? thing) (cat "{" (comma-fy (thing.to-list.map (lambda (kv) (cat (json-out kv.key.to-text) ":" (json-out kv.val))))) "}")
+               (list? thing)   (cat "[" (comma-fy (thing.map json-out)) "]")
+               (pair? thing)   (cat "[" (json-out thing.head) "," (json-out thing.tail) "]")
+               default: 
+                  (if (thing.responds? 'to-json)
+                     thing.to-json
+                     (error 'json-write-error thing "json.write - unknown-type"))))
+
+         (object
+            'read json-in
+            'write json-out
+            'parse json-in
+            'stringify json-out)))
 
 (op promise (expr) ; lazy evaluation
-    (def result (gensym))
-    %(let ($result (box null))
-        (object
-            auto: '(value)
-            'type 'promise
-            'view '(promise $expr)
-            'value (lambda ()
-                        (if (is? (send $result (quote val)) null)
-                            (seq
-                                ((send $result (quote set!)) $expr)
-                                (send $result (quote val)))
-                            (send $result (quote val)))))))
+   (def result (gensym))
+   %(let ($result (box null))
+      (object
+         auto: '(value)
+         'type 'promise
+         'view '(promise $expr)
+         'value (lambda ()
+                   (if (is? (send $result (quote val)) null)
+                      (seq
+                         ((send $result (quote set!)) $expr)
+                         (send $result (quote val)))
+                      (send $result (quote val)))))))
 
 (proc seal (obj) 
-    (def hidden (if opt.hide opt.hide ()))
-    (def type (or opt.new-type obj.type))
-    (def secret (or opt.secret null))
-    (def msgs obj.messages)
-    (proc none-shall-pass (m)
-        (nor (= m 'type)
-             (m.to-text.match "!")
-             (hidden.has? m)))
-    (def forward (msgs.filter none-shall-pass))
-    (proc unseal (xyzzy)
-        (if (null? secret)
-            (error 'ACCESS-DENIED sealed "Object not unsealable!")
-            (if (= xyzzy secret)
-                obj
-                (error 'ACCESS-DENIED sealed "WRONG!!!"))))
-    (def sealed
-        (object
-            'type type
-            'unseal unseal
-            resend: %(($obj @forward))))
-    sealed)
+   (def hidden (if opt.hide opt.hide ()))
+   (def type (or opt.new-type obj.type))
+   (def secret (or opt.secret null))
+   (def msgs obj.messages)
+   (proc none-shall-pass (m)
+      (nor (= m 'type)
+          (m.to-text.match "!")
+          (hidden.has? m)))
+   (def forward (msgs.filter none-shall-pass))
+   (proc unseal (xyzzy)
+      (if (null? secret)
+         (error 'ACCESS-DENIED sealed "Object not unsealable!")
+         (if (= xyzzy secret)
+            obj
+            (error 'ACCESS-DENIED sealed "WRONG!!!"))))
+   (def sealed
+      (object
+         'type type
+         'unseal unseal
+         resend: %(($obj @forward))))
+   sealed)
 
 (op alias (name new-alias)
-    %(op $new-alias ()
-        %($'$name @rest)))
+   %(op $new-alias ()
+      %($'$name @rest)))
 
 (proc any? (f xs)
-    (when (not (proc? f))
-        (error 'bad-argument %(any? $f $xs @rest)
-                             "any?: first argument must be a procedure."))
-    (def ys xs.to-list)
-    (loop go (z ys.head zs ys.tail)
-        (if (f z)
-            true
-            (if (pair? zs)
-                (go zs.head zs.tail)
-                false))))
+   (when (not (proc? f))
+      (error 'bad-argument %(any? $f $xs @rest)
+                           "any?: first argument must be a procedure."))
+   (def ys xs.to-list)
+   (loop go (z ys.head zs ys.tail)
+      (if (f z)
+         true
+         (if (pair? zs)
+            (go zs.head zs.tail)
+            false))))
 
 (proc every? (f xs)
-    (when (not (proc? f))
-        (error 'bad-argument %(every? $f $xs @rest) "every?: first argument must be a procedure."))
-    (def ys xs.to-list)
-    (loop go (z ys.head zs ys.tail)
-        (if (f z)
-            (if (pair? zs)
-                (go zs.head zs.tail)
-                true)
-            false)))
+   (when (not (proc? f))
+      (error 'bad-argument %(every? $f $xs @rest) "every?: first argument must be a procedure."))
+   (def ys xs.to-list)
+   (loop go (z ys.head zs ys.tail)
+      (if (f z)
+         (if (pair? zs)
+            (go zs.head zs.tail)
+            true)
+         false)))
 
 (proc map (f xs) ; general map
-    (when (not (proc? f))
-        (error 'bad-argument %(map $f $xs @rest) "map: first argument must be a procedure."))
-    (proc get-heads (xs)
-        (xs.map (resend 'head)))
-    (proc get-tails (xs)
-        (xs.map (resend 'tail)))
-    (let (objz (pair xs rest))
-        (def lists (objz.map (resend 'to-list)))
-        (loop go (heads (get-heads lists) tails (get-tails lists) results ())
-            (def noo (pair (apply f heads null) results))
-            (if (every? identity tails)
-                (go (get-heads tails) (get-tails tails) noo)
-                noo.reverse))))
+   (when (not (proc? f))
+      (error 'bad-argument %(map $f $xs @rest) "map: first argument must be a procedure."))
+   (proc get-heads (xs)
+      (xs.map (resend 'head)))
+   (proc get-tails (xs)
+      (xs.map (resend 'tail)))
+   (let (objz (pair xs rest))
+      (def lists (objz.map (resend 'to-list)))
+      (loop go (heads (get-heads lists) tails (get-tails lists) results ())
+         (def noo (pair (apply f heads null) results))
+         (if (every? identity tails)
+            (go (get-heads tails) (get-tails tails) noo)
+            noo.reverse))))
 
 (proc fold (kons knil) ; general fold
-    (when (not (proc? kons))
-        (error 'bad-argument %(fold $kons $knil @rest) "fold: first argument must be a procedure."))
-    (def lists (rest.map (resend 'to-list)))
-    (proc fold-m (kons knil lists)
-        (if (any? (resend 'empty?) lists)
-            knil
-            (fold-m kons
-                (apply kons (append (lists.map (resend 'head)) (list knil)) null)
-                (lists.map (resend 'tail)))))
-    (fold-m kons knil lists))
+   (when (not (proc? kons))
+      (error 'bad-argument %(fold $kons $knil @rest) "fold: first argument must be a procedure."))
+   (def lists (rest.map (resend 'to-list)))
+   (proc fold-m (kons knil lists)
+      (if (any? (resend 'empty?) lists)
+         knil
+         (fold-m kons
+            (apply kons (append (lists.map (resend 'head)) (list knil)) null)
+            (lists.map (resend 'tail)))))
+   (fold-m kons knil lists))
 
 (proc zip (xs)
-    (apply map %($list $xs @rest) null))
+   (apply map %($list $xs @rest) null))
 
 (proc flatten (xs)
-    (cond
-        (= xs ()) ()
-        (not (pair? xs)) (list xs)
-        default: (append (flatten xs.head)
-                         (flatten xs.tail))))
+   (cond
+      (= xs ()) ()
+      (not (pair? xs)) (list xs)
+      default: (append (flatten xs.head)
+                       (flatten xs.tail))))
 
 (op bind (names)
    ; FIXME expand to destructure trees as well as lists
