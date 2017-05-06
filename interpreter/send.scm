@@ -410,7 +410,7 @@
 
 (define (vaquero-send-pair obj msg cont err)
     (define msgs
-        '(empty? view to-text to-bool to-list to-table head key car tail val cdr cons size clone))
+        '(empty? view to-text to-bool to-list to-table head key car tail val cdr head! tail! cons size clone))
     (define msgs+ (append msgs '(messages answers? type)))
     (if (member msg msgs+)
         (cont 
@@ -423,6 +423,8 @@
                 ((to-table) (vaquero-table (car obj) (cdr obj)))
                 ((head key car) (car obj))
                 ((tail val cdr) (cdr obj))
+                ((head!) (lambda (v) (set-car! obj v) v))
+                ((tail!) (lambda (v) (set-cdr! obj v) v))
                 ((cons) (lambda (v) (cons v obj)))
                 ((size) 2)
                 ((clone) (cons (car obj) (cdr obj)))
