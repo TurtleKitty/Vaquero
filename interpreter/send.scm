@@ -720,7 +720,7 @@
                         (let loop ((names '()) (vals '()) (left args))
                             (if (eq? '() left)
                                 (extend obj names vals cont err)
-                                (loop (cons (car left) names) (cons (cadr left) vals) (cddr args))))))))
+                                (loop (cons (car left) names) (cons (cadr left) vals) (cddr left))))))))
         ((parent)
             (cont (htr obj 'parent)))
         ((eval)
