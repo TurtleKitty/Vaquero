@@ -550,27 +550,35 @@
                          (send $result (quote val)))
                       (send $result (quote val)))))))
 
-(proc seal (obj) 
-   (def hidden (if opt.hide opt.hide ()))
-   (def type (or opt.new-type obj.type))
-   (def secret (or opt.secret null))
-   (def msgs obj.messages)
+(proc seal (obj)
+   (def passed  (or opt.pass ()))
+   (def hidden  (or opt.hide ()))
+   (def secret  (or opt.secret null))
+   (def type    'sealed-object)
+
    (proc none-shall-pass (m)
-      (nor (= m 'type)
-          (m.to-text.match "!")
-          (hidden.has? m)))
-   (def forward (msgs.filter none-shall-pass))
+       (not (hidden.has? m)))
+
+   (def forward
+      (if passed
+         passed
+         (if hidden
+            (obj.messages.filter none-shall-pass)
+            ())))
+
    (proc unseal (xyzzy)
       (if (null? secret)
-         (error 'ACCESS-DENIED sealed "Object not unsealable!")
+         (error 'ACCESS-DENIED sealed "ACCESS DENIED")
          (if (= xyzzy secret)
             obj
-            (error 'ACCESS-DENIED sealed "WRONG!!!"))))
+            (error 'ACCESS-DENIED sealed "ACCESS DENIED"))))
+
    (def sealed
       (object
          'type type
          'unseal unseal
          resend: %(($obj @forward))))
+
    sealed)
 
 (op alias (name new-alias)

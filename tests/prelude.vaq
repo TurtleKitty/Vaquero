@@ -244,37 +244,35 @@
             (= 12 p.value)
             (= 1 count.val))))
 
-(test seal-unseal
-    (let ()
-        (def r (: x 1 y 2))
-        (def sr (seal r))
-        (def str (seal r new-type: 'myob))
-        (def foo (let (x 10) (lambda (y) (* x y))))
-        (def sfoo (seal foo new-type: 'myob hide: '(env code to-text) secret: "foonballardy")) ; You know nothing about me!
-        (proc handler (e k) true)
-        (and
-            (= sr.type r.type)
-            (and (= sr.x 1) (= sr.y 2))
-            (= str.type 'myob)
-            (= sfoo.type 'myob)
-            (= 30 (foo 3))
-            (= 30 (sfoo 3))
-            (guard
-                handler
-                (sr.set! 0 2)
-                false)
-            (guard
-                handler
-                sfoo.env
-                false)
-            (seq (r.set! 'x 2) true)
-            (= sr.x 2)
-            (= str.x 2)
-            (guard
-                handler
-                (sfoo.unseal "password?")
-                false)
-            (send (sfoo.unseal "foonballardy") 'code))))
+(test seal
+   (let ()
+      (def r (: x 1 y 2))
+      (def sr (seal r pass: '(x y)))
+      (def hr (seal r hide: '(set! del!)))
+      (def xr (seal r pass: '() secret: 'foonballardy)) ; You know nothing about me!
+      (proc handler (e k) true)
+
+      (and
+         (= sr.type 'sealed-object)
+         (and (= sr.x 1) (= sr.y 2))
+         (guard
+            handler
+            (hr.set! 0 2)
+            false)
+         (guard
+            handler
+            (xr.get 'x)
+            false)
+         (seq
+            (r.set! 'x 2)
+            true)
+         (= sr.x 2)
+         (= (hr.get 'x) 2)
+         (guard
+            handler
+            (sr.unseal 'wrong)
+            false)
+         (send (xr.unseal 'foonballardy) 'x))))
 
 (test everywhere
     (= '(50 50)
