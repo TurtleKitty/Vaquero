@@ -278,9 +278,14 @@
                     ((size) 0))))
         (else (vaquero-send-list obj msg cont err))))
 
+(define (list-set! list k val)
+    (if (zero? k)
+        (set-car! list val)
+        (list-set! (cdr list) (- k 1) val)))
+
 (define (vaquero-send-list obj msg cont err)
     (define msgs
-        '(empty? to-list to-vector to-table head key car tail val cdr cons
+        '(empty? to-list to-vector to-table head key car head! tail val cdr tail! set! cons
           size reverse has? append take drop apply fold reduce each map filter sort))
     (define (ldefault msg)
         (if (number? msg)
@@ -289,7 +294,7 @@
                 (err (vaquero-error-object 'out-of-bounds `(,obj ,msg) "list: index out of bounds.") cont))
             (idk obj msg cont err)))
     (case msg
-        ((empty? type view to-bool to-list to-text to-vector head key car tail val cdr cons size reverse has? append take drop apply messages answers?)
+        ((empty? type view to-bool to-list to-text to-vector head key car tail val cdr head! tail! set! cons size reverse has? append take drop apply messages answers?)
             (cont
                 (case msg
                     ((type) 'list)
@@ -302,6 +307,13 @@
                     ((to-vector) (list->vector obj))
                     ((head key car) (car obj))
                     ((tail val cdr) (cdr obj))
+                    ((head!) (lambda (v)   (set-car! obj v) v))
+                    ((tail!) (lambda (v)   (set-cdr! obj v) v))
+                    ((set!)
+                        (lambda (i v)
+                           (if (> (length obj) i)
+                               (begin (list-set! obj i v) v)
+                               (err (vaquero-error-object 'out-of-bounds `(,obj ,i) "list: index out of bounds.") cont))))
                     ((cons) (lambda (v) (cons v obj)))
                     ((size) (length obj))
                     ((clone) (list-copy obj))

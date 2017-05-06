@@ -26,4 +26,21 @@
 (test list-sort-<  (= (ys.sort <) '(0 3 5 6 7 8 9)))
 (test list-sort->  (= (ys.sort >) '(9 8 7 6 5 3 0)))
 
+(test list-head!
+   (= '(b 1)
+      (let (L (list 'a 1))
+         (L.head! 'b)
+         L)))
+
+(test list-tail!
+   (= '(a . 2)
+      (let (L (list 'a 1))
+         (L.tail! '2)
+         L)))
+
+(test list-set!
+   (= '(1 2 72)
+      (let (L (list 1 2 3))
+         (L.set! 2 72)
+         L)))
 
