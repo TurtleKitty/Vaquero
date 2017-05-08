@@ -766,7 +766,7 @@
             (cont 
                 (case msg
                     ((type) 'vector)
-                    ((view) (cons (string->keyword "vector") (map vaquero-view (vector->list obj))))
+                    ((view) (vaquero-view obj))
                     ((to-bool) (not (eq? (vector-length obj) 0)))
                     ((to-list) (vector->list obj))
                     ((to-text) (apply string (vector->list obj)))
