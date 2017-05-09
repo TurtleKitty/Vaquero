@@ -13,19 +13,6 @@
         p.close
         (and was? (not p.open?))))
 
-(test stream-to-list
-    (let (p lines.to-stream)
-        (= '("uno" "dos" "tres") p.to-list)))
-
-(test stream-read-text
-    (= lines.to-stream.read-text lines))
-
-(test stream-to-text
-    (= lines.to-stream.to-text lines))
-
-(test stream-read-seq
-    (= '(seq (foo (bar baz)) (quux 2 3)) sexprs.to-stream.read-seq))
-
 (test stream-read
     (let (p sexprs.to-stream)
         (def first p.read)
@@ -34,12 +21,15 @@
             (= first '(foo (bar baz)))
             (= second '(quux 2 3)))))
 
+(test stream-read-seq
+    (= '(seq (foo (bar baz)) (quux 2 3)) sexprs.to-stream.read-seq))
+
 (test stream-read-rune
     (let (p fb.trim.to-stream)
         (def r1 p.read-rune)
         (def r2 p.read-rune)
         (def r3 p.read-rune)
-        (and (= r1 \f) (= r2 \o) (= r3 \o))))
+        (and (= r1 "f") (= r2 "o") (= r3 "o"))))
 
 (test stream-peek-rune
     (let (p fb.trim.to-stream)
@@ -47,19 +37,7 @@
         (def r2 p.peek-rune)
         (def r3 p.read-rune)
         (def r4 p.peek-rune)
-        (and (= r1 \f) (= r2 \f) (= r3 \f) (= r4 \o))))
-
-(test stream-assert-rune
-    (let (p fb.trim.to-stream)
-        (def r1 (p.assert-rune "fo"))
-        (def r2 (p.assert-rune "fo"))
-        (def r3 (p.assert-rune "fo"))
-        (def r4 
-            (guard
-                (lambda (e k)
-                    'error)
-                    (p.assert-rune "fo")))
-        (and (= r1 \f) (= r2 \o) (= r3 \o) (= r4 'error))))
+        (and (= r1 "f") (= r2 "f") (= r3 "f") (= r4 "o"))))
 
 (test stream-read-line
     (let (p lines.to-stream)
@@ -68,40 +46,47 @@
         (def tres p.read-line)
         (and (= uno "uno") (= dos "dos") (= tres "tres"))))
 
-(test stream-skip
+(test stream-read-lines
+    (let (p lines.to-stream)
+        (= '("uno" "dos" "tres") p.read-lines)))
+
+(test stream-read-text
+    (= lines.to-stream.read-text lines))
+
+(test stream-to-text
+    (= lines.to-stream.to-text lines))
+
+(test stream-to-list
+    (let (p lines.to-stream)
+        (= '("uno" "dos" "tres") p.to-list)))
+
+(test stream-read-n
+    (let (p fb.trim.to-stream)
+        (def token (p.read-n 4))
+        (= token "foon")))
+
+(test stream-read-while
+    (let (p fb.trim.to-stream)
+        (def token (p.read-while "abdflnory"))
+        (= token "foonballardy")))
+
+(test stream-read-until
+    (let (p fb.trim.to-stream)
+        (def token (p.read-until "!"))
+        (= token "foonballardy")))
+
+(test stream-skip-n
     (let (p fb.to-stream)
-        (p.skip 5)
-        (= \o p.peek-rune)))
+        (p.skip-n 5)
+        (= "o" p.peek-rune)))
 
 (test stream-skip-while
     (let (p fb.to-stream)
         (p.skip-while " ")
-        (= \f p.peek-rune)))
+        (= "f" p.peek-rune)))
 
 (test stream-skip-until
     (let (p fb.to-stream)
         (p.skip-until "b")
-        (= \b p.peek-rune)))
-
-(test stream-read-token
-    (let (p fb.trim.to-stream)
-        (def token (p.read-token 4))
-        (= token "foon")))
-
-(test stream-read-token-while
-    (let (p fb.trim.to-stream)
-        (def token (p.read-token-while "abdflnory"))
-        (= token "foonballardy")))
-
-(test stream-read-token-until
-    (let (p fb.trim.to-stream)
-        (def token (p.read-token-until "!"))
-        (= token "foonballardy")))
-
-(test stream-read-token-if
-    (let (p fb.trim.to-stream)
-        (def tokener (_ (and _.alpha? (!= _ \r))))
-        (def token
-            (p.read-token-if tokener))
-        (= token "foonballa")))
+        (= "b" p.peek-rune)))
 

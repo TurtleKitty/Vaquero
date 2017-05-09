@@ -880,37 +880,45 @@
 (define (vaquero-send-input-stream obj msg cont err)
     (define msgs
         '(view to-bool input? output? open? close
-          ready? read read-rune peek-rune read-line read-text assert-rune skip skip-while skip-until
-          read-token read-token-while read-token-until read-token-if to-list to-text read-seq))
+          ready? read read-rune peek-rune read-line read-text read-lines to-text to-list to-bool
+          read-n read-while read-until skip-n skip-while skip-until))
     (case msg
-        ((ready? autos read read-rune peek-rune read-line read-text assert-rune skip skip-while skip-until
-          read-token read-token-while read-token-until read-token-if to-list to-text read-seq
+        ((ready? autos read read-seq read-rune peek-rune read-line read-text read-lines
+          read-n read-while read-until skip-n skip-while skip-until to-text to-list to-bool
           messages answers?)
             (if (port-closed? obj)
                 (err (vaquero-error-object 'input-stream-closed `(send ,obj ,msg) "Input stream closed.") cont)
                 (cont 
                     (case msg
-                        ((autos) '(view to-text to-bool to-list ready? input? output? open? read read-rune peek-rune read-line read-text read-seq))
-                        ((ready?) (char-ready? obj))
-                        ((read) (vaquero-read obj))
-                        ((read-rune) (read-char obj))
-                        ((peek-rune) (peek-char obj))
+                        ((autos)    '(view to-text to-bool to-list ready? input? output? open? read read-seq read-rune peek-rune read-line read-lines read-text))
+                        ((ready? to-bool) (char-ready? obj))
+                        ((read)      (vaquero-read obj))
+                        ((read-seq)  (vaquero-read-file obj))
+                        ((read-rune) (string (read-char obj)))
+                        ((peek-rune) (string (peek-char obj)))
                         ((read-line) (read-line obj))
-                        ((read-text to-text) (read-string #f obj))
-                        ((read-seq) (vaquero-read-file obj))
-                        ((assert-rune)
-                            (vaquero-proc
-                                primitive-type
-                                'stream
-                                (lambda (args opts cont err)
-                                    (if (not (= 1 (length args)))
-                                        (err (vaquero-error-object 'arity `assert-rune "stream.assert-rune requires one text argument") cont)
-                                        (let ((runes (string->list (car args))))
-                                            (define next (read-char obj))
-                                            (if (member next runes)
-                                                (cont next)
-                                                (err (vaquero-error-object 'assert-rune-FAIL `(assert-rune next ,(car args)) "Assertion FAIL") cont)))))))
-                        ((skip)
+                        ((read-lines to-list) (read-lines obj))
+                        ((read-text to-text)  (read-string #f obj))
+                        ((read-n)
+                            (lambda (n)
+                                (read-string n obj)))
+                        ((read-while)
+                            (lambda (s)
+                                (define runes (string->list s))
+                                (let loop ((tok (peek-char obj)) (acc '()))
+                                    (if (member tok runes)
+                                        (let ((t (read-char obj)))
+                                            (loop (peek-char obj) (cons t acc)))
+                                        (list->string (reverse acc))))))
+                        ((read-until)
+                            (lambda (s)
+                                (define runes (string->list s))
+                                (let loop ((tok (peek-char obj)) (acc '()))
+                                    (if (member tok runes)
+                                        (list->string (reverse acc))
+                                        (let ((t (read-char obj)))
+                                            (loop (peek-char obj) (cons t acc)))))))
+                        ((skip-n)
                             (lambda (n)
                                 (read-string n obj)
                                 'null))
@@ -932,51 +940,8 @@
                                         (begin
                                             (read-char obj)
                                             (loop (peek-char obj)))))))
-                        ((read-token read-tokens)
-                            (lambda (n)
-                                (read-string n obj)))
-                        ((read-token-while)
-                            (lambda (s)
-                                (define runes (string->list s))
-                                (let loop ((tok (peek-char obj)) (acc '()))
-                                    (if (member tok runes)
-                                        (let ((t (read-char obj)))
-                                            (loop (peek-char obj) (cons t acc)))
-                                        (list->string (reverse acc))))))
-                        ((read-token-until)
-                            (lambda (s)
-                                (define runes (string->list s))
-                                (let loop ((tok (peek-char obj)) (acc '()))
-                                    (if (member tok runes)
-                                        (list->string (reverse acc))
-                                        (let ((t (read-char obj)))
-                                            (loop (peek-char obj) (cons t acc)))))))
-                        ((read-token-if)
-                            (vaquero-proc
-                                primitive-type
-                                'env
-                                (lambda (args opts cont err)
-                                    (if (not (= 1 (length args)))
-                                        (err (vaquero-error-object 'arity `(read-token-if) "read-token-if: requires one proc argument.") cont)
-                                        (let ((pred (car args)))
-                                            (let loop ((tok (peek-char obj)) (acc '()))
-                                                (vaquero-apply
-                                                    pred
-                                                    (list tok)
-                                                    'null
-                                                    (lambda (rv)
-                                                        (vaquero-bool
-                                                            rv
-                                                            (lambda (ok)
-                                                                (if ok
-                                                                    (let ((t (read-char obj)))
-                                                                        (loop (peek-char obj) (cons t acc)))
-                                                                    (cont (list->string (reverse acc)))))
-                                                            err))
-                                                    err)))))))
                         ((messages) msgs)
-                        ((answers?) (vaquero-answerer msgs))
-                        ((to-list read-lines) (read-lines obj))))))
+                        ((answers?) (vaquero-answerer msgs))))))
         ((close) (close-input-port obj) (cont 'null))
         (else (idk msg obj cont err))))
 
