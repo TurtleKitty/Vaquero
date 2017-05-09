@@ -31,9 +31,6 @@
 (test int?
     (int? 23))
 
-(test rune?
-    (rune? \x))
-
 (test text?
     (text? "foo"))
 
@@ -227,8 +224,8 @@
 
 (test resend
     (=
-        '(int rune text symbol number number)
-        (let (xs (list 1 \2 "3" 'four 1/5 6.4))
+        '(int text symbol number number)
+        (let (xs (list 1 "2" 'three 1/4 6.4))
             (xs.map (resend 'type)))))
 
 (test promise
@@ -332,10 +329,10 @@
 
 (test cat
     (and
-        (=  "nulltrue x foobarbaz"
-            (cat null true \space \x \space 'foo "bar" '(\b \a \z)))
-        (=  "null/true/x/foo/bar/baz"
-            (cat null true \x 'foo "bar" '(\b \a \z) with: "/"))))
+        (=  "truefalsenullfoobarbaz"
+            (cat true false null 'foo "bar" 'baz))
+        (=  "true/false/null/foo/bar/baz"
+            (cat true false null 'foo "bar" 'baz with: "/"))))
 
 (test alias
     (= 100

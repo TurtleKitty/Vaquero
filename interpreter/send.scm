@@ -104,36 +104,6 @@
         ((answers?) (cont (vaquero-answerer msgs)))
         (else (idk obj msg cont err))))
 
-(define (vaquero-send-rune obj msg cont err)
-    (define msgs '(view code to-rune to-text to-bool to-number alpha? digit? whitespace? uc? lc? uc lc))
-    (case msg
-        ((type) (cont 'rune))
-        ((autos) (cont '(view code to-bool to-rune to-text to-number alpha? digit? whitespace? uc? lc? uc lc)))
-        ((view)
-            (cont
-                (vector 'rune 
-                    (case obj
-                        ((#\space) "space")
-                        ((#\newline) "lf")
-                        ((#\return) "cr")
-                        ((#\tab) "tab")
-                        (else (string obj))))))
-        ((code) (cont (char->integer obj)))
-        ((alpha?) (cont (char-alphabetic? obj)))
-        ((digit?) (cont (char-numeric? obj)))
-        ((whitespace?) (cont (char-whitespace? obj)))
-        ((uc?) (cont (char-upper-case? obj)))
-        ((lc?) (cont (char-lower-case? obj)))
-        ((uc) (cont (char-upcase obj)))
-        ((lc) (cont (char-downcase obj)))
-        ((to-bool) (cont #t))
-        ((to-number) (cont (string->number (string obj))))
-        ((to-text) (cont (string obj)))
-        ((to-rune) (cont obj))
-        ((messages) (cont msgs))
-        ((answers?) (cont (lambda (msg) (if (member msg msgs) #t #f))))
-        (else (idk obj msg cont err))))
-
 (define (vaquero-send-text obj msg cont err)
     (define msgs
         '(view clone to-bool to-symbol to-keyword to-number
@@ -305,8 +275,7 @@
                     ((type) 'list)
                     ((empty?) #f)
                     ((autos) '(view empty? to-bool to-text to-list to-vector to-table head tail key val size reverse))
-                    ((view) (vaquero-view obj))
-                    ((to-text) (apply string obj))
+                    ((view to-text) (vaquero-view obj))
                     ((to-bool) #t)
                     ((to-list) obj)
                     ((to-vector) (list->vector obj))
@@ -996,7 +965,6 @@
       `((bool       . ,vaquero-send-bool)
         (symbol     . ,vaquero-send-symbol)
         (number     . ,vaquero-send-number)
-        (rune       . ,vaquero-send-rune)
         (text       . ,vaquero-send-text)
         (empty      . ,vaquero-send-empty)
         (list       . ,vaquero-send-list)

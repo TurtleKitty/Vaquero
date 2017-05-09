@@ -129,7 +129,6 @@
         ((boolean? obj)   'bool)
         ((symbol? obj)    'symbol)
         ((number? obj)    'number)
-        ((char? obj)      'rune)
         ((string? obj)    'text)
         ((null? obj)      'empty)
         ((list? obj)      'list)

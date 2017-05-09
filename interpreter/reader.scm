@@ -31,7 +31,6 @@
             ((#\%) (vaquero-read-quasiquote port))
             ((#\$) (vaquero-read-unquote port))
             ((#\@) (vaquero-read-unquote-splicing port))
-            ((#\\) (vaquero-read-rune port))
             ((#\#) (vaquero-read-structure port))
             ((#\;) (vaquero-read-comment port) (vaquero-read port))
             ((#\|) (vaquero-read-funky port))
@@ -190,33 +189,6 @@
 (define (vaquero-read-unquote-splicing port)
     (read-char port)
     (list 'unqs (vaquero-reader port)))
-
-(define (vaquero-read-rune port)
-    (read-char port)
-    (let ((next (peek-char port)))
-        (case next
-            ((#\( #\)) (read-char port))
-            (else
-                (if (char-alphabetic? next)
-                    (let ((sym (read port)))
-                        (case sym
-                            ((lf) #\newline)
-                            ((cr) #\return)
-                            ((space) #\space)
-                            ((tab) #\tab)
-                            (else (string-ref (symbol->string sym) 0))))
-                    (read-char port))))))
-
-(define (vaquero-rune-literal port)
-    (define xs (vaquero-read-list port))
-    (define rune (car xs))
-    (if (= 1 (string-length rune))
-        (string-ref rune 0)
-        (cond
-            ((equal? rune "space") #\space)
-            ((equal? rune "tab") #\tab)
-            ((equal? rune "lf") #\newline)
-            ((equal? rune "cr") #\return))))
 
 (define (vaquero-read-comment port)
     (read-line port)

@@ -59,14 +59,12 @@
                 (cons 'mod modulo)
                 (cons 'num? number?)
                 (cons 'int? integer?)
-                (cons 'rune? char?)
                 (cons 'pair cons)
                 (cons 'pair? pair?)
                 (cons 'list list)
                 (cons 'list? list?)
                 (cons 'option? keyword?)
                 (cons 'syntax-ok? (lambda (form) (check-vaquero-syntax (list form))))
-                (cons 'rune (lambda (x) (string-ref x 0)))
                 (cons 'vector
                     (vaquero-proc
                         primitive-type

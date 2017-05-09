@@ -103,11 +103,10 @@
                        (close-output-port out)
                        'null)
         )
-        '(read read-rune read-line nl close)
+        '(read read-rune read-line read-lines read-text ready? nl close)
         (list
-            (list in 'read 'read-rune 'peek-rune 'assert-rune 'read-line 'ready?
-                     'skip 'skip-while 'skip-until 'read-token 'read-token-while
-                     'read-token-until 'read-token-if)
+            (list in 'read 'read-rune 'peek-rune 'read-line 'read-lines 'read-text 'ready?
+                     'skip-n 'skip-while 'skip-until 'read-n 'read-while 'read-until)
             (list out 'write 'print 'say 'nl))
         #f))
 
@@ -146,11 +145,10 @@
                        (close-output-port out)
                        'null)
         )
-        '(read read-rune read-line nl close)
+        '(read read-seq read-rune peek-rune read-line read-lines read-text nl ready? close)
         (list
-            (list in 'read 'read-rune 'peek-rune 'assert-rune 'read-line 'ready?
-                     'skip 'skip-while 'skip-until 'read-token 'read-token-while
-                     'read-token-until 'read-token-if)
+            (list in 'read 'read-seq 'read-rune 'peek-rune 'read-line 'read-lines 'read-text 'ready?
+                     'skip-n 'skip-while 'skip-until 'read-n 'read-while 'read-until)
             (list out 'write 'print 'say 'nl))
         #f))
 
