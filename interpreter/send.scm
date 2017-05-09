@@ -177,8 +177,8 @@
                     ((trim) (string-trim-both obj))
                     ((ltrim) (string-trim obj))
                     ((rtrim) (string-trim-right obj))
-                    ((lpad) (lambda (rune n) (string-pad obj n rune)))
-                    ((rpad) (lambda (rune n) (string-pad-right obj n rune)))
+                    ((lpad) (lambda (pad n) (string-pad obj n (string-ref pad 0))))
+                    ((rpad) (lambda (pad n) (string-pad-right obj n (string-ref pad 0))))
                     ((chomp) (string-chomp obj))
                     ((index) (lambda (which) (substring-index which obj)))
                     ((size) (string-length obj))
@@ -251,12 +251,12 @@
                         (if (> idx (string-length obj))
                             (err (vaquero-error-object 'out-of-bounds `(,obj ,idx) "text: index out of bounds.") cont)
                             (begin
-                                (string-set! obj idx val)
+                                (string-set! obj idx (string-ref val 0))
                                 obj))))))
         (else
             (if (number? msg)
                 (if (> (string-length obj) msg)
-                    (cont (string-ref obj msg))
+                    (cont (string (string-ref obj msg)))
                     (err (vaquero-error-object 'out-of-bounds `(,obj ,msg) "text: index out of bounds.") cont))
                 (idk obj msg cont err)))))
 

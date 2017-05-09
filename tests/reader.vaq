@@ -21,9 +21,6 @@
             (= (list 'foo bar 3 4 5)
               %(foo $bar @baz)))))
 
-(test rune-literal
-    (= \f (send "foo" 0)))
-
 (test pair-literal
     (= (pair 'x 'y)
        '(x . y)))

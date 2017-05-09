@@ -17,7 +17,15 @@
 (test text-to-int (= one.to-number 1))
 (test text-to-real (= pi.to-number 3.14))
 (test text-split (= '("foo" "bar" "baz") (fbb.split "[.]")))
-(test text-set! (= "2" (seq (one.set! 0 \2) one)))
+
+(test text-ref
+   (= "q" (send str 2)))
+
+(test text-set!
+   (= "3"
+      (let (two "2")
+      (seq (two.set! 0 "3")
+            two))))
 
 (test text-alphabetic?
    (and str.alphabetic?
@@ -48,8 +56,8 @@
 (test text-trim (= fb.trim "foonballardy!!!"))
 (test text-ltrim (= fb.ltrim "foonballardy!!!  \n"))
 (test text-rtrim (= fb.rtrim "  foonballardy!!!"))
-(test text-lpad (= "   vaquero" (str.lpad \space 10)))
-(test text-rpad (= "vaquero   " (str.rpad \space 10)))
+(test text-lpad (= "   vaquero" (str.lpad " " 10)))
+(test text-rpad (= "vaquero   " (str.rpad " " 10)))
 (test text-chomp (= fb.chomp "  foonballardy!!!  "))
 (test text-index (= (fb.index "!") 14))
 
