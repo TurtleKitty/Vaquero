@@ -1,5 +1,6 @@
 
 (def empty "")
+(def mr-blank "     ")
 (def str "vaquero")
 (def yuck "YUCK")
 (def one "1")
@@ -17,6 +18,29 @@
 (test text-to-real (= pi.to-number 3.14))
 (test text-split (= '("foo" "bar" "baz") (fbb.split "[.]")))
 (test text-set! (= "2" (seq (one.set! 0 \2) one)))
+
+(test text-alphabetic?
+   (and str.alphabetic?
+        (not one.alphabetic?)))
+
+(test text-numeric?
+   (and one.numeric?
+        pi.numeric?
+        (not str.numeric?)))
+
+(test text-whitespace?
+   (and empty.whitespace?
+        mr-blank.whitespace?
+        (not str.whitespace?)))
+
+(test text-uc?
+   (and yuck.uc?
+        (not str.uc?)))
+
+(test text-lc?
+   (and str.lc?
+        (not yuck.lc?)))
+
 (test text-uc   (= "VAQUERO" str.uc))
 (test text-lc   (= "yuck" yuck.lc))
 (test text-take (= "va" (str.take 2)))

@@ -70,10 +70,9 @@
         ((to-text) (cont (number->string obj)))
         ((view to-number) (cont obj))
         (else
-            (cond
-                ((integer? obj) (vaquero-send-int obj msg cont err))
-                ((number? obj) (vaquero-send-real obj msg cont err))
-                (else (idk obj msg cont err))))))
+            (if (integer? obj)
+               (vaquero-send-int obj msg cont err)
+               (vaquero-send-real obj msg cont err)))))
 
 (define (vaquero-send-int obj msg cont err)
     (define msgs '(view to-text to-bool zero? pos? neg? abs floor ceil round truncate inc dec even? odd?))
@@ -139,7 +138,8 @@
     (define msgs
         '(view clone to-bool to-symbol to-keyword to-number
           to-list to-text to-stream size chomp index take drop
-          trim ltrim rtrim lpad rpad set! split match capture replace))
+          trim ltrim rtrim lpad rpad set! split match capture replace
+          alphabetic? numeric? whitespace? uc? lc? uc lc))
     (define (build-regex re flags)
         (define opts
             (append
@@ -150,12 +150,12 @@
         (apply irregex opts))
     (define me-answers? (vaquero-answerer msgs))
     (case msg
-        ((type view autos clone to-bool to-symbol to-keyword to-number to-list to-text to-stream size chomp index uc lc take drop trim ltrim rtrim lpad rpad)
+        ((type view autos clone to-bool to-symbol to-keyword to-number to-list to-text to-stream size chomp index alphabetic? numeric? whitespace? uc? lc? uc lc take drop trim ltrim rtrim lpad rpad)
             (cont
                 (case msg
                     ((type) 'text)
                     ((view) obj)
-                    ((autos) '(view to-bool to-symbol to-text to-keyword to-number to-list to-stream size chomp ltrim rtrim trim))
+                    ((autos) '(view to-bool to-symbol to-text to-keyword to-number to-list to-stream size chomp ltrim rtrim trim alphabetic? numeric? whitespace? uc? lc? uc lc))
                     ((clone) (string-copy obj))
                     ((to-bool) (not (eq? (string-length obj) 0)))
                     ((to-symbol) (string->symbol obj))
@@ -165,8 +165,13 @@
                     ((to-vector) (list->vector (string->list obj)))
                     ((to-text) obj)
                     ((to-stream) (open-input-string obj))
-                    ((uc) (string-upcase obj))
-                    ((lc) (string-downcase obj))
+                    ((alphabetic?) (cont (every char-alphabetic? (string->list obj))))
+                    ((numeric?)    (cont (if (string->number obj) #t #f)))
+                    ((whitespace?) (cont (every char-whitespace? (string->list obj))))
+                    ((uc?)  (cont (every char-upper-case? (string->list obj))))
+                    ((lc?)  (cont (every char-lower-case? (string->list obj))))
+                    ((uc)   (string-upcase obj))
+                    ((lc)   (string-downcase obj))
                     ((take) (lambda (n) (string-take obj n)))
                     ((drop) (lambda (n) (string-drop obj n)))
                     ((trim) (string-trim-both obj))
