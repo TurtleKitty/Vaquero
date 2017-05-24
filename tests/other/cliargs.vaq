@@ -1,5 +1,5 @@
 #!/usr/local/bin/vaquero run
 
-(sys.say sys.opt)
-(sys.say sys.rest)
+(say sys.opt)
+(say sys.rest)
 
