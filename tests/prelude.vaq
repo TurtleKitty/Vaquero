@@ -385,6 +385,13 @@
         (= '((a 1 x) (b 2 y) (c 3 z))
            (zip xs ys zs))))
 
+(test flatten
+   (let ()
+      (def xs '(1 2 3))
+      (def ys '(4 5))
+      (def zs (list xs (list (list ys))))
+      (= (flatten zs) '(1 2 3 4 5))))
+
 (test bind
    (let ()
       (bind (a b c) '(2 3 5))
