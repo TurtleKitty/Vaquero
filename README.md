@@ -51,7 +51,6 @@ vaquero>
 ```
 
 ## Data types
-# https://github.com/TurtleKitty/Vaquero/wiki/null
 
 [null](https://github.com/TurtleKitty/Vaquero/wiki/null) lacks value.  It's not equal to anything but itself.  It answers almost every message with **null**.
 
