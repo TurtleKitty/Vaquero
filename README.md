@@ -51,7 +51,6 @@ vaquero>
 ```
 
 ## Data types
-# https://github.com/TurtleKitty/Vaquero/wiki/null
 
 [null](https://github.com/TurtleKitty/Vaquero/wiki/null) lacks value.  It's not equal to anything but itself.  It answers almost every message with **null**.
 
@@ -152,13 +151,26 @@ Vaquero [procedures](https://github.com/TurtleKitty/Vaquero/wiki/procedure) have
 
 ```scheme
 
-(proc bar (x)
-   (def y (+ x 10))
-   (say y)
-   y)
+(proc foo (x)
+   (when (not x)
+      (return 'ZERO))
+   (say x)
+   (list x opt.y opt.z rest))
 
-(foo 5) ; prints 15
-   -> 15
+(foo 1) ; prints 1
+   -> (1 null null ())
+
+(foo 2 3 5) ; prints 2
+   -> (2 null null (3 5))
+
+(foo 7 y: 11 13 17) ; prints 7
+   -> (7 11 null (13 17))
+
+(foo 19 y: 23 z: 29 31 37) ; prints 19
+   -> (19 23 29 (31 37))
+
+(foo 0)
+   -> 'ZERO
 
 ```
 
@@ -183,8 +195,8 @@ Programmers can create their own data types with the [object](https://github.com
 There are no classes or prototypes - an object is just a box with slots.
 Any procedures it contains will close over the environment of their creation.
 The **auto:** option allows the creation of thunks that auto-execute on message reception.
-The **resend:** keyword allows an object to easily delegate messages to another object.
-The **default:** keyword allows an object to answer arbitrary messages it does not understand.
+The **resend:** option allows an object to easily delegate messages to another object.
+The **default:** option allows an object to answer arbitrary messages it does not understand.
 
 ```scheme
 
@@ -412,7 +424,7 @@ The Vaquero global environment is sacred.  Its names cannot be reassigned or sha
 
 ### Delimited lexical scope
 
-Like Scheme, Vaquero is lexically-scoped by default.  However, the [wall](https://github.com/TurtleKitty/Vaquero/wiki/wall) operator allows one to delimit the extent to which subforms can capture the enclosing environment.
+Vaquero is lexically-scoped by default.  However, the [wall](https://github.com/TurtleKitty/Vaquero/wiki/wall) operator allows one to delimit the extent to which subforms can capture the enclosing environment.
 
 ```scheme
 
@@ -522,6 +534,8 @@ The [import](https://github.com/TurtleKitty/Vaquero/wiki/import) operator allows
    %(list $x $x $x $x $x))
 ```
 
+The pentuple operator uses [quasiquotation](https://github.com/TurtleKitty/Vaquero/wiki/qq)
+
 ```scheme
 ; prog.vaq
 
@@ -573,3 +587,10 @@ They can be found in interpreter/prelude.vaq.
 ### Reader literals for text construction and variable interpolation
 
 Vaquero has a few convenient [reader literals](https://github.com/TurtleKitty/Vaquero/wiki/reader) inspired by Lisp and Perl.
+
+### Reference
+
+The [wiki](https://github.com/TurtleKitty/Vaquero/wiki) contains a more detailed reference of all core data types, operators, procedures, and objects.  
+
+
+
