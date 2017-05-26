@@ -60,7 +60,7 @@ Vaquero, like most programming languages, has [numbers](https://github.com/Turtl
 
 A [symbol](https://github.com/TurtleKitty/Vaquero/wiki/symbol) names a value.  They make the best table keys and object messages.
 
-A string of characters is called a [text](https://github.com/TurtleKitty/Vaquero/wiki/text).  They have built-in messages for dealing with regexen.  They are normally delimited by quotes ("Hi guys!\n"), but there are also reader literals for unescaped quoting (text: ...) and string interpolation (template: ...).
+A string of characters is called a [text](https://github.com/TurtleKitty/Vaquero/wiki/text).  They have built-in messages for dealing with regexen.  They are normally delimited by quotes ("Hi guys!\n"), but there are also reader literals for unescaped quoting #(text ...) and string interpolation #(template ...).
 
 ```scheme
 
@@ -398,7 +398,7 @@ Vaquero has a number of fun features.
 
 ### Lisp-1 syntax
 
-Vaquero code is composed of [S-expressions](https://en.wikipedia.org/wiki/S-expression)
+Vaquero code is composed of [S-expressions](https://en.wikipedia.org/wiki/S-expression).
 Structures in parentheses are assumed to be lists unless they contain a period, in which case they are a pair.
 Other structures begin with #(<name> ...).
 
@@ -534,7 +534,7 @@ The [import](https://github.com/TurtleKitty/Vaquero/wiki/import) operator allows
    %(list $x $x $x $x $x))
 ```
 
-The pentuple operator uses [quasiquotation](https://github.com/TurtleKitty/Vaquero/wiki/qq)
+The pentuple operator uses [quasiquotation](https://github.com/TurtleKitty/Vaquero/wiki/qq).
 
 ```scheme
 ; prog.vaq
@@ -570,8 +570,8 @@ Such leads to an infinite loop.
 
 The only global interfaces to the operating system are stdout, stdin, and stderr (and procedures which use them: read, write, print, say, and log).
 All parts of a program, including modules, have access to these.
-All other operating system services are contained in the [sys](https://github.com/TurtleKitty/Vaquero/wiki/sys) object, which is available only to the top level program.
-Libraries that wish to read command-line arguments, fork processes, or open files must be passed this capability from the top level.
+All other operating system services are contained in the [sys](https://github.com/TurtleKitty/Vaquero/wiki/sys) object, which is available only to the top-level program.
+Libraries that wish to read command-line arguments, fork processes, or open files must be passed this capability from the top-level.
 
 ### Generic procedures with predicate dispatch
 
