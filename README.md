@@ -3,7 +3,7 @@ Vaquero
 
 Vaquero is a scripting language for cowboy coders.
 
-It's an Lisp variant with an unusual object/message system, first-class environments, delimited continuations, and restartable exceptions.
+It's a Lisp variant with an unusual object/message system, first-class environments, delimited continuations, restartable exceptions, and syntactic abstraction.
 
 ## Basic usage
 
@@ -51,16 +51,17 @@ vaquero>
 ```
 
 ## Data types
+# https://github.com/TurtleKitty/Vaquero/wiki/null
 
-[[null|null]] lacks value.  It's not equal to anything but itself.  It answers almost every message with **null**.
+[null](https://github.com/TurtleKitty/Vaquero/wiki/null) lacks value.  It's not equal to anything but itself.  It answers almost every message with **null**.
 
-[[true|bool]] and [[false|bool]] are the boolean values.  null, 0, "", and empty lists, vectors, tables, and objects evaluate to false in a boolean context.  All other values evaluate to true.
+[true](https://github.com/TurtleKitty/Vaquero/wiki/bool) and [false](https://github.com/TurtleKitty/Vaquero/wiki/bool) are the boolean values.  null, 0, "", and empty lists, vectors, tables, and objects evaluate to false in a boolean context.  All other values evaluate to true.
 
-Vaquero, like most programming languages, has [[numbers|number]].
+Vaquero, like most programming languages, has [numbers](https://github.com/TurtleKitty/Vaquero/wiki/number).
 
-A [[symbol|symbol]] names a value.  They make the best table keys and object messages.
+A [symbol](https://github.com/TurtleKitty/Vaquero/wiki/symbol) names a value.  They make the best table keys and object messages.
 
-A string of characters is called a [[text|text]].  They have built-in messages for dealing with regexen.  They are normally delimited by quotes ("Hi guys!\n"), but there are also reader literals for unescaped quoting (text: ...) and string interpolation (template: ...).
+A string of characters is called a [text](https://github.com/TurtleKitty/Vaquero/wiki/text).  They have built-in messages for dealing with regexen.  They are normally delimited by quotes ("Hi guys!\n"), but there are also reader literals for unescaped quoting (text: ...) and string interpolation (template: ...).
 
 ```scheme
 
@@ -77,7 +78,7 @@ A string of characters is called a [[text|text]].  They have built-in messages f
 
 ```
 
-A [[box|box]] is the simplest container type.  It holds a single value and answers messages **val** and **set!**.
+A [box](https://github.com/TurtleKitty/Vaquero/wiki/box) is the simplest container type.  It holds a single value and answers messages **val** and **set!**.
 
 ```scheme
 
@@ -95,7 +96,7 @@ phantom.val
 
 ```
 
-The humble [[pair|pair]] is the simplest compound data structure.  Pairs form into lists and trees, and Vaquero code is made from these.
+The humble [pair](https://github.com/TurtleKitty/Vaquero/wiki/pair) is the simplest compound data structure.  Pairs form into lists and trees, and Vaquero code is made from these.
 
 ```scheme
 
@@ -110,7 +111,7 @@ The humble [[pair|pair]] is the simplest compound data structure.  Pairs form in
 
 ```
 
-A [[vector|vector]] is a heterogeneous array.
+A [vector](https://github.com/TurtleKitty/Vaquero/wiki/vector) is a heterogeneous array.
 
 ```scheme
 (def v (vector 2 3 5))
@@ -125,7 +126,7 @@ A [[vector|vector]] is a heterogeneous array.
 
 ```
 
-A [[table|table]] is an unordered set of pairs (hashtables, under the hood).
+A [table](https://github.com/TurtleKitty/Vaquero/wiki/table) is an unordered set of pairs (hashtables, under the hood).
 
 ```scheme
 
@@ -138,7 +139,7 @@ A [[table|table]] is an unordered set of pairs (hashtables, under the hood).
 
 ```
 
-Vaquero [[lambdas|lambda]] are simple functions with one expression.
+Vaquero [lambdas](https://github.com/TurtleKitty/Vaquero/wiki/lambda) are simple functions with one expression.
 
 ```scheme
 (def foo (lambda (x) (+ x 10))
@@ -147,7 +148,7 @@ Vaquero [[lambdas|lambda]] are simple functions with one expression.
    -> 13
 ```
 
-Vaquero [[procedures|procedure]] have a sequence of expressions, are variadic, can accept arbitrary optional arguments.
+Vaquero [procedures](https://github.com/TurtleKitty/Vaquero/wiki/procedure) have a sequence of expressions, are variadic, can accept arbitrary optional arguments.
 
 ```scheme
 
@@ -161,9 +162,9 @@ Vaquero [[procedures|procedure]] have a sequence of expressions, are variadic, c
 
 ```
 
-Vaquero [[operators|operator]] are procedures that run at compile time.  They alter source code to create new syntax.
+Vaquero [operators](https://github.com/TurtleKitty/Vaquero/wiki/operator) are procedures that run at compile time.  They alter source code to create new syntax.
 
-Vaquero [[environments|environment]] are first-class as well.  They can be accessed with the **env** operator.
+Vaquero [environments](https://github.com/TurtleKitty/Vaquero/wiki/environment) are first-class as well.  They can be accessed with the **env** operator.
 
 ```scheme
 
@@ -172,13 +173,13 @@ Vaquero [[environments|environment]] are first-class as well.  They can be acces
 
 ```
 
-A [[stream|stream]] is a sequence of characters, possibly from outside the program.
+A [stream](https://github.com/TurtleKitty/Vaquero/wiki/stream) is a sequence of characters, possibly from outside the program.
 Input streams have a number of useful parsing primitives.
 Output streams can write, print, or say things to the outside world.
 
-Vaquero supports both [[tcp|tcp-socket]] and [[unix|fs-socket]] sockets.
+Vaquero supports both [tcp](https://github.com/TurtleKitty/Vaquero/wiki/tcp-socket) and [unix](https://github.com/TurtleKitty/Vaquero/wiki/fs-socket) sockets.
 
-Programmers can create their own data types with the [[object|object]] procedure.
+Programmers can create their own data types with the [object](https://github.com/TurtleKitty/Vaquero/wiki/object) procedure.
 There are no classes or prototypes - an object is just a box with slots.
 Any procedures it contains will close over the environment of their creation.
 The **auto:** option allows the creation of thunks that auto-execute on message reception.
@@ -315,9 +316,9 @@ Execute the given expressions in sequence, returning the value of the last one. 
 ## Recursion and loops
 
 Vaquero has tail-call optimization, so a program written in tail-recursive form can recurse forever without blowing the stack.
-[[loop|loop]] is useful for anonymous recursion.
-The [[while|while]] form has **next** and **last** operators.
-[[for|for]] has **next**, **last**, and **redo**.
+[loop](https://github.com/TurtleKitty/Vaquero/wiki/loop) is useful for anonymous recursion.
+The [while](https://github.com/TurtleKitty/Vaquero/wiki/while) form has **next** and **last** operators.
+[for](https://github.com/TurtleKitty/Vaquero/wiki/for) has **next**, **last**, and **redo**.
 
 ```scheme
 (loop recur (x items.head xs items.tail acc ())
@@ -411,7 +412,7 @@ The Vaquero global environment is sacred.  Its names cannot be reassigned or sha
 
 ### Delimited lexical scope
 
-Like Scheme, Vaquero is lexically-scoped by default.  However, the [[wall|wall]] operator allows one to delimit the extent to which subforms can capture the enclosing environment.
+Like Scheme, Vaquero is lexically-scoped by default.  However, the [wall](https://github.com/TurtleKitty/Vaquero/wiki/wall) operator allows one to delimit the extent to which subforms can capture the enclosing environment.
 
 ```scheme
 
@@ -430,13 +431,13 @@ Like Scheme, Vaquero is lexically-scoped by default.  However, the [[wall|wall]]
 
 ### First-class environments
 
-The [[env|environment]] operator grants access to the local environment object.
+The [env](https://github.com/TurtleKitty/Vaquero/wiki/environment) operator grants access to the local environment object.
 
 ### First-class delimited continuations
 
 First class sub-continuation capture gives the programmer the ability to build coroutines, generators, backtracking, or any other fancy control structure without some of the [sorrows](http://okmij.org/ftp/continuations/against-callcc.html) of full continuation capture.
 
-[[gate|gate]] and [[capture|capture]] correspond to **reset** and **shift** in the academic literature on delimited continuations.
+[gate](https://github.com/TurtleKitty/Vaquero/wiki/gate) and [capture](https://github.com/TurtleKitty/Vaquero/wiki/capture) correspond to **reset** and **shift** in the academic literature on delimited continuations.
 
 ```scheme
 
@@ -452,8 +453,8 @@ First class sub-continuation capture gives the programmer the ability to build c
 
 ### Restartable exceptions
 
-The [[guard|guard]] operator adds a handler to the error continuation, which is separate from the user continuations.
-When an error is signaled (via [[fail|fail]] or [[error|error]]), a handler can do one of three things: return a default value to the enclosing scope,
+The [guard](https://github.com/TurtleKitty/Vaquero/wiki/guard) operator adds a handler to the error continuation, which is separate from the user continuations.
+When an error is signaled (via [fail](https://github.com/TurtleKitty/Vaquero/wiki/fail) or [error](https://github.com/TurtleKitty/Vaquero/wiki/error)), a handler can do one of three things: return a default value to the enclosing scope,
 retry the computation from the sub-form where it errored by providing another value,
 or throw an error itself, at which point the next handler in the error continuation is called.
 
@@ -501,11 +502,11 @@ or throw an error itself, at which point the next handler in the error continuat
 
 ### Lexically scoped module import via HTTP
 
-Modules are imported via [[use|use]].  The pathname can be a local filesystem path or an HTTP[S] uri.
+Modules are imported via [use](https://github.com/TurtleKitty/Vaquero/wiki/use).  The pathname can be a local filesystem path or an HTTP[S] uri.
 
-Modules [[export|export]] a set of names. These names are packaged into a module object in the environment of the use statement.
+Modules [export](https://github.com/TurtleKitty/Vaquero/wiki/export) a set of names. These names are packaged into a module object in the environment of the use statement.
 
-The [[import|import]] operator allows the programmer to import names into the current environment from a module previously defined by a use statement.
+The [import](https://github.com/TurtleKitty/Vaquero/wiki/import) operator allows the programmer to import names into the current environment from a module previously defined by a use statement.
 
 ```scheme
 ; dk.vaq
@@ -555,20 +556,20 @@ Such leads to an infinite loop.
 
 The only global interfaces to the operating system are stdout, stdin, and stderr (and procedures which use them: read, write, print, say, and log).
 All parts of a program, including modules, have access to these.
-All other operating system services are contained in the [[sys|sys]] object, which is available only to the top level program.
+All other operating system services are contained in the [sys](https://github.com/TurtleKitty/Vaquero/wiki/sys) object, which is available only to the top level program.
 Libraries that wish to read command-line arguments, fork processes, or open files must be passed this capability from the top level.
 
 ### Generic procedures with predicate dispatch
 
-[[gen|generic]] and [[spec|generic]] allow the programmer to create generic procedures that dispatch based on arbitrary predicate expressions.  It's one crazy answer to the [expression problem](https://en.wikipedia.org/wiki/Expression_problem).
+[gen](https://github.com/TurtleKitty/Vaquero/wiki/generic) and [spec](https://github.com/TurtleKitty/Vaquero/wiki/generic) allow the programmer to create generic procedures that dispatch based on arbitrary predicate expressions.  It's one crazy answer to the [expression problem](https://en.wikipedia.org/wiki/Expression_problem).
 
 ### Operators: compile-time procedures
 
-Vaquero [[operators|operator]] use ordinary Vaquero code to transform source code at compile time.
+Vaquero [operators](https://github.com/TurtleKitty/Vaquero/wiki/operator) use ordinary Vaquero code to transform source code at compile time.
 This allows user-level creation of custom syntax.
 An example of this power: the only primitive form of looping is tail recursion; all others (loop, for, while) are defined in terms of recursion via operators.
 They can be found in interpreter/prelude.vaq.
 
 ### Reader literals for text construction and variable interpolation
 
-Vaquero has a few convenient [[reader literals|reader]] inspired by Lisp and Perl.
+Vaquero has a few convenient [reader literals](https://github.com/TurtleKitty/Vaquero/wiki/reader) inspired by Lisp and Perl.
