@@ -522,7 +522,6 @@
                (num? thing)    thing.to-text
                (symbol? thing) (json-out thing.to-text)
                (text? thing)   (cat "\"" (thing.replace "\"" "\\\"" flags: "g") "\"")
-               (rune? thing)   (json-out (text thing))
                (vector? thing) (json-out thing.to-list)
                (table? thing) (cat "{" (comma-fy (thing.to-list.map (lambda (kv) (cat (json-out kv.key.to-text) ":" (json-out kv.val))))) "}")
                (list? thing)   (cat "[" (comma-fy (thing.map json-out)) "]")
