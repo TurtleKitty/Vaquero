@@ -11,7 +11,7 @@ The Vaquero bootstrap interpreter is written in [Chicken Scheme](http://www.call
 You'll need this to compile and run it.
 
 ```bash
-cd Vaquero_github_repo_directory
+cd Vaquero
 sh ./bin/get_eggs.sh   # may need to run this part as root
 sh ./bin/compile.sh
 sh ./bin/run_tests.sh
