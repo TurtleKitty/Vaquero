@@ -139,28 +139,28 @@
       (vaquero-error 'bare-seq code "Empty sequences are forbidden!")))
 
 (define (vaquero-seq-subcontractor xs prep?)
-    (define head (car xs))
-    (define tail (cdr xs))
-    (let ((head-c (vaquero-compile head)))
-        (if (pair? tail)
-            (let ((tail-c (vaquero-seq-subcontractor tail #f)))
-                (if prep?
-                    (frag
-                        (prep-defs
-                            xs
-                            env
-                            (lambda (null)
-                                (head-c
-                                    env
-                                    (lambda (h) (tail-c env cont err))
-                                    err))
-                            err))
-                    (frag
+   (define head (car xs))
+   (define tail (cdr xs))
+   (let ((head-c (vaquero-compile head)))
+      (if (pair? tail)
+         (let ((tail-c (vaquero-seq-subcontractor tail #f)))
+            (if prep?
+               (frag
+                  (prep-defs
+                     xs
+                     env
+                     (lambda (null)
                         (head-c
-                            env
-                            (lambda (h) (tail-c env cont err))
-                            err))))
-            head-c)))
+                           env
+                           (lambda (h) (tail-c env cont err))
+                           err))
+                    err))
+               (frag
+                  (head-c
+                     env
+                     (lambda (h) (tail-c env cont err))
+                     err))))
+         head-c)))
 
 (define (check-formals formals)
    (if (pair? formals)
