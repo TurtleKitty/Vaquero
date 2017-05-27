@@ -38,7 +38,7 @@ The Vaquero executable responds to the seven messages above.
 * **repl** starts a Read-Eval-Print Loop.
 * **eval** parses a string into code and evaluates it.
 * **run** takes a filename and expands, links, compiles, caches, and executes it.
-* **check** tests tests the syntax of a file.
+* **check** tests the syntax of a file.
 * **expand** pretty-prints the named file with all operators expanded
 * **compile** expands, links, compiles, and caches a file without executing it.
 * **clean** clears the Vaquero cache in ~/.vaquero.
