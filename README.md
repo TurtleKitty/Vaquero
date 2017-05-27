@@ -3,7 +3,7 @@ Vaquero
 
 Vaquero is a scripting language for cowboy coders.
 
-It's a Lisp variant with an unusual object/message system, first-class environments, delimited continuations, restartable exceptions, and syntactic abstraction.
+It's a Lisp variant with an unusual object/message system, delimited lexical environments, delimited continuations, restartable exceptions, and syntactic abstraction.
 
 ## Basic usage
 
@@ -25,14 +25,24 @@ Compilation should take a minute or two.  run_tests.sh will execute a few hundre
 Usage:
 
 vaquero repl
-vaquero exec "<code string>"
+vaquero eval "<code string>"
 vaquero run <filename>
 vaquero check <filename>
 vaquero expand <filename>
 vaquero compile <filename>
 vaquero clean
 ```
+
 The Vaquero executable responds to the seven messages above.
+
+* **repl** starts a Read-Eval-Print Loop.
+* **eval** parses a string into code and evaluates it.
+* **run** takes a filename and expands, links, compiles, caches, and executes it.
+* **check** tests tests the syntax of a file.
+* **expand** pretty-prints the named file with all operators expanded
+* **compile** expands, links, compiles, and caches a file without executing it.
+* **clean** clears the Vaquero cache in ~/.vaquero.
+
 
 ## Hello, world!
 
@@ -176,7 +186,7 @@ Vaquero [procedures](https://github.com/TurtleKitty/Vaquero/wiki/procedure) have
 
 Vaquero [operators](https://github.com/TurtleKitty/Vaquero/wiki/operator) are procedures that run at compile time.  They alter source code to create new syntax.
 
-Vaquero [environments](https://github.com/TurtleKitty/Vaquero/wiki/environment) are first-class as well.  They can be accessed with the **env** operator.
+Vaquero [environments](https://github.com/TurtleKitty/Vaquero/wiki/environment) are first-class.  They can be accessed with the **env** operator.
 
 ```scheme
 
@@ -195,7 +205,7 @@ Programmers can create their own data types with the [object](https://github.com
 There are no classes or prototypes - an object is just a box with slots.
 Any procedures it contains will close over the environment of their creation.
 The **auto:** option allows the creation of thunks that auto-execute on message reception.
-The **resend:** option allows an object to easily delegate messages to another object.
+The **resend:** option allows an object to easily delegate messages to other objects.
 The **default:** option allows an object to answer arbitrary messages it does not understand.
 
 ```scheme
@@ -232,6 +242,9 @@ simple.foo
 
 simple.bar
    -> 3
+
+simple.baz
+   -> ERROR 'message-not-understood  ; the default default: is to toss an error on unknown messages
 
 complex.foo
    -> 2
@@ -273,7 +286,8 @@ Those who want mutable state will have to use mutable structures such as boxes, 
 
 ## Sequencing
 
-Execute the given expressions in sequence, returning the value of the last one.  Procs and **let**s have an implied seq, so this form is mostly useful in conditionals.
+Execute the given expressions in sequence, returning the value of the last one.
+Procs and lets have an implied seq, so this form is mostly useful in conditionals.
 
 ```scheme
 (seq
@@ -318,16 +332,16 @@ Execute the given expressions in sequence, returning the value of the last one. 
    (proc (x)
        (* x x)))
 
-(proc square-2 (x)
+(proc square-2 (x)  ; syntactic sugar for (def square-2 (proc (x) ...))
    (* x x))
 
-(def square-3
+(def square-3    ; the _ operator is useful to create quick procedures of one argument
    (_ (* _ _)))
 ```
 
 ## Recursion and loops
 
-Vaquero has tail-call optimization, so a program written in tail-recursive form can recurse forever without blowing the stack.
+Vaquero has tail-call optimization, so a program written in tail-recursive form can recurse forever without blowing the stack or devouring all the RAM.
 [loop](https://github.com/TurtleKitty/Vaquero/wiki/loop) is useful for anonymous recursion.
 The [while](https://github.com/TurtleKitty/Vaquero/wiki/while) form has **next** and **last** operators.
 [for](https://github.com/TurtleKitty/Vaquero/wiki/for) has **next**, **last**, and **redo**.
@@ -351,6 +365,13 @@ The [while](https://github.com/TurtleKitty/Vaquero/wiki/while) form has **next**
    total)
 
    -> 210
+
+(loop go (counter 1000000) (if (= counter 0) 'done (go counter.dec)))
+
+   ; time passes...
+
+   -> done
+
 ```
 
 ## Quoting
@@ -414,10 +435,6 @@ Other structures begin with #(<name> ...).
 Unquoted lists are evaluated as code.
 The head of the list (the first item) should be either an operator, a procedure, or another object that responds to the **apply** message.
 
-### Tail-call optimization
-
-As mentioned, a tail-recursive Vaquero program can loop forever without devouring all the RAM.
-
 ### Immutable global environment
 
 The Vaquero global environment is sacred.  Its names cannot be reassigned or shadowed.  This helps eliminate a certain class of symbol capture problems with macros.  So long as your operators are pure - that is, relying only on global operators and procedures or other pure operators - you should have little to fear.  **proc** will always mean **proc**.
@@ -465,7 +482,7 @@ First class sub-continuation capture gives the programmer the ability to build c
 
 ### Restartable exceptions
 
-The [guard](https://github.com/TurtleKitty/Vaquero/wiki/guard) operator adds a handler to the error continuation, which is separate from the user continuations.
+The [guard](https://github.com/TurtleKitty/Vaquero/wiki/guard) operator adds a handler to the error continuation, which is separate from the user continuation.
 When an error is signaled (via [fail](https://github.com/TurtleKitty/Vaquero/wiki/fail) or [error](https://github.com/TurtleKitty/Vaquero/wiki/error)), a handler can do one of three things: return a default value to the enclosing scope,
 retry the computation from the sub-form where it errored by providing another value,
 or throw an error itself, at which point the next handler in the error continuation is called.
