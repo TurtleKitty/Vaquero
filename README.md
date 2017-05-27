@@ -366,7 +366,10 @@ The [while](https://github.com/TurtleKitty/Vaquero/wiki/while) form has **next**
 
    -> 210
 
-(loop go (counter 1000000) (if (= counter 0) 'done (go counter.dec)))
+(loop go (counter 1000000)
+   (if (= counter 0)
+      'done
+      (go counter.dec)))
 
    ; time passes...
 
