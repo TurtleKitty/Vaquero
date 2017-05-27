@@ -33,7 +33,7 @@
             ((#\@) (vaquero-read-unquote-splicing port))
             ((#\#) (vaquero-read-structure port))
             ((#\;) (vaquero-read-comment port) (vaquero-read port))
-            ((#\|) (vaquero-read-funky port))
+            ((#\| #\\) (vaquero-read-funky port))
             (else (read port)))))
 
 (define (vaquero-read-error-handler e kont)
@@ -82,6 +82,9 @@
          ((eq? token #\;)
             (vaquero-read-comment port)
             (loop (peek-char port) acc))
+         ((or (eq? token #\\) (eq? token #\|))
+            (let ((new-acc (cons (vaquero-read-funky port) acc)))
+               (loop (peek-char port) new-acc)))
          (else
             (let ((new-acc (cons (vaquero-reader port) acc)))
                (loop (peek-char port) new-acc))))))
@@ -199,15 +202,7 @@
     'null)
 
 (define (vaquero-read-funky port) ; hackity-hack
-    (read-char port)
-    (let ((next (peek-char port)))
-        (if (eq? next #\\)
-            (begin
-                (read-char port)
-                (let ((rune (read-char port)))
-                    (read-char port)
-                    rune))
-            (vaquero-reader port))))
+   (string (read-char port)))
 
 (define (vaquero-parse form)
 	(define (desc form mt)

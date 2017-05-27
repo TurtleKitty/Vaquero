@@ -258,3 +258,7 @@
             (proc () "λא象"))
         (= (λא象) "λא象")))
 
+(test funky  ; limitations of the implementation
+   (= '("\\" "|" "\\")
+      (list \ | \)))
+
