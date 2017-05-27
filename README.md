@@ -592,5 +592,10 @@ Vaquero has a few convenient [reader literals](https://github.com/TurtleKitty/Va
 
 The [wiki](https://github.com/TurtleKitty/Vaquero/wiki) contains a more detailed reference of all core data types, operators, procedures, and objects.  
 
+### Bugs
+
+**use** and **import** don't work in the REPL.  As a work around, you can pass a stream to env.load.  
+
+Syntax checking sometimes fails in the REPL.  I don't know why.  
 
 
