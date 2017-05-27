@@ -616,6 +616,5 @@ The [wiki](https://github.com/TurtleKitty/Vaquero/wiki) contains a more detailed
 
 **use** and **import** don't work in the REPL.  As a work around, you can pass a stream to env.load.  
 
-Syntax checking sometimes fails in the REPL.  I don't know why.  
-
+Syntax checking sometimes fails in the REPL.  I don't know why.  It can be a bit fragile, crashing on some syntax errors.  
 
