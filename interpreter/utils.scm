@@ -37,13 +37,9 @@
                 (let ((key (first pairs)) (val (second pairs)))
                     (loop (fn key val) (cddr pairs)))))))
 
-(define (vaquero-error form . args)
-    (newline)
-    (display "ERRORED!!") (newline)
-    (display (vaquero-view form)) (newline)
-    (display (vaquero-view args)) (newline)
-    (newline)
-    (exit))
+(define (vaquero-error name form message)
+   (display "ERROR: ") (display message) (newline)
+   (abort (list name form message)))
 
 (define (vaquero-error-object name form to-text)
     (vaquero-object `(type error name ,name form ,form to-text ,to-text message ,to-text view (error ,name ,form ,to-text)) #f #f #f))
@@ -105,7 +101,7 @@
 
 (define (vaquero-equal? x y)
     (define (no-way)
-        (vaquero-error "= cannot compare objects " x " and " y "!")
+        (vaquero-error 'bad-= (list '= x y) (list "= cannot compare objects " x " and " y "!"))
         #f)
     (cond
         ((and (number? x) (number? y))
@@ -158,7 +154,7 @@
 
 (define (vaquero-< x y)
     (define (no-way)
-        (vaquero-error "< cannot compare objects " x " and " y "!")
+        (vaquero-error 'bad-< (list '< x y) (list "< cannot compare objects " x " and " y "!"))
         #f)
     (cond
         ((and (number? x) (number? y)) (< x y))
@@ -179,7 +175,7 @@
 
 (define (vaquero-> x y)
     (define (no-way)
-        (vaquero-error "> cannot compare objects " x " and " y "!")
+        (vaquero-error 'bad-> (list '> x y) (list "> cannot compare objects " x " and " y "!"))
         #f)
     (cond
         ((and (number? x) (number? y)) (> x y))
@@ -199,7 +195,7 @@
                     (> x-ord y-ord))))))
 
 (define (nodef x)
-    (vaquero-error x "Symbol " x " is not defined"))
+    (vaquero-error 'undefined-symbol x "Symbol not defined"))
 
 (define (keyword->symbol k)
     (string->symbol (keyword->string k)))

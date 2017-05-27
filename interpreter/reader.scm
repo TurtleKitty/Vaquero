@@ -26,7 +26,7 @@
                            (read-char port)
                            '())
                         (vaquero-read-list port))))
-            ((#\)) (vaquero-error "read error: unexpected \")\"!\n"))
+            ((#\)) (vaquero-error 'read-error 'read "read error: unexpected ')'"))
             ((#\') (vaquero-read-quote port))
             ((#\%) (vaquero-read-quasiquote port))
             ((#\$) (vaquero-read-unquote port))
@@ -48,7 +48,7 @@
    (read-char port) ; ditch the (
    (let ((type (read port))) ; read the symbol in head
       (if (not (symbol? type))
-         (vaquero-error "read error: structures must begin with a type symbol!")
+         (vaquero-error 'read-error type "read error: structures must begin with a type symbol!")
          (if (holy? type)
             (let ((funk (glookup type)) (args (vaquero-read-list port)))
                (vaquero-apply funk args my-empty-table identity vaquero-read-error-handler))
@@ -56,14 +56,14 @@
                ((text)     (vaquero-read-text port))
                ((template) (vaquero-read-template port))
                ((doc)      (vaquero-read-doc port) (vaquero-reader port))
-               (else       (vaquero-error (string-join (list "read error: unknown structure type:" (symbol->string type) "is not defined in the global environment.\n") " "))))))))
+               (else       (vaquero-error 'unknown-structure type (string-join (list "read error: unknown structure type:" (symbol->string type) "is not defined in the global environment.") " "))))))))
 
 (define (vaquero-read-list port)
    ; lparen already swallowed
    (let loop ((token (peek-char port)) (acc '()))
       (cond
          ((eof-object? token)
-            (vaquero-error "read error: unexpected EOF in unterminated list!\n"))
+            (vaquero-error 'read-error 'EOF "read error: unexpected EOF in unterminated list!"))
          ((char-whitespace? token)
             (read-char port)
             (loop (peek-char port) acc))
@@ -103,7 +103,7 @@
     (let loop ((token (peek-char port)) (depth 0) (acc '()))
         (cond
             ((eof-object? token)
-                (vaquero-error "read error: unexpected EOF in text literal!\n"))
+                (vaquero-error 'read-error 'EOF "read error: unexpected EOF in text literal!"))
             ((eq? token #\()
                 (let ((new-acc (cons (read-char port) acc)))
                     (loop (peek-char port) (+ depth 1) new-acc)))
@@ -126,7 +126,7 @@
         (let loop ((token (peek-char port)) (acc '()))
             (cond
                 ((eof-object? token)
-                    (vaquero-error "read error: unexpected EOF in template literal!\n"))
+                    (vaquero-error 'read-error EOF "read error: unexpected EOF in template literal!"))
                 ((eq? token #\})
                     (read-char port)
                     (if (eq? #\} (peek-char port))
@@ -148,7 +148,7 @@
     (let loop ((token (peek-char port)) (acc '()) (texts '()))
         (cond
             ((eof-object? token)
-                (vaquero-error "read error: unexpected EOF in template literal!\n"))
+                (vaquero-error 'read-error 'EOF "read error: unexpected EOF in template literal!"))
             ((eq? token #\{)
                 (read-char port)
                 (if (eq? #\{ (peek-char port))

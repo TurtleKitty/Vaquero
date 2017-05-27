@@ -133,10 +133,10 @@
             err)))
 
 (define (vaquero-compile-seq code)
-    (define seq (cdr code))
-    (if (pair? seq)
-        (vaquero-seq-subcontractor seq #t)
-        (vaquero-error code "Empty sequences are forbidden!")))
+   (define seq (cdr code))
+   (if (pair? seq)
+      (vaquero-seq-subcontractor seq #t)
+      (vaquero-error 'bare-seq code "Empty sequences are forbidden!")))
 
 (define (vaquero-seq-subcontractor xs prep?)
     (define head (car xs))
@@ -163,14 +163,16 @@
             head-c)))
 
 (define (check-formals formals)
-    (if (pair? formals)
-        (let loop ((f (car formals)) (fs (cdr formals)))
-            (if (holy? f)
-                (begin (vaquero-error (blasphemy f)) #f)
-                (if (pair? fs)
-                    (loop (car fs) (cdr fs))
-                    #t)))
-        #t))
+   (if (pair? formals)
+      (let loop ((f (car formals)) (fs (cdr formals)))
+         (if (holy? f)
+            (begin
+               (vaquero-error 'blasphemy formals (blasphemy f))
+               #f)
+            (if (pair? fs)
+               (loop (car fs) (cdr fs))
+               #t)))
+      #t))
 
 (define (make-vaquero-lambda code env formals body)
     (define arity (length formals))
@@ -193,7 +195,7 @@
                                     err)))))))
             (hts! p 'type 'lambda)
             p)
-        (vaquero-error 'bad-formals-in-lambda code)))
+        (vaquero-error 'bad-formals-in-lambda code "Bad formals!")))
 
 (define (vaquero-compile-lambda code)
     (let ((formals (cadr code)) (bodies (cddr code)))
@@ -220,7 +222,7 @@
                                 (lambda (noob)
                                     (bodies-c noob cont err))
                                 err)))))
-        (vaquero-error 'bad-formals-in-proc code)))
+        (vaquero-error 'bad-formals-in-proc code "Bad formals!")))
 
 (define (vaquero-compile-proc code)
     (define is-named (symbol? (cadr code)))
