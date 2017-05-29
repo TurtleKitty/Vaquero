@@ -12,7 +12,7 @@
 (define will-exist 'vaquero-internal-this-name-is-about-to-be-defined)
 
 (define (idk obj msg cont err)
-   (err (vaquero-error-object 'message-not-understood `(send ,obj ,msg) "This object does not understand how to answer that message.") cont))
+   (err (vaquero-error-object 'message-not-understood `(send ,obj ,msg) "Message not understood.") cont))
 
 (define (p x . xs)
    (write (cons x xs))
