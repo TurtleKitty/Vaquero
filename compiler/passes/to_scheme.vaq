@@ -1,0 +1,15 @@
+
+(export transform)
+
+; vaquero -> scheme
+
+(proc transform (form)
+   (if (pair? form)
+      (case form.head
+         (quote) form
+         (lambda)
+            %(lambda $form.1 @(transform form.tail.tail))
+         default:
+            (map transform form))
+      form))
+

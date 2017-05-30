@@ -1,0 +1,344 @@
+
+(use gen "generic.vaq")
+
+(export transform)
+
+(def procs null)
+
+(proc transform (form proc-db)
+   (set! procs proc-db)
+   (cps form))
+
+(proc gencont ()
+   (gensym "continuation"))
+
+(proc genhand ()
+   (gensym "handler"))
+
+(proc genval ()
+   (gensym "value"))
+
+(proc cps-frag (cont hand body)
+   %(lambda (env $cont $hand) $body))
+
+; FIXME don't CPS globals?
+
+(proc cps (form)
+   (if (and (pair? form) (list? form))
+      (case form.head
+         (quote)    (cps-quote form)
+         (if)       (cps-if form)
+         (seq)      (cps-seq form)
+         (lambda)   (cps-lambda form)
+         (proc)     (cps-proc form)
+         (let)      (cps-let form)
+         (wall)     (cps-wall form)
+         (gate)     (cps-gate form)
+         (capture)  (cps-capture form)
+         (guard)    (cps-guard form)
+         (fail)     (cps-fail form)
+         default:   (cps-application form))
+      (cps-atom form)))
+
+(proc cps-quote (form)
+   (def cont (gencont))
+   (def hand (genhand))
+   (cps-frag
+      cont
+      hand
+      %($cont (quote $form.1))))
+
+(proc cps-if (form)
+   (def pred (cps form.1))
+   (def if-true (cps form.2))
+   (def if-false (cps form.3))
+   (def cont (gencont))
+   (def hand (genhand))
+   (def pred-val (genval))
+   (def bool (genval))
+   (cps-frag
+      cont
+      hand
+      %($pred
+         env
+         (lambda ($pred-val)
+            (send
+               (lambda ($bool)
+                  (if $bool
+                     ($if-true  env $cont $hand)
+                     ($if-false env $cont $hand)))
+               $hand
+               null
+               $pred-val
+               'to-bool))
+         $hand)))
+
+(proc cps-seq (form)
+   ; all seqs should be binary by now
+   (def cps-head (cps form.1))
+   (def cps-tail (cps form.2))
+   (def cont (gencont))
+   (def hand (genhand))
+   (def whatever (genval))
+   (cps-frag
+      cont
+      hand
+      %($cps-head
+         env
+         (lambda ($whatever) ($cps-tail env $cont $hand))
+         $hand)))
+
+(proc cps-lambda (form)
+   (def cont (gencont))
+   (def hand (genhand))
+   (def lambda-cont (gencont))
+   (def lambda-hand (genhand))
+   (def new-args (pair lambda-cont (pair lambda-hand form.2)))
+   (cps-frag
+      cont
+      hand
+      %($cont (vaquero-internal-primitive-proc $cont $hand null (quote $(procs form.1)) env (lambda $new-args $(cps form.tail.tail.tail))))))
+
+(proc cps-proc (form)
+   (def cont (gencont))
+   (def hand (genhand))
+   (def lambda-hand (genhand))
+   (def new-args (pair 'return (pair lambda-hand form.2)))
+   (cps-frag
+      cont
+      hand
+      %(vaquero-internal-primitive-proc $cont $hand null (quote $(procs form.1)) env (lambda $new-args $(cps form.tail.tail.tail)))))
+
+(proc cps-let (form) ; FIXME
+   null) 
+
+(proc cps-wall (form)
+   (def cont (gencont))
+   (def hand (genhand))
+   (def partitioner (genval))
+   (def noob (genval))
+   (def args form.1)
+   (def cps-body (cps form.tail.tail))
+   (cps-frag
+      cont
+      hand
+      %(send
+         (lambda ($partitioner)
+            ($partitioner
+               (lambda ($noob)
+                  ($cps-body $noob $cont $hand))
+               $hand
+               null
+               @args))
+         $hand
+         null
+         env
+         'partition)))
+
+(proc cps-gate (form)
+   (def cps-body (cps form.1))
+   (def cont (gencont))
+   (def hand (genhand))
+   (cps-frag
+      cont
+      hand
+      %($cont
+         ($cps-body env identity $hand))))
+
+(proc cps-capture (form)
+   (def k-arg form.1)
+   (def cps-lamb (cps %(lambda ($k-arg) @form.tail.tail)))
+   (def cont (gencont))
+   (def hand (genhand))
+   (def funk (genval))
+   (def k-val (genval))
+   (cps-frag
+      cont
+      hand
+      %($cps-lamb
+         env
+         (lambda ($funk)
+            ($funk
+               identity
+               $hand
+               null
+               $cont))
+         $hand)))
+
+(proc cps-guard (form)
+   (def handler (cps form.1))
+   (def cps-body (cps form.tail.tail))
+   (def cont (gencont))
+   (def hand (genhand))
+   (def funk (genval))
+   (def e (genval))
+   (def k (genval))
+   (cps-frag
+      cont
+      hand
+      %($handler
+         env
+         (lambda ($funk)
+            (cps-body
+               env
+               $cont
+               (lambda ($e $k) ($funk $cont $hand null $e $k))))
+         $hand)))
+
+(proc cps-fail (form)
+   (def fail-obj (cps form.1))
+   (def cont (gencont))
+   (def hand (genhand))
+   (def e (genval))
+   (cps-frag
+      cont
+      hand
+      %($fail-obj
+         env
+         (lambda ($e)
+            ($hand $e $cont))
+         $hand)))
+
+(proc cps-list (xs)
+   (def cont (gencont))
+   (def hand (genhand))
+   (def h (genval))
+   (def t (genval))
+   (if (pair? xs)
+      (let (head (cps xs.head) tail (cps-list xs.tail))
+         (cps-frag
+            cont
+            hand
+            %($head
+               env
+               (lambda ($h)
+                  ($tail
+                     env
+                     (lambda ($t) ($cont (pair $h $t)))
+                     $hand))
+               $hand)))
+      (cps-frag cont hand %($cont ()))))
+
+(proc cps-application (form)
+   (def cps-proc (cps form.head))
+   (def cps-args (cps-list form.tail))
+   (def cont (gencont))
+   (def hand (genhand))
+   (def f (genval))
+   (def yargs (genval))
+   (cps-frag
+      cont
+      hand
+      %($cps-proc
+         env
+         (lambda ($f) 
+            ($cps-args
+               env
+               (lambda ($yargs)
+                  (vaquero-internal-primitive-apply $cont $hand null $f $yargs))
+               $hand))
+         $hand)))
+
+(proc cps-atom (form)
+   (def cont (gencont))
+   (def hand (genhand))
+   (cps-frag cont hand %($cont $form)))
+
+
+#(doc
+
+; http://matt.might.net/articles/cps-conversion/
+; someday I'll grok this enough to implement it correctly
+
+(proc atomic? (form)
+    (if (pair? form)
+        ((send '(quote proc lambda) 'has?) form.head)
+        true))
+
+(proc M (form)
+    (when (not (atomic? form))
+        (error 'not-an-atom! form "WRONG!"))
+    (if (not (pair? form))
+        form
+        (case form.head
+            (quote) form
+            (lambda) (seq
+                (def k (gencont)) ; user continuation
+                (def e (genhand)) ; error continuation
+                %($form.head $form.2 $(append form.3 (list k e)) @form.tail.tail.tail.tail)) ; remember the added IDs from transform 2
+            (proc) (seq
+                (def k 'return)    ; user continuation
+                (def e (genhand))  ; error continuation
+                %($form.head $form.2 $(append form.3 (list k e)) @form.tail.tail.tail.tail)) ; remember the added IDs from transform 2
+            default: (fail 'wtf))))
+
+(proc T-c (form c)
+    (debug (list 'T-c form c))
+    (if (atomic? form)
+        %($c $(M form))
+        (case form.head
+            (def) form
+            (if) (seq
+                (def k (gencont))
+                %((lambda ($k)
+                    $(T-k form.1
+                        (proc (p)
+                            %(if $p
+                                 $(T-c form.2 k)
+                                 $(T-c form.3 k))))) $c))
+            (seq) (T-k form.1
+                    (proc (x)
+                        (T-c form.2 c)))
+            (wall) form
+            (gate) form
+            (capture) form
+            (guard) form
+            (fail) form
+            default: ; procedure application
+                (T-k form.head
+                    (proc (f)
+                        (T*-k form.tail
+                            (proc (args)
+                                %($f @args $c))))))))
+
+(proc T-k (form k)
+    (debug (list 'T-k form k))
+    (if (atomic? form)
+        (k (M form))
+        (case form.head
+            (def) (seq
+                (def rv (gensym "value"))
+                %((lambda ($rv)
+                    (def form.1 $rv))))
+            (if) (seq
+                (def rv (gensym "value"))
+                (def cont %(lambda ($rv) $(k rv)))
+                (T-k form.1
+                    (proc (aexp)
+                        %(if $aexp 
+                            $(T-c form.2 cont)
+                            $(T-c form.3 cont)))))
+            (seq) (T-k form.1
+                    (proc (x)
+                        (T-k form.2 k)))
+            (wall) form
+            (gate) form
+            (capture) form
+            (guard) form
+            (fail) form
+            default: ; procedure application
+                (def rv (gensym "value"))
+                (def cont %(lambda ($rv) $(k rv)))
+                (T-c form cont))))
+
+(proc T*-k (exprs k)
+    (if exprs.empty?
+        (k ())
+        (T-k exprs.head
+            (proc (hd)
+                (T*-k exprs.tail
+                    (proc (tl)
+                        (k (pair hd tl))))))))
+)
+
+

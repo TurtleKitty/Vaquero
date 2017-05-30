@@ -1,0 +1,57 @@
+
+(use gen "passes/generic.vaq")
+
+(export loader)
+
+(def module-fns (:))
+(def module-code (:))
+
+(def vaquero-expanded-dir "~/.vaquero/expanded")
+
+(proc get-vaquero-path (f)
+    (f.replace flags: "g" "[^a-zA-Z0-9_.]" "_"))
+
+(proc get-vaquero-expanded-path (f)
+    (cat with: "/" vaquero-expanded-dir (get-vaquero-path f)))
+
+
+; (use <name> "path") -> (vaquero-module-UUID x y z)
+; assume the macro expander fetched, cached, and expanded the modules
+
+(proc loader (form fs)
+   (debug %(linker $form))
+   (proc slurp-file (f)
+      (fs.from
+         f
+         (lambda (p)
+            p.read-text)))
+   (def loaded (pass form slurp-file))
+   %(seq @module-code.values $loaded))
+
+(proc pass (form slurp-file) ; FIXME - match the interpreter
+   (if (pair? form)
+      (case form.head
+         (use)
+            (let (use-name form.1 use-uri form.2)
+               (if (module-fns.has? use-uri)
+                  %(def $use-name (gate ($(module-fns use-uri) @use-args)))
+                  (let (mod-fn (send (cat "vaquero-primitive-module-" (uuid)) 'to-symbol))
+                     (def this-file (slurp-file (get-vaquero-expanded-path use-uri)))
+                     (def this-mod (send (parse this-file) 'head))
+                     (module-fns.set! use-uri mod-fn)
+                     (def code
+                        (pass this-mod))
+                     (module-code.set! use-uri
+                        %(def $mod-fn
+                           (gate
+                              ((lambda ()
+                                 (seq
+                                    $code
+                                    vaquero-internal-library-export-procedure))))))
+                     %(def $use-name (gate ($mod-fn @use-args))))))
+         (def quote if seq let wall gate capture guard fail proc lambda)
+            ((gen.transform form.head) pass form)
+         default:
+            ((gen.transform 'application) pass form))
+      form))
+

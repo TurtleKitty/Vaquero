@@ -1,0 +1,56 @@
+
+(use normalize-procs "passes/normalize_procs.vaq")
+(use identify-procs "passes/identify_procs.vaq")
+(use quote-all-literals "passes/quote_literals.vaq")
+(use specify-implied-seq "passes/make_implied_seq_explicit.vaq")
+(use remove-pointless-seq "passes/remove_pointless_seq.vaq")
+(use prep-defs "passes/prepare_defs_for_mutual_recursion.vaq")
+(use simplify-seq "passes/simplify_seq.vaq")
+(use flatten-seq "passes/flatten_seq.vaq")
+(use explicit-opt "passes/add_opt_to_formals.vaq")
+(use explicit-rest "passes/add_rest_to_formals.vaq")
+(use def-to-env-msg "passes/def_to_env_msg.vaq")
+(use var-to-env-msg "passes/var_to_env_msg.vaq")
+(use cps-transform "passes/cps_transform.vaq")
+(use to-scheme "passes/to_scheme.vaq")
+
+(lib () compile)
+
+(def i (box 0))
+(def debugging true)
+(def proc-db (:))
+
+(proc meow (label)
+   (i.set! i.inc)
+   (def idx i.val)
+   (debug %($idx $label @rest)))
+
+(def order %(
+    (normalize-procs . $normalize-procs)
+    (identify-procs . $identify-procs) ; mutate!
+    (quote-all-literals . $quote-all-literals)
+    (specify-implied-seq . $specify-implied-seq)
+    (remove-pointless-seq . $remove-pointless-seq)
+    (prep-defs . $prep-defs)
+    (simplify-seq . $simplify-seq)
+    (flatten-seq . $flatten-seq)
+    (simplify-seq . $simplify-seq) ; resimplify after flattening
+    (def-to-env-msg . $def-to-env-msg)
+    (var-to-env-msg . $var-to-env-msg)
+    (explicit-opt . $explicit-opt)
+    (explicit-rest . $explicit-rest)
+    (cps-transform . $cps-transform)
+    (to-scheme . $to-scheme)
+))
+
+(proc compile (form)
+    (when debugging
+        (meow 'BEGIN form))
+    (let loop (the-form form pass order.head nexts order.tail)
+        (def new-form (pass.tail.transform the-form proc-db))
+        (when debugging
+            (meow pass.head new-form))
+        (if (pair? nexts)
+            (loop new-form nexts.head nexts.tail)
+            new-form)))
+

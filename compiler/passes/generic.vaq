@@ -1,0 +1,36 @@
+
+(export transform)
+
+(proc transform-q (transform form) form)
+
+(proc transform-1 (transform form)
+   %($form.head @(form.tail.map transform)))
+
+(proc transform-2 (transform form)
+   %($form.head $form.1 @(form.tail.tail.map transform)))
+
+(proc transform-3 (transform form)
+   %($form.head $form.1 $form.2 @(form.tail.tail.tail.map transform)))
+
+(proc transform-if (transform form)
+   %(if $(transform form.1) $(transform form.2) $(transform form.3)))
+
+(proc transform-n (transform form)
+   (pair (transform form.head) (form.tail.map transform)))
+
+(def transform 
+   (:
+      def          transform-2
+      if           transform-if
+      quote        transform-q
+      seq          transform-1
+      lambda       transform-2
+      proc         transform-2
+      proc-id      transform-3
+      wall         transform-2
+      gate         transform-1
+      capture      transform-2
+      guard        transform-2
+      fail         transform-1
+      application  transform-n))
+

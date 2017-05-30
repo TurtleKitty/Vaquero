@@ -1,0 +1,25 @@
+
+(use gen "generic.vaq")
+
+(export transform)
+
+; (proc name (args) bodies ...) -> (def name (proc (args) bodies ...))
+; (op name (args) bodies ...) -> (def name (proc (args) bodies ...))
+; (ops might as well become procs after compile time)
+
+(proc transform (form)
+   (if (pair? form)
+      (case form.head
+         (lambda)
+            ((gen.transform 'proc) transform form)
+         (def if quote seq wall gate capture guard fail)
+            ((gen.transform form.head) transform form)
+         (proc)
+            (if (symbol? form.1)
+               %(def $form.1 (proc $form.2 @(transform form.tail.tail.tail)))
+               %(proc $form.1 @(transform form.tail.tail)))
+         (op)
+            %(def $form.1 (proc $form.2 @(transform form.tail.tail.tail)))
+         default: ((gen.transform 'application) transform form))
+      form))
+

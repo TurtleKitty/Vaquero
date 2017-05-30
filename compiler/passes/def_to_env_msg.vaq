@@ -1,0 +1,20 @@
+
+(use gen "generic.vaq")
+
+(export transform)
+
+; (def x 1) -> ((send env 'def!) 'x 1)
+
+(proc transform (form)
+   (if (pair? form)
+      (case form.head
+         (def)
+            %((send env (quote def!)) (quote $form.1) $(transform form.2))
+         (if quote seq wall gate capture guard fail)
+            ((gen.transform form.head) transform form)
+         (proc lambda)
+            ((gen.transform 'proc-id) transform form)
+         default:
+            ((gen.transform 'application) transform form))
+      form))
+

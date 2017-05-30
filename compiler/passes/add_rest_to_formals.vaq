@@ -1,0 +1,20 @@
+
+(use gen "generic.vaq")
+
+(export transform)
+
+; (proc (opt x y z ...) ...) -> (proc (opt x y z ... . rest) ...)
+
+(proc transform (form)
+   (if (pair? form)
+      (case form.head
+         (def if quote seq wall gate capture guard fail)
+            ((gen.transform form.head) transform form)
+         (lambda)
+            ((gen.transform 'proc-id) transform form)
+         (proc)
+            %(proc $form.1 (@form.2 . rest) @(form.tail.tail.tail.map transform))
+         default:
+            ((gen.transform 'application) transform form))
+      form))
+

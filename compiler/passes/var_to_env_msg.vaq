@@ -1,0 +1,20 @@
+
+(use gen "generic.vaq")
+
+(export transform)
+
+; x -> ((send env 'lookup) 'x)
+
+(proc transform (form)
+   (if (pair? form)
+      (case form.head
+         (if quote seq wall gate capture guard fail)
+            ((gen.transform form.head) transform form)
+         (proc lambda)
+            ((gen.transform 'proc-id) transform form)
+         default:
+            ((gen.transform 'application) transform form))
+      (if (and (symbol? form) (not (global? form) (not (option? form))))
+         %((send env 'lookup) (quote $form))
+         form)))
+

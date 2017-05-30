@@ -1,0 +1,25 @@
+
+(use gen "generic.vaq")
+
+(export transform)
+
+; (seq 1 foo "foo" #(vector 1 2 3))
+; -> (seq (quote 1) foo (quote "foo") (quote #(vector 1 2 3)))
+
+(proc transform (form)
+   (if (pair? form)
+      (if (option? form.head)
+         %(quote $form)
+         (case form.head
+             (def if quote seq wall gate guard fail)
+                ((gen.transform form.head) transform form)
+             (capture)
+                ((gen.transform 'seq) transform form)
+             (proc lambda)
+                ((gen.transform 'proc-id) transform form)
+             default:
+                ((gen.transform 'application) transform form)))
+      (if (or (symbol? form) (= form ()))
+         form
+         %(quote $form))))
+

@@ -1,0 +1,26 @@
+
+(use gen "generic.vaq")
+
+(export transform)
+
+; (seq 1 2 3 4 5) -> (seq 1 (seq 2 (seq 3 (seq 4 5))))
+
+(proc transform (form)
+   (if (pair? form)
+      (if (= 'seq form.head)
+         (cond
+            (> form.size 3)
+               %(seq $(transform form.1) $(transform (pair 'seq form.tail.tail)))
+            (= form.size 2)
+               (transform form.1)
+            default:
+               %(seq $(transform form.1) $(transform form.2)))
+         (case form.head
+            (def if quote wall gate capture guard fail)
+               ((gen.transform form.head) transform form)
+            (proc lambda)
+               ((gen.transform 'proc-id) transform form)
+            default:
+               ((gen.transform 'application) transform form)))
+      form))
+

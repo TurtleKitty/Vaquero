@@ -1,0 +1,19 @@
+
+(use gen "generic.vaq")
+
+(proc transform (form)
+   (if (symbol? form)
+      form.to-text
+      form))
+
+(def file sys.rest.head)
+
+(def forms
+   (sys.fs.from file
+      (proc (f)
+         f.read-seq)))
+
+(log forms)
+(log %(gen.transform $forms.head))
+(log (gen.transform forms.head))
+

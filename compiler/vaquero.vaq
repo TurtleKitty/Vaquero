@@ -1,0 +1,138 @@
+#!/usr/local/bin/vaquero run
+
+(use loader  "linker.vaq")
+(use compile "compiler.vaq")
+
+(everywhere
+   (proc slurp-file (f)
+      (sys.fs.from
+         f
+         (lambda (p)
+            p.read-text)))
+
+   (proc read-file (fname)
+      (parse (slurp-file fname)))
+
+   (def macro-env (env.extend () ()))
+
+   (proc expand (sexpr)
+      (macro-env.expand sexpr))
+
+   (proc read-expand (fname)
+      (def struct (read-file fname))
+      (expand struct)))
+
+(proc compile-file (fname)
+   (def expanded (read-expand fname))
+   (def ok (syntax-ok? expanded))
+   (if ok
+      (let (loaded (loader %(seq @expanded) sys))
+         (let (compiled (compile loaded))
+             #(doc append runtime and compile from here?)
+             #(doc return... what? the name?)
+             'the-compiled-file-name))
+      (fail 'syntax-error)))
+
+(op import-global-prelude ()
+   (def expanded (read-expand "prelude.vaq"))
+   (when (not (syntax-ok? expanded))
+      (fail "Global prelude out of whack?"))
+   ;(def compiled (template: {{ (read-file (compile-file "compiler/prelude.vaq")) }}))
+   %(def global-prelude $expanded))
+
+(import-global-prelude)
+
+(def home-dir "~/.vaquero")
+(def vaquero-module-dir    (cat home-dir "/modules"))
+(def vaquero-expanded-dir  (cat home-dir "/expanded"))
+(def vaquero-compiled-dir  (cat home-dir "/compiled"))
+(def cli-env env)
+
+(proc start ()
+   (def args rest)
+   (when (= args.size 0)
+      (usage))
+   (proc prep-dir (path)
+      (when (not (sys.fs.exists? path))
+         (sys.fs.mkdir path)))
+   (def cmd args.head.to-symbol)
+   (prep-dir vaquero-module-dir)
+   (prep-dir vaquero-expanded-dir)
+   (prep-dir vaquero-compiled-dir)
+   (def control (:
+      check   vaquero-check
+      clean   vaquero-clean
+      compile vaquero-compile
+      eval    vaquero-eval
+      exec    vaquero-eval-string
+      expand  vaquero-expand
+      repl    vaquero-repl
+      run     vaquero-run
+   ))
+   (def handler (control cmd))
+   (if handler
+      (handler.apply args.tail opt)
+      (seq
+         (log (cat "Unknown command: " cmd))
+         (usage))))
+
+(proc usage ()
+   (say #(text
+Usage:
+
+vaquero repl
+vaquero exec "<code string>"
+vaquero run <filename>
+vaquero eval <filename>
+vaquero check <filename>
+vaquero expand <filename>
+vaquero compile <filename>
+vaquero clean))
+   (sys.proc.exit))
+
+(proc vaquero-repl ()
+    (repl (cli-env.extend () ()) stdin stdout stderr))
+
+(proc vaquero-eval-string (str)
+   (def expanded (expand (parse str)))
+   (say
+      (cli-env.eval expanded)))
+
+(proc vaquero-run (filename)
+   ; compile then exec
+   (def cfile (compile-file filename))
+   (sys.shell (cat with: " " cfile (rest.join " "))))
+
+(proc vaquero-check (filename)
+   (def its-good (syntax-ok? (read-expand filename)))
+   (say (cat "Vaquero syntax check complete: " (if its-good 'ok 'FAIL))))
+
+(proc vaquero-expand (filename)
+   ; expand and print - don't compile or cache
+   (sys.write (read-expand filename)))
+
+(proc vaquero-eval (filename)
+   (def expanded (read-expand filename))
+   (def its-good (syntax-ok? expanded))
+   (if its-good
+      (cli-env.eval expanded)
+      (error 'syntax-error expanded "Syntax error.")))
+
+(proc vaquero-compile (filename)
+   ; expand, compile, and cache - don't run
+   (def cfile (compile-file filename))
+   (say (cat "File " filename " compiled to " cfile ".")))
+
+(proc vaquero-clean ()
+   (def mods (sys.fs.ls vaquero-module-dir))
+   (def expanded (sys.fs.ls vaquero-expanded-dir))
+   (def compiled (sys.fs.ls vaquero-compiled-dir))
+   (def files (append mods expanded compiled))
+   (loop go (f files.head fs files.tail)
+      (sys.fs.rm f)
+      (if fs
+         (go fs.head fs.tail)
+         'ok)))
+
+(start.apply sys.rest sys.opt)
+

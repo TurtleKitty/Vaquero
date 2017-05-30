@@ -1,0 +1,731 @@
+
+(export sender)
+
+(op prob ()
+   %(lambda (obj) @rest))
+
+(op prom ()
+   %(lambda (msg) @rest))
+
+(def default-messages
+   '(type view to-text to-bool messages answers? autos resends default))
+
+(proc idk (obj)
+   (prom
+      (error
+         'message-not-understood
+         %(send $obj (quote $msg))
+         "Message not understood."))) 
+
+(def null-messages '(to-symbol apply))
+
+(def control-null (:
+   type      (prob 'null)
+   view      (prob "null")
+   to-text   (prob "null")
+   to-bool   (prob false)
+   messages  (prob null-messages)
+   answers?  (prob (prom (or (default-messages.has? msg) (null-messages.has? msg))))
+   autos     (prob '(to-symbol))
+   resends   (prob ())
+   default   (prob (prom null))
+   to-symbol (prob null)
+   apply (prob
+      (error
+         'apply-null
+         null
+         "null can not be used as a procedure."))
+))
+
+(def bool-messages '(to-symbol not))
+
+(def control-bool (:
+   type      (prob 'bool)
+   view      (prob (if obj "true" "false"))
+   to-text   (prob (if obj "true" "false"))
+   to-bool   (prob obj)
+   messages  (prob bool-messages)
+   answers?  (prob (prom (or (default-messages.has? msg) (bool-messages.has? msg))))
+   autos     (prob ())
+   resends   (prob ())
+   default   idk
+   to-symbol (prob obj)
+   not       (prob (vaquero-internal-not obj))
+))
+
+(def int-messages '(to-number zero? pos? neg? odd? even? abs floor ceil round truncate inc dec))
+
+(def control-int (:
+   type      (prob 'int)
+   view      (prob (vaquero-internal-number-to-text obj))
+   to-text   (prob (vaquero-internal-number-to-text obj))
+   to-bool   (prob (vaquero-internal-not (= obj 0)))
+   messages  (prob int-messages)
+   answers?  (prob (prom (or (default-messages.has? msg) (int-messages.has? msg))))
+   autos     (prob '(to-number zero? pos? neg? odd? even? abs floor ceil round truncate inc dec))
+   resends   (prob ())
+   default   idk
+   to-number (prob obj)
+   to-utf8   (prob (vaquero-internal-int-to-rune obj))
+   zero?     (prob (= obj 0))
+   pos?      (prob (> obj 0))
+   neg?      (prob (< obj 0))
+   odd?      (prob (= 1 (mod obj 2)))
+   even?     (prob (= 0 (mod obj 2)))
+   abs       (prob (vaquero-internal-abs obj))
+   floor     (prob obj)
+   ceil      (prob obj)
+   round     (prob obj)
+   truncate  (prob obj)
+   inc       (prob (+ obj 1))
+   dec       (prob (- obj 1))
+))
+
+(def rat-messages '(to-number zero? pos? neg? abs floor ceil round truncate))
+
+(def control-rat (:
+   type      (prob 'rational)
+   view      (prob (vaquero-internal-number-to-text obj))
+   to-text   (prob (vaquero-internal-number-to-text obj))
+   to-bool   (prob (vaquero-internal-not (= obj 0)))
+   messages  (prob rat-messages)
+   answers?  (prob (prom (or (default-messages.has? msg) (rat-messages.has? msg))))
+   autos     (prob '(to-number zero? pos? neg? abs floor ceil round truncate))
+   resends   (prob ())
+   default   idk
+   to-number (prob obj)
+   zero?     (prob false)
+   pos?      (prob (> obj 0))
+   neg?      (prob (< obj 0))
+   abs       (prob (vaquero-internal-abs obj))
+   floor     (prob (vaquero-internal-floor obj))
+   ceil      (prob (vaquero-internal-ceil obj))
+   round     (prob (vaquero-internal-round obj))
+   truncate  (prob (vaquero-internal-truncate obj))
+))
+
+(def real-messages '(to-number zero? pos? neg? abs floor ceil round truncate))
+
+(def control-real (:
+   type      (prob 'real)
+   view      (prob (vaquero-internal-number-to-text obj))
+   to-text   (prob (vaquero-internal-number-to-text obj))
+   to-bool   (prob (vaquero-internal-not (= obj 0)))
+   messages  (prob real-messages)
+   answers?  (prob (prom (or (default-messages.has? msg) (real-messages.has? msg))))
+   autos     (prob '(to-number zero? pos? neg? abs floor ceil round truncate))
+   resends   (prob ())
+   default   idk
+   to-number (prob obj)
+   zero?     (prob (= obj 0))
+   pos?      (prob (> obj 0))
+   neg?      (prob (< obj 0))
+   abs       (prob (vaquero-internal-abs obj))
+   floor     (prob (vaquero-internal-floor obj))
+   ceil      (prob (vaquero-internal-ceil obj))
+   round     (prob (vaquero-internal-round obj))
+   truncate  (prob (vaquero-internal-truncate obj))
+))
+
+(def rune-messages '(to-rune to-int code alpha? digit? whitespace? uc? lc? uc lc))
+
+(def control-rune (:
+   type      (prob 'rune)
+   view      (prob (vaquero-internal-list-to-text (list \\ obj))) ; FIXME \space, \tab, \newline, \return
+   to-text   (prob (vaquero-internal-text obj))
+   to-bool   (prob (vaquero-internal-not (vaquero-internal-rune-whitespace? obj)))
+   messages  (prob rune-messages)
+   answers?  (prob (prom (or (default-messages.has? msg) (rune-messages.has? msg))))
+   autos     (prob rune-messages)
+   resends   (prob ())
+   default   idk
+   to-rune   (prob obj)
+   to-int    (prob (vaquero-internal-text-to-number (vaquero-internal-text obj)))
+   code      (prob (vaquero-internal-rune-to-int obj))
+   alpha?       (prob (vaquero-internal-rune-alpha? obj))
+   digit?       (prob (vaquero-internal-rune-digit? obj))
+   whitespace?  (prob (vaquero-internal-rune-whitespace? obj))
+   uc?  (prob (vaquero-internal-rune-uc? obj))
+   lc?  (prob (vaquero-internal-rune-lc? obj))
+   uc   (prob (vaquero-internal-rune-uc obj))
+   lc   (prob (vaquero-internal-rune-lc obj))
+))
+
+(def symbol-messages '(to-symbol))
+
+(def control-symbol (:
+   type      (prob 'symbol)
+   view      (prob (vaquero-internal-symbol-to-text obj))
+   to-text   (prob (vaquero-internal-symbol-to-text obj))
+   to-bool   (prob true)
+   messages  (prob symbol-messages)
+   answers?  (prob (prom (or (default-messages.has? msg) (symbol-messages.has? msg))))
+   autos     (prob symbol-messages)
+   resends   (prob ())
+   default   idk
+   to-symbol (prob obj)
+))
+
+(def bin-messages '(to-int to-list to-vector size clone set!))
+
+(def control-bin (: ; FIXME
+   type      (prob 'bin)
+   view      (prob (vaquero-internal-bin-to-text obj))
+   to-text   (prob (vaquero-internal-bin-to-text obj))
+   to-bool   (prob true)
+   messages  (prob bin-messages)
+   answers?  (prob (prom (or (default-messages.has? msg) (bin-messages.has? msg))))
+   autos     (prob '(to-number to-list size clone))
+   resends   (prob ())
+   default   idk
+   to-int    idk
+   to-list   idk
+   to-vector idk
+   size      idk
+   clone     idk
+   set!      idk
+))
+
+(def text-messages '(to-symbol to-option to-number to-list to-bin to-stream size empty? clone chomp trim ltrim rtrim lpad rpad set! index take drop match split capture replace))
+
+(def control-text (:
+   type      (prob 'text)
+   view      (prob (cat \" obj \"))
+   to-text   (prob obj)
+   to-bool   (prob (if (= "" obj) false true))
+   messages  (prob text-messages)
+   answers?  (prob (prom (or (default-messages.has? msg) (text-messages.has? msg))))
+   autos     (prob text-messages) ; FIXME
+   resends   (prob ())
+   default   (prob
+              (prom 
+                 (if (number? msg)
+                    (if (> (vaquero-internal-text-size obj) msg)
+                       (vaquero-internal-text-ref obj msg)
+                       (error 'out-of-bounds %(send $obj $msg) "text: index out of bounds."))
+                    ((idk obj) msg))))
+   to-symbol   (prob (vaquero-internal-text-to-symbol obj))
+   to-option   (prob (vaquero-internal-text-to-keyword obj))
+   to-number   (prob (vaquero-internal-text-to-number obj))
+   to-list     (prob (vaquero-internal-text-to-list obj))
+   to-bin      (prob (vaquero-internal-text-to-bin obj))
+   to-stream   (prob (vaquero-internal-text-to-stream obj))
+   size    (prob (vaquero-internal-text-size obj))
+   empty?  (prob (= "" obj))
+   clone   (prob (vaquero-internal-text-clone obj))
+   chomp   (prob (vaquero-internal-text-chomp obj))
+   trim    (prob (vaquero-internal-text-trim obj))
+   ltrim   (prob (vaquero-internal-text-trim-left obj))
+   rtrim   (prob (vaquero-internal-text-trim-right obj))
+   lpad    (prob (lambda (rune n) (vaquero-internal-text-pad-left obj rune n)))
+   rpad    (prob (lambda (rune n) (vaquero-internal-text-pad-right obj rune n)))
+   set!    (prob (lambda (n rune) (vaquero-internal-text-set! obj n rune)))
+   index   (prob (lambda (substr) (vaquero-internal-text-subtext-index obj substr)))
+   take    (prob (lambda (n) (vaquero-internal-text-take obj n)))
+   drop    (prob (lambda (n) (vaquero-internal-text-drop obj n)))
+   match (prob
+      (proc (regex)
+         (def flags (or opt.flags ""))
+         (vaquero-internal-text-match obj regex flags)))
+   split (prob
+      (proc (regex)
+         (def flags (or opt.flags ""))
+         (vaquero-internal-text-split obj regex flags)))
+   capture (prob
+      (proc (regex)
+         (def flags (or opt.flags ""))
+         (vaquero-internal-text-capture obj regex flags)))
+   replace (prob
+      (proc (regex replacement)
+         (def flags (or opt.flags ""))
+         (vaquero-internal-text-replace obj regex flags)))
+))
+
+(def env-messages
+   '(mama to-list to-table empty? size empty? clone def! has? get set! del! lookup lookup-list extend partition expand eval))
+
+(def control-env (:
+   type      (prob 'env)
+   view      (prob (vaquero-internal-env-to-text obj))
+   to-text   (prob (vaquero-internal-env-to-text obj))
+   to-bool   (prob true)
+   messages  (prob env-messages)
+   answers?  (prob (prom (or (default-messages.has? msg) (env-messages.has? msg))))
+   autos     (prob '(empty? mama to-list to-table))
+   resends   (prob ())
+   default   idk
+   mama      (prob (vaquero-internal-env-mama obj))
+   to-list   (prob (vaquero-internal-env-to-list obj))
+   to-table (prob (vaquero-internal-env-to-table obj))
+   empty?    (prob (= 0 (vaquero-internal-env-size obj)))
+   def!      (prob (vaquero-internal-env-def! obj))   ; local
+   get       (prob (vaquero-internal-env-get obj))    ; local
+   set!      (prob (vaquero-internal-env-set! obj))   ; local or ancestral
+   has?      (prob (vaquero-internal-env-has? obj))   ; local
+   del!      (prob (vaquero-internal-env-del! obj))   ; local or ancestral
+   lookup    (prob (vaquero-internal-env-lookup obj)) ; local or ancestral
+   lookup-list  (prob (vaquero-internal-env-lookup-list obj)) ; local or ancestral
+   extend       (prob (vaquero-internal-env-extend obj))
+   partition    (prob (vaquero-internal-env-partition obj))
+   seal! null ; FIXME
+   wild! null ; FIXME
+   expand    (prob 
+      ; FIXME : opexpand expr
+   )
+   eval      (prob
+      ; FIXME : expand then interpret expr
+   )
+))
+
+(def pair-messages
+   '(head key tail val to-list to-vector to-table size empty? reverse cons has? append take drop apply fold reduce map filter sort each))
+
+(def control-pair (:
+   type      (prob 'pair)
+   view      (prob (vaquero-internal-pair-view obj))
+   to-text   (prob (vaquero-internal-pair-to-text obj)) ; all members must be runes
+   to-bool   (prob (if (= () obj) false true))
+   messages  (prob pair-messages)
+   answers?  (prob (prom (or (default-messages.has? msg) (pair-messages.has? msg))))
+   autos     (prob '(head key tail val to-list to-vector to-table size empty? reverse))
+   resends   (prob ())
+   default   (prob
+               (prom
+                  (if (= (vaquero-internal-get-object-type msg) 'int)
+                     (vaquero-internal-list-ref obj msg)
+                     (idk))))
+    head      (prob (vaquero-internal-pair-head obj))
+    key       (prob (vaquero-internal-pair-head obj))
+    car       (prob (vaquero-internal-pair-head obj))
+    tail      (prob (vaquero-internal-pair-tail obj))
+    val       (prob (vaquero-internal-pair-tail obj))
+    cdr       (prob (vaquero-internal-pair-tail obj))
+    to-list   (prob
+                (if (vaquero-internal-list? obj)
+                   obj
+                   (vaquero-internal-list
+                      (vaquero-internal-pair-head obj)
+                      (vaquero-internal-pair-tail obj))))
+    to-vector (prob (vaquero-internal-pair-to-vector obj))
+    to-table (prob (vaquero-internal-pair-to-table obj))
+    size      (prob (vaquero-internal-pair-size obj))
+    empty?    (prob (if (= obj ()) true false))
+    reverse   (prob (vaquero-internal-pair-reverse obj))
+    cons      (prob
+                 (proc (item)
+                    (vaquero-internal-pair item obj)))
+    has?      (prob
+                 (proc (item)
+                    (vaquero-internal-pair-has? obj item)))
+    append    null ; FIXME
+    take      (prob
+                 (proc (n)
+                    (vaquero-internal-pair-take obj n)))
+    drop      (prob
+                 (proc (n)
+                    (vaquero-internal-pair-drop obj n)))
+    apply     (prob
+                 (lambda (args options)
+                    (if (!= (vaquero-internal-pair-size args) 1)
+                       (error 'arg-error %(list.apply args opts) "list.apply takes only one integer argument.")
+                       (vaquero-internal-list-ref obj (vaquero-internal-pair-head args)))))
+    fold      (prob
+                 (lambda (acc funk)
+                    (if obj.empty?
+                       acc
+                       (obj.tail.fold (funk acc obj.head) funk))))
+    reduce    (prob
+                 (lambda (acc funk)
+                    (if obj.empty?
+                       acc
+                       (funk obj.head (obj.tail.reduce acc funk)))))
+    map       (prob
+                 (lambda (funk)
+                     (obj.reduce () (lambda (x y) (pair (funk x) y)))))
+    filter    (prob
+                 (lambda (funk)
+                     (obj.reduce () (lambda (x y) (if (funk x) (pair x y) y)))))
+    sort      (prob
+                 (lambda (funk)
+                    (def merge (lambda (a b)
+                       (if a.size.zero?
+                          b
+                          (if b.size.zero?
+                             a
+                             (if (funk a.head b.head)
+                                (pair a.0 (merge a.tail b))
+                                (pair b.0 (merge a b.tail)))))))
+                    (def sort (lambda (yarr)
+                       (def len yarr.size)
+                       (if (< len 2)
+                          yarr
+                          (seq
+                             (def half (send (/ len 2) 'floor))
+                             (merge (sort (yarr.take half)) (sort (yarr.drop half)))))))
+                    (sort obj)))
+    each      (prob
+                 (lambda (funk)
+                    (if xs.empty?
+                       null
+                       (seq
+                          (funk xs.head)
+                          (xs.tail.each funk)))))
+))
+
+(def vector-messages
+   '(size empty? has? index put set! to-list to-vector to-table append take drop apply fold reduce map filter sort each))
+
+(def control-vector (:
+   type      (prob 'vector)
+   view      (prob (vaquero-internal-vector-view obj))
+   to-text   (prob (vaquero-internal-vector-to-text obj)) ; all members must be runes
+   to-bool   (prob (if (= 0 (vaquero-internal-vector-size obj)) false true))
+   messages  (prob vector-messages)
+   answers?  (prob (prom (or (default-messages.has? msg) (vector-messages.has? msg))))
+   autos     (prob '(to-list to-vector to-table size empty?))
+   resends   (prob ())
+   default   (prob
+                (prom
+                   (if (= (vaquero-internal-get-object-type msg) 'int)
+                      (vaquero-internal-vector-ref obj msg)
+                      (idk))))
+   to-list   (prob (vaquero-internal-vector-to-list obj))
+   to-vector (prob obj)
+   to-table (prob (vaquero-internal-vector-to-table obj))
+   size      (prob (vaquero-internal-vector-size obj))
+   empty?    (prob (if (= 0 (vaquero-internal-vector-size obj)) true false))
+   has?      (prob
+                (proc (item)
+                   (vaquero-internal-vector-has? obj item)))
+   append    null ; FIXME
+   take      (prob
+                (proc (n)
+                   (vaquero-internal-vector-take obj n)))
+   drop      (prob
+                (proc (n)
+                   (vaquero-internal-vector-drop obj n)))
+   apply     (prob
+                (lambda (args options)
+                   (if (!= (vaquero-internal-vector-size args) 1)
+                      (error 'arg-error %(vector.apply args opts) "vector.apply takes only one integer argument.")
+                      (vaquero-internal-vector-ref obj (vaquero-internal-pair-head args)))))
+   fold      (prob null) ;FIXME
+   reduce    (prob null) ;FIXME
+   map       (prob null) ;FIXME
+   filter    (prob null) ;FIXME
+   sort      (prob null) ;FIXME
+   each      (prob null) ;FIXME
+))
+
+(def table-messages
+   '(to-list to-table size empty? keys values pairs clone get put rm set! del! has? apply merge fold reduce map filter sort each))
+
+(def control-table (:
+   type      (prob 'table)
+   view      (prob (vaquero-internal-table-to-text obj))
+   to-text   (prob (vaquero-internal-table-to-text obj))
+   to-bool   (prob (if (= 0 vaquero-internal-table-size obj) false true))
+   messages  (prob table-messages)
+   answers?  (prob (prom (or (default-messages.has? msg) (table-messages.has? msg))))
+   autos     (prob '(size keys values pairs clone to-list to-table))
+   resends   (prob ())
+   default   (prob
+                (prom
+                   (if (vaquero-internal-table-has? obj msg)
+                      (vaquero-internal-table-has? obj msg)
+                      null)))
+   to-list   (prob (vaquero-internal-table-to-list obj))
+   to-table (prob obj)
+   size      (prob (vaquero-internal-table-size obj))
+   empty?    (prob (= 0 (vaquero-internal-table-size obj)))
+   keys      (prob (vaquero-internal-table-keys obj))
+   values    (prob (vaquero-internal-table-values obj))
+   pairs     (prob (vaquero-internal-table-to-list obj))
+   clone     (prob (vaquero-internal-table-clone obj))
+   get       (prob (proc (k) (vaquero-internal-table-get obj k)))
+   put       (prob (proc () (vaquero-internal-table-put obj rest)))
+   rm        (prob (proc () (vaquero-internal-table-rm obj rest)))
+   set!      (prob (proc () (vaquero-internal-table-set! obj rest)))
+   del!      (prob (proc () (vaquero-internal-table-del! obj rest)))
+   has?      (prob (proc (k) (vaquero-internal-table-has? obj k)))
+   merge     (prob (proc (other) (vaquero-internal-table-merge obj other)))
+   apply     (prob
+                (lambda (args options)
+                   (if (!= (vaquero-internal-pair-size args) 1)
+                      (error 'arg-error %(table.apply $args $options) "Record apply takes only one argument.")
+                      (vaquero-internal-table-get obj args.head))))
+   fold      (prob
+                (def xs obj.to-list)
+                (lambda (acc funk)
+                   (if xs.empty?
+                      acc
+                      (xs.tail.fold (funk acc xs.head) funk))))
+   reduce    (prob
+                (def xs obj.to-list)
+                (lambda (acc funk)
+                   (if xs.empty?
+                      acc
+                      (funk xs.head (xs.tail.reduce acc funk)))))
+   map       (prob
+                (def noob (table))
+                (def ps obj.pairs)
+                (lambda (funk)
+                   (ps.each (lambda (p) (noob.set! p.head (funk p))))))
+   filter    (prob
+                (def noob (table))
+                (def ps obj.pairs)
+                (lambda (funk)
+                   (ps.each (lambda (p) (if (funk p) (noob.set! p.head p.tail) null)))))
+   each      (prob
+                (lambda (funk)
+                   (obj.to-list.each funk)))
+))
+
+(def proc-messages '(apply arity code env formals))
+
+(def control-lambda (:
+   type      (prob 'lambda)
+   view      (prob (vaquero-internal-lambda-to-text obj))
+   to-text   (prob (vaquero-internal-lambda-to-text obj))
+   to-bool   (prob true)
+   messages  (prob proc-messages)
+   answers?  (prob (prom (or (default-messages.has? msg) (proc-messages.has? msg))))
+   autos     (prob '(arity code env formals))
+   resends   (prob ())
+   default   idk
+   apply     (prob (lambda (args opts) (vaquero-internal-apply obj args opts)))
+   arity     (prob (vaquero-internal-proc-arity obj))
+   code      (prob (vaquero-internal-proc-code obj))
+   env       (prob (vaquero-internal-proc-env obj))
+   formals   (prob (vaquero-internal-proc-formals obj))
+))
+
+(def control-proc (:
+   type      (prob 'proc)
+   view      (prob (vaquero-internal-proc-to-text obj))
+   to-text   (prob (vaquero-internal-proc-to-text obj))
+   to-bool   (prob true)
+   messages  (prob proc-messages)
+   answers?  (prob (prom (or (default-messages.has? msg) (proc-messages.has? msg))))
+   autos     (prob '(arity code env formals))
+   resends   (prob ())
+   default   idk
+   apply     (prob (lambda (args opts) (vaquero-internal-apply obj args opts)))
+   arity     (prob (vaquero-internal-proc-arity obj))
+   code      (prob (vaquero-internal-proc-code obj))
+   env       (prob (vaquero-internal-proc-env obj))
+   formals   (prob (vaquero-internal-proc-formals obj))
+))
+
+(def control-operator (:
+   type      (prob 'operator)
+   view      (prob (vaquero-internal-operator-to-text obj))
+   to-text   (prob (vaquero-internal-operator-to-text obj))
+   to-bool   (prob true)
+   messages  (prob proc-messages)
+   answers?  (prob (prom (or (default-messages.has? msg) (proc-messages.has? msg))))
+   autos     (prob '(arity code env formals))
+   resends   (prob ())
+   default   idk
+   apply     (prob (lambda (args opts) (vaquero-internal-apply obj args opts)))
+   arity     (prob (vaquero-internal-proc-arity obj))
+   code      (prob (vaquero-internal-proc-code obj))
+   env       (prob (vaquero-internal-proc-env obj))
+   formals   (prob (vaquero-internal-proc-formals obj))
+))
+
+(def source-messages
+   '(open? ready? close
+     read read-rune peek-rune read-line read-lines read-text read-vaquero
+     assert-rune skip skip-while skip-until read-tokens
+     read-tokens-while read-tokens-until read-token-if each))
+
+(def control-source (:
+   type      (prob 'source)
+   view      (prob (vaquero-internal-source-view obj))
+   to-text   (prob (vaquero-internal-source-view obj))
+   to-bool   (prob true)
+   messages  (prob source-messages)
+   answers?  (prob (prom (or (default-messages.has? msg) (source-messages.has? msg))))
+   autos     (prob '(open? ready? close read read-rune peek-rune read-line read-text read-vaquero))
+   resends   (prob ())
+   default   idk
+   open?     (prob (vaquero-internal-stream-open? obj))
+   ready?    (prob (vaquero-internal-stream-ready? obj))
+   close     (prob (vaquero-internal-stream-close obj))
+   read      (prob (vaquero-internal-source-read obj))
+   read-rune (prob (vaquero-internal-source-read-rune obj))
+   peek-rune (prob (vaquero-internal-source-peek-rune obj))
+   read-line (prob (vaquero-internal-source-read-line obj))
+   read-lines (prob (vaquero-internal-source-read-lines obj))
+   read-text (prob (vaquero-internal-source-read-text obj))
+   read-vaquero (prob (vaquero-internal-source-read-vaquero obj))
+   assert-rune (prob
+       (lambda (runes)
+          (def rune-list runes.to-list)
+          (def next obj.read-rune)
+           (if (rune-list.has? next)
+              next
+              (error
+                 'assert-rune-FAIL %(assert-rune $runes $next) "Assertion failed."))))
+   skip (prob
+           (lambda (n)
+              (loop go (x n)
+                 (if x.zero?
+                    null
+                    (seq
+                       obj.read-rune
+                       (go x.dec))))))
+    skip-while (prob
+        (lambda (runes)
+            (def rune-list runes.to-list)
+            (loop go (tok obj.peek-rune)
+                (if (rune-list.has? tok)
+                    (seq
+                        obj.read-rune
+                        (go obj.peek-rune))
+                    null))))
+    skip-until (prob
+        (lambda (runes)
+           (def rune-list runes.to-list)
+           (loop go (tok obj.peek-rune)
+              (if (rune-list.has? tok)
+                 null
+                 (seq
+                    obj.read-rune
+                    (go obj.peek-rune))))))
+    read-tokens (prob
+        (lambda (n)
+           (loop go (x n tokens ())
+              (if x.zero?
+                 tokens.reverse.to-text
+                 (go x.dec (pair obj.read-rune tokens))))))
+    read-token-while (prob
+        (lambda (runes)
+           (def rune-list runes.to-list)
+           (loop go (tok obj.peek-rune tokens ())
+              (if (rune-list.has? tok)
+                 (go obj.peek-rune (pair obj.read-rune tokens))
+                 tokens.reverse.to-text))))
+    read-token-until (prob
+        (lambda (runes)
+            (def rune-list runes.to-list)
+            (loop go (tok obj.peek-rune tokens ())
+                (if (rune-list.has? tok)
+                    tokens.reverse.to-text
+                    (go obj.peek-rune (pair obj.read-rune tokens))))))
+    read-token-if (prob
+        (lambda (pred?)
+            (loop go (tok obj.peek-rune tokens ())
+                (if (pred? tok)
+                    (go obj.peek-rune (pair obj.read-rune tokens))
+                    tokens.reverse.to-text))))
+))
+
+(def sink-messages
+    '(open? close flush write print say nl))
+
+(def control-sink (:
+   type      (prob 'sink)
+   view      (prob (vaquero-internal-sink-view obj))
+   to-text   (prob (vaquero-internal-sink-view obj))
+   to-bool   (prob true)
+   messages  (prob sink-messages)
+   answers?  (prob (prom (or (default-messages.has? msg) (sink-messages.has? msg))))
+   autos     (prob '(open? close))
+   resends   (prob ())
+   default   idk
+   open?     (prob (vaquero-internal-stream-open? obj))
+   close     (prob (vaquero-internal-stream-close obj))
+   flush     (prob (vaquero-internal-sink-flush obj))
+   write     (prob
+      (lambda (thing)
+         (vaquero-internal-sink-print obj thing.view)))
+   print     (prob 
+      (lambda (thing)
+         (vaquero-internal-sink-print obj thing.to-text)))
+   say       (prob
+      (lambda (thing)
+         (vaquero-internal-sink-print obj (cat thing.to-text "\n"))))
+   nl  (prob (vaquero-internal-sink-newline obj))
+))
+
+(def control-eof (:
+   type      (prob 'EOF)
+   view      (prob "EOF")
+   to-text   (prob "END OF LINE.") ; FIXME - print actual eof-object?
+   to-bool   (prob false)
+   messages  (prob ())
+   answers?  (prob (prom (or (default-messages.has? msg) (proc-messages.has? msg))))
+   autos     (prob ())
+   resends   (prob ())
+   default   idk
+))
+
+(def control (:
+   null         control-null
+   bool         control-bool
+   int          control-int
+   rational     control-rat
+   real         control-real
+   rune         control-rune
+   symbol       control-symbol
+   bin          control-bin
+   text         control-text
+   environment  control-env
+   pair         control-pair
+   vector       control-vector
+   table       control-table
+   lambda            control-lambda
+   proc         control-proc
+   operator     control-operator
+   source       control-source
+   sink         control-sink
+   EOF          control-eof
+))
+
+(def object-defaults (:
+   type    (lambda (obj) 'object)
+   view    (lambda (obj) %(object: @(send obj 'messages)))
+   to-text (lambda (obj) %(object: @(send obj 'messages)))
+   to-bool (lambda (obj) true)
+))
+
+(proc has-msg? (obj msg)
+   ((vaquero-internal-object-answers? obj) msg))
+
+(proc autofire (obj msg def-thunk)
+   (if (has-msg? obj msg)
+      (let (method (vaquero-internal-object-get-message obj msg))
+         (if (vaquero-internal-list-has? (vaquero-internal-object-autos obj) msg)
+            (method)
+            method))
+      (def-thunk)))
+
+(proc sender (obj msg)
+   (def t (vaquero-internal-get-object-type obj))
+   (if (vaquero-internal-table-has? control t)
+      (let (dispatcher (vaquero-internal-table-get control t))
+         (if (vaquero-internal-table-has? dispatcher msg)
+            ((vaquero-internal-table-get dispatcher msg) obj)
+            (((vaquero-internal-table-get dispatcher 'default) obj) msg)))
+      (case msg
+         ; begin with unshadowable reflection messages
+         (answers?)
+            (vaquero-internal-object-answers? obj)
+         (autos)
+            (vaquero-internal-object-autos obj)
+         (default)
+            (vaquero-internal-object-default obj)
+         (messages)
+            (vaquero-internal-object-messages obj)
+         (resends)
+            (vaquero-internal-object-resends obj)
+         ; end reflection; begin shadowable messages with defaults
+         (type view to-text to-bool)
+            (autofire obj msg (lambda () ((object-defaults msg) obj)))
+         ; regular messages
+         default: 
+            (autofire obj msg (lambda () ((vaquero-internal-object-default obj) msg))))))
+
+

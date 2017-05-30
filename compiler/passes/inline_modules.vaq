@@ -1,0 +1,25 @@
+
+
+(use gen "generic.vaq")
+
+(export transform)
+
+; (use <name> "path") -> (def <name> (vaquero-module-UUID))
+
+(proc transform (form vaquero-modules) ; FIXME
+   (if (pair? form)
+      (if (and (= form.head 'seq) (pair? form.1) (= form.1.head 'seq))
+         (transform %(seq @form.1.tail @form.tail.tail))
+         (case form.head
+            (use)
+               (if (vaquero-modules.has? form.2)
+                  %($(vaquero-modules form.1) @form.tail.tail)
+                  (let (mod-fn (send (cat "vaquero-module-" (uuid)) 'to-symbol))
+                     (vaquero-modules.set! form.1 mod-fn)
+                     %($(vaquero-modules form.1) @form.tail.tail)))
+            (def if quote wall gate capture guard fail proc lambda)
+               ((gen.transform form.head) transform form)
+            default:
+               ((gen.transform 'application) transform form)))
+      form))
+

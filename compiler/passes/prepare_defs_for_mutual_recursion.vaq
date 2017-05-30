@@ -1,0 +1,32 @@
+
+
+(use gen "generic.vaq")
+
+(export transform)
+
+; (seq (def x 1) (def y (proc ...)) ... x ... (y ...) ...)
+;   -> (seq (def x null) (def y null) ((send env 'set!) 'x 1) ((send env 'set!) 'y (proc ...)) ... x ... (y ...) ...)
+
+(proc transform (form)
+   (proc is-def (form)
+      (and (pair? form) (= form.head 'def)))
+   (if (pair? form)
+      (case form.head
+         (seq)
+            (let (defs (form.tail.filter is-def))
+               (def nulls (defs.map (_ %(def $_.1 null))))
+               (def transformed
+                  (form.tail.map
+                     (_
+                        (if (is-def _)
+                           %((send env 'set!) (quote $_.1) $(transform _.2))
+                           _))))
+               %(seq @nulls @transformed))
+         (def if quote wall gate capture guard fail)
+            ((gen.transform form.head) transform form)
+         (proc lambda)
+            ((gen.transform 'proc-id) transform form)
+         default:
+            ((gen.transform 'application) transform form))
+      form))
+
