@@ -3,8 +3,11 @@
 
 (export transform)
 
-(proc transform (form proc-db)
-   (cps form proc-db))
+(def proc-db (box null))
+
+(proc transform (form db)
+   (proc-db.set! db)
+   (cps form))
 
 (proc gencont ()
    (gensym "continuation"))
@@ -85,7 +88,7 @@
          (lambda ($whatever) ($cps-tail env $cont $hand))
          $hand)))
 
-(proc cps-lambda (form proc-db)
+(proc cps-lambda (form)
    (def cont (gencont))
    (def hand (genhand))
    (def lambda-cont (gencont))
@@ -94,9 +97,9 @@
    (cps-frag
       cont
       hand
-      %($cont (vaquero-internal-primitive-proc $cont $hand null (quote $(proc-db form.1)) env (lambda $new-args $(cps form.tail.tail.tail))))))
+      %($cont (vaquero-internal-primitive-proc $cont $hand null (quote $(proc-db.val.get form.1)) env (lambda $new-args $(cps form.tail.tail.tail))))))
 
-(proc cps-proc (form proc-db)
+(proc cps-proc (form)
    (def cont (gencont))
    (def hand (genhand))
    (def lambda-hand (genhand))
@@ -104,7 +107,7 @@
    (cps-frag
       cont
       hand
-      %(vaquero-internal-primitive-proc $cont $hand null (quote $(proc-db form.1)) env (lambda $new-args $(cps form.tail.tail.tail)))))
+      %(vaquero-internal-primitive-proc $cont $hand null (quote $(proc-db.val.get form.1)) env (lambda $new-args $(cps form.tail.tail.tail)))))
 
 (proc cps-let (form) ; FIXME
    null) 
