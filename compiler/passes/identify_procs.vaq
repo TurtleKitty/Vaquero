@@ -6,15 +6,12 @@
 ; (lambda (args) bodies...) -> (lambda $id (args) bodies...)
 ; (proc (args) bodies...)   -> (proc $id (args) bodies...)
 
-(def db null)
-
-(proc id-proc (form)
+(proc id-proc (form db)
    (def id (uuid))
    (db.set! id form)
    %($form.head $id $form.1 @(transform form.tail.tail db)))
 
-(proc transform (form)
-   (when rest (set! db rest.head))
+(proc transform (form db)
    (if (pair? form)
       (case form.head
          (def if quote seq wall gate guard fail)
@@ -22,7 +19,7 @@
          (capture)
             ((gen.transform 'seq) transform form) ; after capture-lambda
          (lambda proc)
-            (id-proc form)
+            (id-proc form db)
          default: ((gen.transform 'application) transform form))
       form))
 
