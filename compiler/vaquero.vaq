@@ -1,7 +1,10 @@
 #!/usr/local/bin/vaquero run
 
-(use loader  "linker.vaq")
-(use compile "compiler.vaq")
+(use L "linker.vaq")
+(use C "compiler.vaq")
+
+(import L linker)
+(import C compile)
 
 (everywhere
    (proc slurp-file (f)
@@ -26,8 +29,8 @@
    (def expanded (read-expand fname))
    (def ok (syntax-ok? expanded))
    (if ok
-      (let (loaded (loader %(seq @expanded) sys))
-         (let (compiled (compile loaded))
+      (let (linked (linker %(seq @expanded) sys))
+         (let (compiled (compile linked))
              #(doc append runtime and compile from here?)
              #(doc return... what? the name?)
              'the-compiled-file-name))

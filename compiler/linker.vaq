@@ -1,7 +1,7 @@
 
 (use gen "passes/generic.vaq")
 
-(export loader)
+(export linker)
 
 (def module-fns (:))
 (def module-code (:))
@@ -18,7 +18,7 @@
 ; (use <name> "path") -> (vaquero-module-UUID x y z)
 ; assume the macro expander fetched, cached, and expanded the modules
 
-(proc loader (form fs)
+(proc linker (form fs)
    (debug %(linker $form))
    (proc slurp-file (f)
       (fs.from
