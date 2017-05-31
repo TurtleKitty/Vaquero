@@ -127,30 +127,6 @@
    truncate  (prob (vaquero-internal-truncate obj))
 ))
 
-(def rune-messages '(to-rune to-int code alpha? digit? whitespace? uc? lc? uc lc))
-
-(def control-rune (:
-   type      (prob 'rune)
-   view      (prob (vaquero-internal-list-to-text (list \\ obj))) ; FIXME \space, \tab, \newline, \return
-   to-text   (prob (vaquero-internal-text obj))
-   to-bool   (prob (vaquero-internal-not (vaquero-internal-rune-whitespace? obj)))
-   messages  (prob rune-messages)
-   answers?  (prob (prom (or (default-messages.has? msg) (rune-messages.has? msg))))
-   autos     (prob rune-messages)
-   resends   (prob ())
-   default   idk
-   to-rune   (prob obj)
-   to-int    (prob (vaquero-internal-text-to-number (vaquero-internal-text obj)))
-   code      (prob (vaquero-internal-rune-to-int obj))
-   alpha?       (prob (vaquero-internal-rune-alpha? obj))
-   digit?       (prob (vaquero-internal-rune-digit? obj))
-   whitespace?  (prob (vaquero-internal-rune-whitespace? obj))
-   uc?  (prob (vaquero-internal-rune-uc? obj))
-   lc?  (prob (vaquero-internal-rune-lc? obj))
-   uc   (prob (vaquero-internal-rune-uc obj))
-   lc   (prob (vaquero-internal-rune-lc obj))
-))
-
 (def symbol-messages '(to-symbol))
 
 (def control-symbol (:
@@ -190,7 +166,7 @@
 
 (def control-text (:
    type      (prob 'text)
-   view      (prob (cat \" obj \"))
+   view      (prob (cat "\"" obj "\""))
    to-text   (prob obj)
    to-bool   (prob (if (= "" obj) false true))
    messages  (prob text-messages)
@@ -210,7 +186,14 @@
    to-list     (prob (vaquero-internal-text-to-list obj))
    to-bin      (prob (vaquero-internal-text-to-bin obj))
    to-stream   (prob (vaquero-internal-text-to-stream obj))
-   size    (prob (vaquero-internal-text-size obj))
+   size        (prob (vaquero-internal-text-size obj))
+   alpha?      (prob (vaquero-internal-text-alpha? obj))
+   digit?      (prob (vaquero-internal-text-digit? obj))
+   whitespace? (prob (vaquero-internal-text-whitespace? obj))
+   uc?     (prob (vaquero-internal-text-uc? obj))
+   lc?     (prob (vaquero-internal-text-lc? obj))
+   uc      (prob (vaquero-internal-text-uc obj))
+   lc      (prob (vaquero-internal-text-lc obj))
    empty?  (prob (= "" obj))
    clone   (prob (vaquero-internal-text-clone obj))
    chomp   (prob (vaquero-internal-text-chomp obj))
@@ -283,7 +266,7 @@
 (def control-pair (:
    type      (prob 'pair)
    view      (prob (vaquero-internal-pair-view obj))
-   to-text   (prob (vaquero-internal-pair-to-text obj)) ; all members must be runes
+   to-text   (prob (vaquero-internal-pair-to-text obj))
    to-bool   (prob (if (= () obj) false true))
    messages  (prob pair-messages)
    answers?  (prob (prom (or (default-messages.has? msg) (pair-messages.has? msg))))
@@ -378,7 +361,7 @@
 (def control-vector (:
    type      (prob 'vector)
    view      (prob (vaquero-internal-vector-view obj))
-   to-text   (prob (vaquero-internal-vector-to-text obj)) ; all members must be runes
+   to-text   (prob (vaquero-internal-vector-to-text obj)) 
    to-bool   (prob (if (= 0 (vaquero-internal-vector-size obj)) false true))
    messages  (prob vector-messages)
    answers?  (prob (prom (or (default-messages.has? msg) (vector-messages.has? msg))))
@@ -668,7 +651,6 @@
    int          control-int
    rational     control-rat
    real         control-real
-   rune         control-rune
    symbol       control-symbol
    bin          control-bin
    text         control-text
