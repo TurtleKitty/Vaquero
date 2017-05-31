@@ -1,57 +1,132 @@
 
-(use gen "passes/generic.vaq")
-
 (export linker)
 
-(def module-fns (:))
-(def module-code (:))
+(def modules (:))
 
 (def vaquero-expanded-dir "~/.vaquero/expanded")
 
 (proc get-vaquero-path (f)
-    (f.replace flags: "g" "[^a-zA-Z0-9_.]" "_"))
+   (f.replace flags: "g" "[^a-zA-Z0-9_.]" "_"))
 
 (proc get-vaquero-expanded-path (f)
-    (cat with: "/" vaquero-expanded-dir (get-vaquero-path f)))
+   (cat with: "/" vaquero-expanded-dir (get-vaquero-path f)))
 
 
 ; (use <name> "path") -> (vaquero-module-UUID x y z)
+; (import <name> names...) -> (seq (def ...))
 ; assume the macro expander fetched, cached, and expanded the modules
 
-(proc linker (form fs)
-   (debug %(linker $form))
-   (proc slurp-file (f)
-      (fs.from
-         f
-         (lambda (p)
-            p.read-text)))
-   (def loaded (pass form slurp-file))
-   %(seq @module-code.values $loaded))
+(def slurp (box null))
 
-(proc pass (form slurp-file) ; FIXME - match the interpreter
-   (if (pair? form)
-      (case form.head
-         (use)
-            (let (use-name form.1 use-uri form.2)
-               (if (module-fns.has? use-uri)
-                  %(def $use-name (gate ($(module-fns use-uri) @use-args)))
-                  (let (mod-fn (send (cat "vaquero-primitive-module-" (uuid)) 'to-symbol))
-                     (def this-file (slurp-file (get-vaquero-expanded-path use-uri)))
-                     (def this-mod (send (parse this-file) 'head))
-                     (module-fns.set! use-uri mod-fn)
-                     (def code
-                        (pass this-mod))
-                     (module-code.set! use-uri
-                        %(def $mod-fn
-                           (gate
-                              ((lambda ()
-                                 (seq
-                                    $code
-                                    vaquero-internal-library-export-procedure))))))
-                     %(def $use-name (gate ($mod-fn @use-args))))))
-         (def quote if seq let wall gate capture guard fail proc lambda)
-            ((gen.transform form.head) pass form)
-         default:
-            ((gen.transform 'application) pass form))
-      form))
+(proc linker (prog fs)
+   (log %(linker $prog))
+   (slurp.set!
+      (lambda (f)
+         (fs.from
+            (get-vaquero-expanded-path f)
+            (lambda (s)
+               s.read-seq))))
+   (link prog))
+
+(proc link (prog)
+   (def sys-UUID        (gensym "sys"))
+   (def main-UUID       (gensym "vaquero-internal-main-program"))
+   (def module-env-UUID (gensym "vaquero-internal-module-env"))
+   (def ok              (find-modules prog))
+   (def module-list     modules.values)
+   (def mk-mod
+      (lambda (m)
+         (package-module m.head module-env-UUID (transform-uses m.tail))))
+   (def modules (module-list.map mk-mod))
+   (def main-program (transform-uses prog))
+   %(lambda ($sys-UUID)
+      ((send env 'merge!)
+         (wall ()
+            (def $module-env-UUID env)
+            @modules
+            $module-env-UUID))
+
+      (proc $main-UUID (sys)
+         ; begin main program
+         $main-program
+         ; end main program
+      )
+
+      ($main-UUID $sys-UUID)))
+
+(proc find-modules (prog)
+   (if (pair? prog)
+      (if (list? prog)
+         (case prog.head
+            (quote) true
+            (use) (seq (def-vaquero-module prog.2) true)
+            default: (prog.map find-modules))
+         (pair (find-modules prog.head) (find-modules prog.tail)))
+      true))
+
+(proc def-vaquero-module (path)
+   (if (modules.has? path)
+      (modules.get path)
+      (let (expanded (slurp.val path))
+         (def mod-id (uuid))
+         (def module (pair mod-id expanded))
+         (modules.set! path module)
+         (find-modules expanded)
+         module)))
+
+(proc uuid-ify (name id)
+   (send (cat name "-" id) 'to-symbol))
+
+(proc vaquero-module-id (path)
+   (send (modules.get path) 'head))
+
+(proc transform-uses (code)
+   (if (pair? code)
+      (if (list? code)
+         (case code.head
+            (use)
+               (seq
+                  (def module-name code.1)
+                  (def mod-id (vaquero-module-id code.2))
+                  %(def $module-name ($(uuid-ify "vaquero-internal-module-proc" mod-id))))
+            (import)
+               (seq
+                  (def module-name code.1)
+                  (def imports code.tail.tail)
+                  (proc def-ify (name)
+                     %(def $name (send $module-name (quote $name))))
+                  (def defs (imports.map def-ify))
+                  %(seq @defs))
+            default: (code.map transform-uses))
+         (pair (transform-uses code.head) (transform-uses code.tail)))
+      code))
+
+(proc package-module (mod-id mod-env code)
+   ; should be expanded by now, so the form should be (seq ...)
+   (def proc-name   (uuid-ify "vaquero-internal-module-proc" mod-id))
+   (def object-name (uuid-ify "vaquero-internal-module-object" mod-id))
+   (def loop-name   (uuid-ify "loop-name" mod-id))
+   (def expo        (uuid-ify "export"    mod-id))
+   (def expos       (uuid-ify "exports"   mod-id))
+   (def rval        (uuid-ify "rval"      mod-id))
+   (def body code.tail)
+   %(proc $proc-name ()
+      (if ((send $mod-env (quote has?)) (quote $object-name))
+         ((send $mod-env (quote get)) (quote $object-name))
+         (gate
+            (let ()
+               ; begin body
+               @body
+               ; end body
+               (def $object-name
+                  (apply object (pair 'type (pair 'module
+                     ((proc $loop-name ($expo $expos $rval)
+                        (def nu-rval (pair $expo (pair ((send env 'lookup) $expo) $rval)))
+                        (if $expos
+                           ($loop-name (send $expos 'head) (send $expos 'tail) nu-rval)
+                           nu-rval)) (send vaquero-internal-exports 'head) (send vaquero-internal-exports 'tail) ()))) (table)))
+
+               ((send $mod-env (quote def!)) (quote $object-name) $object-name)
+
+               $object-name)))))
 

@@ -29,7 +29,7 @@
    (def expanded (read-expand fname))
    (def ok (syntax-ok? expanded))
    (if ok
-      (let (linked (linker %(seq @expanded) sys))
+      (let (linked (linker @expanded sys.fs))
          (let (compiled (compile linked))
              #(doc append runtime and compile from here?)
              #(doc return... what? the name?)
@@ -112,7 +112,7 @@ vaquero clean))
 
 (proc vaquero-expand (filename)
    ; expand and print - don't compile or cache
-   (sys.write (read-expand filename)))
+   (write (read-expand filename)))
 
 (proc vaquero-eval (filename)
    (def expanded (read-expand filename))
@@ -130,7 +130,8 @@ vaquero clean))
    (def mods (sys.fs.ls vaquero-module-dir))
    (def expanded (sys.fs.ls vaquero-expanded-dir))
    (def compiled (sys.fs.ls vaquero-compiled-dir))
-   (def files (append mods expanded compiled))
+   (def prelude  (list (cat home-dir "/prelude.vaq")))
+   (def files (append mods expanded compiled prelude))
    (loop go (f files.head fs files.tail)
       (sys.fs.rm f)
       (if fs
