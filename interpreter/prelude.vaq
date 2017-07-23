@@ -54,7 +54,7 @@
 (op and (x)
    (if rest
       (list 'if x (and.apply rest null) 'false)
-      (list 'send x ''to-bool)))
+      (list 'if x 'true 'false)))
 
 (op or (x)
    (def stub (gensym))
@@ -419,7 +419,7 @@
    (with-gensyms (testy result)
       (qq
          (let ((unq testy) (quote (unq predicate)) (unq result) (unq predicate))
-            (if (send (unq result) 'to-bool)
+            (if (unq result)
                true
                (error 'assertion-failed (unq testy) "(assert ...) FAIL"))))))
 
