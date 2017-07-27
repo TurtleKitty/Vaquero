@@ -52,9 +52,15 @@ END
 
 (define *cwd* (current-directory))
 (define *use-cache* #t)
-(define vaquero-mod-dir       "~/.vaquero/modules")
-(define vaquero-expanded-dir  "~/.vaquero/expanded")
-(define vaquero-compiled-dir  "~/.vaquero/compiled")
+(define user-home-dir (vector-ref (user-information (current-user-id) #t) 5))
+
+(define (vaquero-cache-dir dir)
+   (string-join (list user-home-dir ".vaquero" dir) "/"))
+
+(define cached-global-prelude-path (vaquero-cache-dir "prelude.vaq"))
+(define vaquero-mod-dir            (vaquero-cache-dir "modules"))
+(define vaquero-expanded-dir       (vaquero-cache-dir "expanded"))
+(define vaquero-compiled-dir       (vaquero-cache-dir "compiled"))
 
 (define genv #f)
 (define g-has? (lambda (name) #f))
