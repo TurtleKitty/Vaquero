@@ -192,7 +192,7 @@
         (list
             'opt      (cdr global-arg-pair)
             'rest     (car global-arg-pair)
-            'view     'operating-system-interface
+            'type     'operating-system-interface
             'env      sys-env
             'fs       sys-fs
             'signal   sys-signal
