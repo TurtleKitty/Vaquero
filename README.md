@@ -78,12 +78,12 @@ A string of characters is called a [text](https://github.com/TurtleKitty/Vaquero
 
 ; text literals are useful for constructing regexen without needing to escape backslashes.
 #(text (\w+)-(\d+))
-   ->  "(\\w+)-(\\d+)"
+   ; ->  "(\\w+)-(\\d+)"
 
 ; template literals allow interleaving text and expressions
 (def my-variable 7)
 #(template foo bar {{ my-variable }})
-   -> "foo bar 7"
+   ; -> "foo bar 7"
 
 ```
 
@@ -92,16 +92,16 @@ A [box](https://github.com/TurtleKitty/Vaquero/wiki/box) is the simplest contain
 ```scheme
 
 (def phantom (box 5))
-   -> #(box 5)
+   ; -> #(box 5)
 
 phantom.val
-   -> 5
+   ; -> 5
 
 (phantom.set! 7)
-   -> 7
+   ; -> 7
 
 phantom.val
-   -> 7
+   ; -> 7
 
 ```
 
@@ -110,13 +110,13 @@ The humble [pair](https://github.com/TurtleKitty/Vaquero/wiki/pair) is the simpl
 ```scheme
 
 (pair 'x 1)
-   -> (x . 1)
+   ; -> (x . 1)
 
 (pair 1 (pair 2 (pair ())))
-   -> (1 2)
+   ; -> (1 2)
 
 (list 1 2)
-   -> (1 2)
+   ; -> (1 2)
 
 ```
 
@@ -124,14 +124,14 @@ A [vector](https://github.com/TurtleKitty/Vaquero/wiki/vector) is a heterogeneou
 
 ```scheme
 (def v (vector 2 3 5))
-   -> #(vector 2 3 5)
+   ; -> #(vector 2 3 5)
 
 ; vectors answer the apply message
 (v 1)
-   -> 3
+   ; -> 3
 
 (v.set! 2 42)
-   -> #(vector 2 3 42)
+   ; -> #(vector 2 3 42)
 
 ```
 
@@ -140,21 +140,21 @@ A [table](https://github.com/TurtleKitty/Vaquero/wiki/table) is an unordered set
 ```scheme
 
 (table 'x 1 'y (+ 1 1))
-   -> #(table x 1 y 2)
+   ; -> #(table x 1 y 2)
 
 ; the : operator auto-quotes table keys while evaluating values
 (: x 1 y (+ 1 1))
-   -> #(table x 1 y 2)
+   ; -> #(table x 1 y 2)
 
 ```
 
 Vaquero [lambdas](https://github.com/TurtleKitty/Vaquero/wiki/lambda) are simple functions with one expression.
 
 ```scheme
-(def foo (lambda (x) (+ x 10))
+(def foo (lambda (x) (+ x 10)))
 
 (foo 3)
-   -> 13
+   ; -> 13
 ```
 
 Vaquero [procedures](https://github.com/TurtleKitty/Vaquero/wiki/procedure) have a sequence of expressions, are variadic, can accept arbitrary optional arguments.
@@ -168,19 +168,19 @@ Vaquero [procedures](https://github.com/TurtleKitty/Vaquero/wiki/procedure) have
    (list x opt.y opt.z rest))
 
 (foo 1) ; prints 1
-   -> (1 null null ())
+   ; -> (1 null null ())
 
 (foo 2 3 5) ; prints 2
-   -> (2 null null (3 5))
+   ; -> (2 null null (3 5))
 
 (foo 7 y: 11 13 17) ; prints 7
-   -> (7 11 null (13 17))
+   ; -> (7 11 null (13 17))
 
 (foo 19 y: 23 z: 29 31 37) ; prints 19
-   -> (19 23 29 (31 37))
+   ; -> (19 23 29 (31 37))
 
 (foo 0)
-   -> 'ZERO
+   ; -> 'ZERO
 
 ```
 
@@ -191,7 +191,7 @@ Vaquero [environments](https://github.com/TurtleKitty/Vaquero/wiki/environment) 
 ```scheme
 
 (let (x 2 y 3) env)
-   -> #(env y 3 x 2)
+   ; -> #(env y 3 x 2)
 
 ```
 
@@ -213,10 +213,10 @@ The **default:** option allows an object to answer arbitrary messages it does no
 (def simple
    (object 'foo 2 'bar 3))
 
-   -> #(object bar foo)
+   ; -> #(object bar foo)
 
 (def counter (box 0))
-   -> #(box 0)
+   ; -> #(box 0)
 
 (proc counter-val ()
    counter.val)
@@ -227,45 +227,45 @@ The **default:** option allows an object to answer arbitrary messages it does no
 (def complex
    (object
       'baz 5
-      'incr counter-incr
+      'incr! counter-incr
       'val  counter-val
       resend: (list (list simple 'foo 'bar))
-      auto: '(incr val)
+      auto: '(incr! val)
       default:
          (lambda (msg)
             (say 'do-not-grok))))
 
-   -> #(object incr baz val bar foo)
+   ; -> #(object incr! baz val bar foo)
 
 simple.foo
-   -> 2
+   ; -> 2
 
 simple.bar
-   -> 3
+   ; -> 3
 
 simple.baz
-   -> ERROR 'message-not-understood  ; the default default: is to toss an error on unknown messages
+   ; -> ERROR 'message-not-understood  ; the default default: is to toss an error on unknown messages
 
 complex.foo
-   -> 2
+   ; -> 2
 
 complex.bar
-   -> 3
+   ; -> 3
 
 complex.baz
-   -> 5
+   ; -> 5
 
 complex.val
-   -> 0
+   ; -> 0
 
-complex.incr
-   -> 1
+complex.incr!
+   ; -> 1
 
 complex.val
-   -> 1
+   ; -> 1
 
 complex.foonballardy  ; prints do-not-grok
-   -> null
+   ; -> null
 
 ```
 
@@ -280,7 +280,7 @@ Those who want mutable state will have to use mutable structures such as boxes, 
 
 (def foo 1)
 (say foo)
-   -> 1
+   ; -> 1
 
 ```
 
@@ -301,10 +301,10 @@ Procs and lets have an implied seq, so this form is mostly useful in conditional
 ```scheme
 
 (if true 1 2)
-   -> 1
+   ; -> 1
 
 (if false 1 2)
-   -> 2
+   ; -> 2
 
 (when (= x 0)
    (say "Zero!"))
@@ -352,19 +352,19 @@ The [while](https://github.com/TurtleKitty/Vaquero/wiki/while) form has **next**
       (send (pair x acc) 'reverse)
       (recur xs.head xs.tail (pair x acc))))
 
-(let (i 0 total 0)
-   (while (< i 20)
-      (set! total (+ total i))
-      (set! i i.inc)
-      (list i total)))
+(let (i (box 0) total (box 0))
+   (while (< i.val 20)
+      (total.set! (+ total.val i.val))
+      (i.set! i.val.inc)
+      (list i.val total.val)))
 
-   -> (20 190)
+   ; -> (20 190)
 
-(for (i 0 total 0) (<= i 20) (set! i i.inc)
-   (set! total (+ total i))
-   total)
+(for (i (box 0) total (box 0)) (<= i.val 20) (i.set! i.val.inc)
+   (total.set! (+ total.val i.val))
+   total.val)
 
-   -> 210
+   ; -> 210
 
 (loop go (counter 1000000)
    (if (= counter 0)
@@ -373,7 +373,7 @@ The [while](https://github.com/TurtleKitty/Vaquero/wiki/while) form has **next**
 
    ; time passes...
 
-   -> done
+   ; -> done
 
 ```
 
@@ -384,36 +384,36 @@ The [while](https://github.com/TurtleKitty/Vaquero/wiki/while) form has **next**
 (def bar (list 1 2 3))
 
 foo
-   -> 17
+   ; -> 17
 
 (quote foo)
-   -> foo
+   ; -> foo
 
 'foo
-   -> foo
+   ; -> foo
 
 bar
-   -> (1 2 3)
+   ; -> (1 2 3)
 
 'bar
-   -> bar
+   ; -> bar
 
 (quote (foo bar baz))
-   -> (foo bar baz)
+   ; -> (foo bar baz)
 
 '(foo bar baz)
-   -> (foo bar baz)
+   ; -> (foo bar baz)
 
 ; quasiquotation
 
-(qq (foo bar)) -> (foo bar)
-(qq ((unq foo) (unq bar))) -> (17 (1 2 3))
-(qq ((unq foo) (unqs bar))) -> (17 1 2 3) 
+(qq (foo bar)) ; -> (foo bar)
+(qq ((unq foo) (unq bar))) ; -> (17 (1 2 3))
+(qq ((unq foo) (unqs bar))) ; -> (17 1 2 3) 
 
 ; syntactic sugar
 
-%($foo $bar) -> (qq ((unq foo) (unq bar))) -> (17 (1 2 3))
-%($foo @bar) -> (qq ((unq foo) (unqs bar))) -> (17 1 2 3)
+%($foo $bar) ; -> (qq ((unq foo) (unq bar))) ; -> (17 (1 2 3))
+%($foo @bar) ; -> (qq ((unq foo) (unqs bar))) ; -> (17 1 2 3)
 ```
 
 ## Features
@@ -452,13 +452,13 @@ Vaquero is lexically-scoped by default.  However, the [wall](https://github.com/
    (wall (z (+ x y))
       z))
 
-   -> 3
+   ; -> 3
 
 (let (x 1 y 2)
    (wall (z (+ x y))
       x))
 
-   -> ERROR x is not defined
+   ; -> ERROR x is not defined
 ```
 
 ### First-class environments
@@ -479,7 +479,7 @@ First class sub-continuation capture gives the programmer the ability to build c
          (+ 7
             (kont (kont (kont 2)))))))
 
-   -> 12
+   ; -> 12
 
 ```
 
@@ -502,22 +502,22 @@ or throw an error itself, at which point the next handler in the error continuat
 (guard handler
    (+ 2 3))
 
-   -> 6
+   ; -> 6
 
 (guard handler
    (+ 3 (fail 'default)))
 
-   -> 42
+   ; -> 42
 
 (guard handler
    (+ 3 (fail 'resume)))
 
-   -> 72
+   ; -> 72
 
 (guard handler
    (+ 2 (fail 'crap)))
 
-   -> ERROR aww-hell
+   ; -> ERROR aww-hell
 
 ; most system procs throw a more sophisticated error than a symbol
 
@@ -527,7 +527,7 @@ or throw an error itself, at which point the next handler in the error continuat
 (guard show-it
    (error 'wrong-way '(go left) "Left was a poor choice."))
 
-   -> (wrong-way (go left) "Left was a poor choice.")
+   ; -> (wrong-way (go left) "Left was a poor choice.")
 
 
 ```
