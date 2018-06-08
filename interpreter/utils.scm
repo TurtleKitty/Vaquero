@@ -37,6 +37,12 @@
             (let ((key (first pairs)) (val (second pairs)))
                (loop (fn key val) (cddr pairs)))))))
 
+(define-syntax method
+    (ir-macro-transformer
+        (lambda (expr inject compare)
+            (let ((name (cadr expr)) (body (cddr expr)))
+                `(define (,name ,(inject 'obj) ,(inject 'msg) ,(inject 'cont) ,(inject 'err)) ,@body)))))
+
 (define (vaquero-error name form message)
    (display "ERROR: ") (display message) (newline)
    (abort (list name form message)))
@@ -153,6 +159,7 @@
 (define (vaquero-type obj)
    (cond
       ((boolean? obj)    'bool)
+      ((keyword? obj)    'keyword)
       ((symbol? obj)     'symbol)
       ((number? obj)     'number)
       ((string? obj)     'text)
