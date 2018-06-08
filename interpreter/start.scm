@@ -50,7 +50,11 @@
                         (display "Syntax check complete: ")
                         (say (if its-good 'ok 'FAIL))))
                 ((clean)
-                    (let ((cached (append (glob "~/.vaquero/expanded/*") (glob "~/.vaquero/compiled/*") (glob "~/.vaquero/modules/*") (list "~/.vaquero/prelude.vaq"))))
+                    (let ((cached (append
+                                       (glob (vaquero-cache-dir "expanded/*"))
+                                       (glob (vaquero-cache-dir "compiled/*"))
+                                       (glob (vaquero-cache-dir "modules/*"))
+                                       (list cached-global-prelude-path))))
                         (let loop ((f (car cached)) (fs (cdr cached)))
                             (delete-file* f)
                             (if (eq? fs '())

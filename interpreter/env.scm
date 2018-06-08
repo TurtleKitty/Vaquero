@@ -186,7 +186,7 @@
 (import-global-prelude)
 
 (define (add-global-prelude this-env)
-    (define cpath "~/.vaquero/prelude.vaq")
+    (define cpath cached-global-prelude-path)
     (define is-cached (file-exists? cpath))
     (define expanded-prelude
         (if is-cached

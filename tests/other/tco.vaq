@@ -1,5 +1,5 @@
 
-(sys.test 'tco
+(test tco
     (seq
         (def count 1000000)
         (def upto
