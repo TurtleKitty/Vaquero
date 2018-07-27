@@ -1,4 +1,6 @@
 
+(include "bool.scm")
+(include "eof.scm")
 (include "null.scm")
 (include "symbol.scm")
 
@@ -24,24 +26,17 @@
          (htr vtable 'default)))
    (m obj msg cont err))
 
-(define (vaquero-send-symbol obj msg cont err)
-   (vaquero-send-generic vaquero-send-symbol-vtable obj msg cont err))
-
 (define (vaquero-send-null obj msg cont err)
    (vaquero-send-generic vaquero-send-null-vtable obj msg cont err))
 
 (define (vaquero-send-bool obj msg cont err)
-    (define msgs '(view to-text to-bool to-symbol not))
-    (case msg
-        ((type) (cont 'bool))
-        ((autos) (cont '(view to-bool to-text to-symbol)))
-        ((to-bool) (cont obj))
-        ((view to-symbol) (cont (if obj 'true 'false)))
-        ((to-text) (cont (if obj "true" "false")))
-        ((not) (cont (not obj)))
-        ((messages) (cont msgs))
-        ((answers?) (cont (vaquero-answerer msgs)))
-        (else (idk obj msg cont err))))
+   (vaquero-send-generic vaquero-send-bool-vtable obj msg cont err))
+
+(define (vaquero-send-symbol obj msg cont err)
+   (vaquero-send-generic vaquero-send-symbol-vtable obj msg cont err))
+
+(define (vaquero-send-EOF obj msg cont err)
+   (vaquero-send-generic vaquero-send-EOF-vtable obj msg cont err))
 
 (define (vaquero-send-number obj msg cont err)
    (case msg
@@ -929,19 +924,6 @@
         ((close) (close-output-port obj) (cont 'null))
         (else (idk msg obj cont err))))
 
-(define (vaquero-send-eof obj msg cont err)
-   (define msgs '())
-   (case msg
-      ((type) (cont 'EOF))
-      ((view) (cont 'EOF))
-      ((to-bool) (cont #f))
-      ((to-text) (cont "END OF LINE."))
-      ((autos) '(view to-text to-bool))
-      ((apply) (err (vaquero-error-object 'eof-is-not-applicable '(EOF ...) "EOF objects can not be used as procedures.") cont))
-      ((messages) (cont msgs))
-      ((answers?) (cont (vaquero-answerer msgs)))
-      (else (idk msg obj cont err))))
-
 (define (vaquero-send-wtf obj msg cont err)
    (err (vaquero-error-object 'wtf-was-that? `(send ,obj ,msg) "Unknown object!")))
 
@@ -963,6 +945,6 @@
         (table      . ,vaquero-send-table)
         (proc       . ,vaquero-send-proc)
         (object     . ,vaquero-send-object)
-        (eof        . ,vaquero-send-eof)
+        (eof        . ,vaquero-send-EOF)
         (WTF        . ,vaquero-send-wtf))))
 
