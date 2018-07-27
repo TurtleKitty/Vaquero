@@ -1,4 +1,5 @@
 
+(include "null.scm")
 (include "symbol.scm")
 
 (define vaquero-universal-messages '(type view messages autos answers? to-bool to-text))
@@ -26,6 +27,9 @@
 (define (vaquero-send-symbol obj msg cont err)
    (vaquero-send-generic vaquero-send-symbol-vtable obj msg cont err))
 
+(define (vaquero-send-null obj msg cont err)
+   (vaquero-send-generic vaquero-send-null-vtable obj msg cont err))
+
 (define (vaquero-send-bool obj msg cont err)
     (define msgs '(view to-text to-bool to-symbol not))
     (case msg
@@ -38,16 +42,6 @@
         ((messages) (cont msgs))
         ((answers?) (cont (vaquero-answerer msgs)))
         (else (idk obj msg cont err))))
-
-(define (vaquero-send-null obj msg cont err)
-    (define msgs '(view to-text to-bool to-symbol))
-    (case msg
-        ((to-bool) (cont #f))
-        ((to-text) (cont ""))
-        ((apply) (err (vaquero-error-object 'null-is-not-applicable '(null ...) "Null can not be used as a procedure.") cont))
-        ((messages) (cont msgs))
-        ((answers?) (cont (lambda (msg) #t)))
-        (else (cont 'null))))
 
 (define (vaquero-send-number obj msg cont err)
    (case msg

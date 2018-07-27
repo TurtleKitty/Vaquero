@@ -5,7 +5,7 @@
          (cont (lambda (msg) (hte? vaquero-send-symbol-vtable msg))))
 
       (method autos
-         (cont '(autos messages to-bool to-symbol to-text type view default)))
+         (cont '(autos messages to-bool to-symbol to-text type view)))
 
       (method messages
          (cont (htks vaquero-send-symbol-vtable)))
