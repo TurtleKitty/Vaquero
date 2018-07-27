@@ -19,24 +19,25 @@
    (lambda (msg)
       (if (member msg msgs+) #t #f)))
 
-(define (vaquero-send-generic vtable obj msg cont err)
-   (define m
-      (if (hte? vtable msg)
-         (htr vtable msg)
-         (htr vtable 'default)))
-   (m obj msg cont err))
+(define (vaquero-send-generic vtable)
+   (lambda (obj msg cont err)
+      (define m
+         (if (hte? vtable msg)
+            (htr vtable msg)
+            (htr vtable 'default)))
+      (m obj msg cont err)))
 
-(define (vaquero-send-null obj msg cont err)
-   (vaquero-send-generic vaquero-send-null-vtable obj msg cont err))
+(define vaquero-send-null
+   (vaquero-send-generic vaquero-send-null-vtable))
 
-(define (vaquero-send-bool obj msg cont err)
-   (vaquero-send-generic vaquero-send-bool-vtable obj msg cont err))
+(define vaquero-send-bool
+   (vaquero-send-generic vaquero-send-bool-vtable))
 
-(define (vaquero-send-symbol obj msg cont err)
-   (vaquero-send-generic vaquero-send-symbol-vtable obj msg cont err))
+(define vaquero-send-symbol
+   (vaquero-send-generic vaquero-send-symbol-vtable))
 
-(define (vaquero-send-EOF obj msg cont err)
-   (vaquero-send-generic vaquero-send-EOF-vtable obj msg cont err))
+(define vaquero-send-EOF
+   (vaquero-send-generic vaquero-send-EOF-vtable))
 
 (define (vaquero-send-number obj msg cont err)
    (case msg
