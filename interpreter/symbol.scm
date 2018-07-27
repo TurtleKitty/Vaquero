@@ -1,50 +1,35 @@
 
-(use r7rs)
-
-(define-library (send symbol)
-  (import (scheme base)) ; utils
-  (export vaquero-send-symbol-vtable)
-  (begin
-
 (define vaquero-send-symbol-vtable
-   (alist->hash-table
-      `((answers?   . ,answers?)
-        (autos      . ,autos)
-        (can?       . ,can)
-        (does       . ,does)
-        (messages   . ,messages)
-        (to-bool    . ,to-bool)
-        (to-symbol  . ,to-symbol)
-        (to-text    . ,to-text)
-        (type       . ,type)
-        (view       . ,to-symbol)
-        (default    . ,idk))))
+   (let ()
+      (method answers?
+         (cont (lambda (msg) (hte? vaquero-send-symbol-vtable msg))))
 
-(method answers?
-   (cont (lambda (msg) (hte? vaquero-send-symbol-vtable msg))))
+      (method autos
+         (cont '(autos messages to-bool to-symbol to-text type view default)))
 
-(method autos
-   (cont '(autos does messages to-bool to-symbol to-text type view default)))
+      (method messages
+         (cont (htks vaquero-send-symbol-vtable)))
 
-(method can?
-   (cont (lambda (t) (eq t 'symbol)))) 
+      (method to-bool
+         (cont #t))
 
-(method does
-   (cont <empty set>))
+      (method to-symbol
+         (cont obj))
 
-(method messages
-   (cont (htks vaquero-send-symbol-vtable)))
+      (method to-text
+         (cont (symbol->string obj)))
 
-(method to-bool
-   (cont #t))
+      (method type
+         (cont 'symbol))
 
-(method to-symbol
-   (cont obj))
+      (alist->hash-table
+         `((answers?   . ,answers?)
+           (autos      . ,autos)
+           (messages   . ,messages)
+           (to-bool    . ,to-bool)
+           (to-symbol  . ,to-symbol)
+           (to-text    . ,to-text)
+           (type       . ,type)
+           (view       . ,to-symbol)
+           (default    . ,idk)))))
 
-(method to-text
-   (cont (symbol->string obj)))
-
-(method type
-   (cont 'symbol))
-
-))

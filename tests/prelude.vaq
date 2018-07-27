@@ -329,9 +329,9 @@
 
 (test cat
     (and
-        (=  "truefalsenullfoobarbaz"
+        (=  "truefalsefoobarbaz"
             (cat true false null 'foo "bar" 'baz))
-        (=  "true/false/null/foo/bar/baz"
+        (=  "true/false//foo/bar/baz"
             (cat true false null 'foo "bar" 'baz with: "/"))))
 
 (test alias

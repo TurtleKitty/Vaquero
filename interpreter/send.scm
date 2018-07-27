@@ -1,4 +1,6 @@
 
+(include "symbol.scm")
+
 (define vaquero-universal-messages '(type view messages autos answers? to-bool to-text))
 
 (define (vaquero-send obj msg cont err)
@@ -14,29 +16,15 @@
    (lambda (msg)
       (if (member msg msgs+) #t #f)))
 
+(define (vaquero-send-generic vtable obj msg cont err)
+   (define m
+      (if (hte? vtable msg)
+         (htr vtable msg)
+         (htr vtable 'default)))
+   (m obj msg cont err))
+
 (define (vaquero-send-symbol obj msg cont err)
-    (define msgs '(view to-text to-bool))
-    (case msg
-        ((autos) (cont '(view to-bool to-text)))
-        ((view) (cont obj))
-        ((to-symbol)
-            (cont
-                (if (keyword? obj)
-                    (keyword->symbol obj)
-                    obj)))
-        ((to-text) (cont (symbol->string obj)))
-        (else
-            (case obj
-                ((true)  (vaquero-send-bool #t msg cont err))
-                ((false) (vaquero-send-bool #f msg cont err))
-                ((null)  (vaquero-send-null obj msg cont err))
-                (else
-                    (case msg
-                        ((type) (cont 'symbol))
-                        ((to-bool) (cont #t))
-                        ((messages) (cont msgs))
-                        ((answers?) (cont (vaquero-answerer msgs)))
-                        (else (idk obj msg cont err))))))))
+   (vaquero-send-generic vaquero-send-symbol-vtable obj msg cont err))
 
 (define (vaquero-send-bool obj msg cont err)
     (define msgs '(view to-text to-bool to-symbol not))
@@ -55,6 +43,7 @@
     (define msgs '(view to-text to-bool to-symbol))
     (case msg
         ((to-bool) (cont #f))
+        ((to-text) (cont ""))
         ((apply) (err (vaquero-error-object 'null-is-not-applicable '(null ...) "Null can not be used as a procedure.") cont))
         ((messages) (cont msgs))
         ((answers?) (cont (lambda (msg) #t)))
@@ -964,8 +953,10 @@
 
 (define vaquero-send-vtable
    (alist->hash-table
-      `((bool       . ,vaquero-send-bool)
+      `((null       . ,vaquero-send-null)
+        (bool       . ,vaquero-send-bool)
         (symbol     . ,vaquero-send-symbol)
+        (keyword    . ,vaquero-send-symbol)
         (number     . ,vaquero-send-number)
         (text       . ,vaquero-send-text)
         (empty      . ,vaquero-send-empty)

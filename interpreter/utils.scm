@@ -158,6 +158,9 @@
 
 (define (vaquero-type obj)
    (cond
+      ((eq? obj 'null)   'null)
+      ((eq? obj 'true)   'bool)
+      ((eq? obj 'false)  'bool)
       ((boolean? obj)    'bool)
       ((keyword? obj)    'keyword)
       ((symbol? obj)     'symbol)
