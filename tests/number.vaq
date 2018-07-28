@@ -21,8 +21,13 @@
         (= 'int zero.type)
         (= 'int one.type)))
 
-(test number-type
-    (= 'number pi.type))
+(test real-type
+    (= 'real pi.type))
+
+(test to-bool
+   (and zero.to-bool.not
+        one.to-bool
+        pi.to-bool))
 
 (test to-text
     (and
@@ -68,8 +73,38 @@
 (test rem-neg (= -1 (rem -7 2)))
 (test mod-neg (= 1 (mod -7 2)))
 
+(test abs
+   (let (x -7 y -1.618)
+      (and
+         (= x.abs 7)
+         (= y.abs 1.618))))
+
+(test pos?
+   (and pi.pos?
+        one.pos?))
+
+(test neg?
+   (and pi.neg?.not
+        one.neg?.not))
+
+(test even?
+   (let (x 2 y 3)
+      (and x.even? y.even?.not)))
+
+(test odd?
+   (let (x 2 y 3)
+      (and x.odd?.not y.odd?)))
+
+(test inc
+   (and
+      (= zero.inc 1)
+      (= one.inc  2)))
+
+(test dec
+   (and
+      (= zero.dec -1)
+      (= one.dec   0)))
+
 (test floor (= pi.floor 3))
 (test ceil (= pi.ceil 4))
-
-
 

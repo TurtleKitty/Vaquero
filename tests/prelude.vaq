@@ -224,7 +224,7 @@
 
 (test resend
     (=
-        '(int text symbol number number)
+        '(int text symbol real real)
         (let (xs (list 1 "2" 'three 1/4 6.4))
             (xs.map (resend 'type)))))
 

@@ -2,6 +2,7 @@
 (include "bool.scm")
 (include "eof.scm")
 (include "null.scm")
+(include "number.scm")
 (include "symbol.scm")
 
 (define vaquero-universal-messages '(type view messages autos answers? to-bool to-text))
@@ -36,54 +37,14 @@
 (define vaquero-send-symbol
    (vaquero-send-generic vaquero-send-symbol-vtable))
 
+(define vaquero-send-int
+   (vaquero-send-generic vaquero-send-int-vtable))
+
+(define vaquero-send-real
+   (vaquero-send-generic vaquero-send-real-vtable))
+
 (define vaquero-send-EOF
    (vaquero-send-generic vaquero-send-EOF-vtable))
-
-(define (vaquero-send-number obj msg cont err)
-   (case msg
-      ((zero?) (cont (= obj 0)))
-      ((pos?) (cont (> obj 0)))
-      ((neg?) (cont (< obj 0)))
-      ((abs) (cont (abs obj)))
-      ((to-bool) (cont (not (= obj 0))))
-      ((to-text) (cont (number->string obj)))
-      ((to-number) (cont obj))
-      (else
-         (if (integer? obj)
-           (vaquero-send-int obj msg cont err)
-           (vaquero-send-real obj msg cont err)))))
-
-(define (vaquero-send-int obj msg cont err)
-   (define msgs '(view to-text to-bool zero? pos? neg? abs floor ceil round truncate inc dec even? odd?))
-   (case msg
-      ((type) (cont 'int))
-      ((view) (cont obj))   
-      ((autos) (cont '(view to-bool to-text zero? pos? neg? abs floor ceil round truncate inc dec even? odd?)))
-      ((inc) (cont (+ obj 1)))
-      ((dec) (cont (- obj 1)))
-      ((even?) (cont (even? obj)))
-      ((odd?) (cont (odd? obj)))
-      ((floor) (cont obj))
-      ((ceil) (cont obj))
-      ((round) (cont obj))
-      ((truncate) (cont obj))
-      ((messages) (cont msgs))
-      ((answers?) (cont (vaquero-answerer msgs)))
-      (else (idk obj msg cont err))))
- 
-(define (vaquero-send-real obj msg cont err)
-   (define msgs '(view to-text to-bool zero? pos? neg? abs floor ceil round truncate))
-   (case msg
-      ((type) (cont 'number))
-      ((view) (cont (* 1.0 obj)))
-      ((floor) (cont (inexact->exact (floor obj))))
-      ((ceil) (cont (inexact->exact (ceiling obj))))
-      ((round) (cont (inexact->exact (round obj))))
-      ((truncate) (cont (inexact->exact (truncate obj))))
-      ((autos) (cont '(view to-bool to-text zero? pos? neg? abs floor ceil round truncate)))
-      ((messages) (cont msgs))
-      ((answers?) (cont (vaquero-answerer msgs)))
-      (else (idk obj msg cont err))))
 
 (define (vaquero-send-text obj msg cont err)
     (define msgs
@@ -934,7 +895,8 @@
         (bool       . ,vaquero-send-bool)
         (symbol     . ,vaquero-send-symbol)
         (keyword    . ,vaquero-send-symbol)
-        (number     . ,vaquero-send-number)
+        (int        . ,vaquero-send-int)
+        (real       . ,vaquero-send-real)
         (text       . ,vaquero-send-text)
         (empty      . ,vaquero-send-empty)
         (list       . ,vaquero-send-list)
