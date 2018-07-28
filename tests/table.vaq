@@ -42,19 +42,19 @@
 
 (test table-size (= simp.size 2))
 
-(test table-keys (= '(x y) (simp.keys.sort <))) 
+(test table-keys (= '(x y) (list-sort < simp.keys))) 
 
 (test table-values
     (= '(2 3)
-        (simp.values.sort <)))
+        (list-sort < simp.values)))
 
 (test table-pairs
     (= (list '(x . 2) '(y . 3))
-       (simp.pairs.sort (lambda (a b) (< a.tail b.tail)))))
+       (list-sort (lambda (a b) (< a.tail b.tail)) simp.pairs)))
 
 (test table-to-list
     (= (list '(x . 2) '(y . 3))
-       (simp.to-list.sort (lambda (a b) (< a.tail b.tail)))))
+       (list-sort (lambda (a b) (< a.tail b.tail)) simp.to-list)))
 
 (test table-merge ; table equality is broken...
     (seq
@@ -66,27 +66,27 @@
 
 (def yor (: a 1 b 2 c 3 d 4 e 5))
 
-(test table-fold
-    (= 15
-       (yor.fold 0 (lambda (total kv) (+ total kv.val)))))
+;(test table-fold
+;    (= 15
+;       (yor.fold 0 (lambda (total kv) (+ total kv.val)))))
 
-(test table-reduce
-    (= '(total . 120)
-       (yor.reduce
-            '(total . 1)
-            (lambda (total kv) (pair 'total (* total.val kv.val))))))
+;(test table-reduce
+;    (= '(total . 120)
+;       (yor.reduce
+;            '(total . 1)
+;            (lambda (total kv) (pair 'total (* total.val kv.val))))))
 
-(test table-map
-    (let ()
-        (proc square-pair (p)
-            (pair p.key (* p.val p.val)))
-        (def noob (yor.map square-pair))
-        (= '(1 4 9 16 25) (noob.values.sort <))))
+;(test table-map
+;    (let ()
+;        (proc square-pair (p)
+;            (pair p.key (* p.val p.val)))
+;        (def noob (yor.map square-pair))
+;        (= '(1 4 9 16 25) (list-sort < noob.values))))
 
-(test table-filter
-    (let ()
-        (proc kill4 (p)
-            (!= p.val 4))
-        (def noob (yor.filter kill4))
-        (= '(1 2 3 5) (noob.values.sort <))))
+;(test table-filter
+;    (let ()
+;        (proc kill4 (p)
+;            (!= p.val 4))
+;        (def noob (yor.filter kill4))
+;        (= '(1 2 3 5) (list-sort < noob.values))))
 

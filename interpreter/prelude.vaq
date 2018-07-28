@@ -258,6 +258,51 @@
                      $rv))))
          ($jump null)))))
 
+(op everywhere ()
+   %(seq @rest (compile-eval @rest)))
+
+(everywhere
+   (proc list-fold (f acc xs)
+      (if xs.empty?
+         acc
+         (list-fold f (f xs.head acc) xs.tail)))
+
+   (proc list-reduce (f acc xs)
+      (if xs.empty?
+         acc
+         (f xs.head (list-reduce f acc xs.tail))))
+
+   (proc list-map (f xs)
+      (if xs
+         (pair (f xs.head) (list-map f xs.tail))
+         ()))
+
+   (proc list-filter (f xs)
+      (list-reduce (lambda (x y) (if (f x) (pair x y) y)) '() xs))
+
+   (def list-sort
+      (let ()
+         (def merge (lambda (f a b)
+            (if a.size.zero?
+               b
+               (if b.size.zero?
+                  a
+                  (if (f a.head b.head)
+                     (pair a.0 (merge f a.tail b))
+                     (pair b.0 (merge f a b.tail)))))))
+
+         (def sort (lambda (f yarr)
+            (def len yarr.size)
+            (if (< len 2)
+               yarr
+               (seq
+                  (def half (send (/ len 2) 'floor))
+                  (merge f (sort f (yarr.take half)) (sort f (yarr.drop half)))))))
+
+         (lambda (f xs)
+            (sort f xs)))))
+
+
 (op _ (body)
    (def uscore (gensym))
    (def bodies (pair body rest))
@@ -265,7 +310,7 @@
       (if (pair? form)
          (if (= form.head '_)
             form
-            (form.map rename))
+            (list-map rename form))
          (if (= form '_)
             uscore
             form)))
@@ -303,13 +348,10 @@
       auto: '(val view)))
 
 (op qw ()
-   (pair 'list (rest.map (lambda (x) x.to-text))))
-
-(op everywhere ()
-   %(seq @rest (compile-eval @rest)))
+   (pair 'list (list-map (lambda (x) x.to-text) rest)))
 
 (op with-gensyms (gs)
-   (def pairs (gs.map (_ (list _ '(gensym)))))
+   (def pairs (list-map (_ (list _ '(gensym))) gs))
    (def lets
       (loop go (x pairs.head xs pairs.tail)
          (if xs
@@ -345,11 +387,10 @@
 (op each (name arg body)
    (def bodies (pair body rest))
    (with-gensyms (xs jump)
-      (qq
-         (let ((unq xs) (send (unq arg) 'to-list))
-            (proc (unq jump) ((unq name))
-               (unqs bodies))
-            ((send (unq xs) 'each) (unq jump))))))
+     %(let ($xs (send $arg 'to-list))
+         (proc $jump ($name)
+            @bodies)
+         (list-map $jump $xs))))
 
 (proc range (start end)
    (def step (if opt.step opt.step 1))
@@ -364,17 +405,18 @@
    (qq
       (vector
          (unqs
-            (rest.map
+            (list-map
                (_ (if (pair? _)
                     (qq (matrix (unqs _)))
-                   _)))))))
+                   _)
+               rest))))))
 
 (op gen (name body)
    (def opt-arity (if opt.arity opt.arity 5))
    (qq
       (def (unq name)
          (let (default (box (proc () (unqs (pair body rest))))
-               clauses (vector.apply ((send (range 0 $opt-arity) 'map) (_ ())) (:)))
+               clauses (vector.apply (list-map (_ ()) (range 0 $opt-arity)) (:)))
             (proc add-clause! (pred body)
                (def idx pred.arity)
                (clauses.set!
@@ -523,8 +565,8 @@
                (symbol? thing) (json-out thing.to-text)
                (text? thing)   (cat "\"" (thing.replace "\"" "\\\"" flags: "g") "\"")
                (vector? thing) (json-out thing.to-list)
-               (table? thing) (cat "{" (comma-fy (thing.to-list.map (lambda (kv) (cat (json-out kv.key.to-text) ":" (json-out kv.val))))) "}")
-               (list? thing)   (cat "[" (comma-fy (thing.map json-out)) "]")
+               (table? thing) (cat "{" (comma-fy (list-map (lambda (kv) (cat (json-out kv.key.to-text) ":" (json-out kv.val))) thing.to-list)) "}")
+               (list? thing)   (cat "[" (comma-fy (list-map json-out thing)) "]")
                (pair? thing)   (cat "[" (json-out thing.head) "," (json-out thing.tail) "]")
                default: 
                   (if (thing.responds? 'to-json)
@@ -564,7 +606,7 @@
       (if passed
          passed
          (if hidden
-            (obj.messages.filter none-shall-pass)
+            (list-filter none-shall-pass obj.messages)
             ())))
 
    (proc unseal (xyzzy)
@@ -613,11 +655,11 @@
    (when (not (proc? f))
       (error 'bad-argument %(map $f $xs @rest) "map: first argument must be a procedure."))
    (proc get-heads (xs)
-      (xs.map (resend 'head)))
+      (list-map (resend 'head) xs))
    (proc get-tails (xs)
-      (xs.map (resend 'tail)))
+      (list-map (resend 'tail) xs))
    (let (objz (pair xs rest))
-      (def lists (objz.map (resend 'to-list)))
+      (def lists (list-map (resend 'to-list) objz))
       (loop go (heads (get-heads lists) tails (get-tails lists) results ())
          (def noo (pair (apply f heads null) results))
          (if (every? identity tails)
@@ -627,13 +669,13 @@
 (proc fold (kons knil) ; general fold
    (when (not (proc? kons))
       (error 'bad-argument %(fold $kons $knil @rest) "fold: first argument must be a procedure."))
-   (def lists (rest.map (resend 'to-list)))
+   (def lists (list-map (resend 'to-list) rest))
    (proc fold-m (kons knil lists)
       (if (any? (resend 'empty?) lists)
          knil
          (fold-m kons
-            (apply kons (append (lists.map (resend 'head)) (list knil)) null)
-            (lists.map (resend 'tail)))))
+            (apply kons (append (list-map (resend 'head) lists) (list knil)) null)
+            (list-map (resend 'tail) lists))))
    (fold-m kons knil lists))
 
 (proc zip (xs)

@@ -9,8 +9,8 @@
 (test list-type        (= ys.type 'list))
 (test list-not-null    (= (null? empty) false))
 (test list-view        (= ys.view '(8 6 7 5 3 0 9)))
-(test list-false       (= empty.to-bool false))
 (test list-true        (= ys.to-bool true))
+(test list-false       (= empty.to-bool false))
 (test list-to-table    (= alist.to-table (: x 1 y 2)))
 (test list-to-vector   (= ys.to-vector (vector 8 6 7 5 3 0 9)))
 (test list-head        (= ys.head 8))
@@ -19,12 +19,12 @@
 (test list-has?        (= (ys.has? 7) true))
 (test list-has?-not    (= (ys.has? 4) false))
 
-(test list-fold    (= (ys.fold 0 +) 38))
-(test list-reduce  (= (ys.reduce 0 +) 38))
-(test list-map     (= (ys.map (lambda (x) (* 10 x))) '(80 60 70 50 30 0 90)))
-(test list-filter  (= (ys.filter (lambda (x) (> x 5))) '(8 6 7 9)))
-(test list-sort-<  (= (ys.sort <) '(0 3 5 6 7 8 9)))
-(test list-sort->  (= (ys.sort >) '(9 8 7 6 5 3 0)))
+;(test list-fold    (= (ys.fold 0 +) 38))
+;(test list-reduce  (= (ys.reduce 0 +) 38))
+;(test list-map     (= (ys.map (lambda (x) (* 10 x))) '(80 60 70 50 30 0 90)))
+;(test list-filter  (= (ys.filter (lambda (x) (> x 5))) '(8 6 7 9)))
+;(test list-sort-<  (= (ys.sort <) '(0 3 5 6 7 8 9)))
+;(test list-sort->  (= (ys.sort >) '(9 8 7 6 5 3 0)))
 
 (test list-head!
    (= '(b 1)

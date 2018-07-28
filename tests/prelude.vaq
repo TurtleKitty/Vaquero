@@ -66,8 +66,8 @@
 
 (test compose
     (let ()
-        (proc f (xs) (xs.map (_ (* _ _))))
-        (proc g (xs) (xs.map (_ (+ _ 10))))
+        (proc f (xs) (list-map (_ (* _ _)) xs))
+        (proc g (xs) (list-map (_ (+ _ 10)) xs))
         (and
             (= '(121 144 169 196 225 256 289)
                 ((compose f g range) 1 7))
@@ -109,16 +109,16 @@
         (=  (list (foo 0) (foo 9) (foo 23) (foo 42) (foo 153))
            '(null null is-a-biggun is-a-biggun is-a-biggun))))
 
-(test chain
-    (let ()
-        (def xs (range 0 10))
-        (proc foo (x) (* x x))
-        (proc bar (x) (and (> x 10) (< x 100)))
-        (= '(81 64 49 36 25 16)
-            (chain xs
-                (map foo)
-                (filter bar)
-                (sort >)))))
+;(test chain
+;    (let ()
+;        (def xs (range 0 10))
+;        (proc foo (x) (* x x))
+;        (proc bar (x) (and (> x 10) (< x 100)))
+;        (= '(81 64 49 36 25 16)
+;            (chain xs
+;                (map foo)
+;                (filter bar)
+;                (sort >)))))
 
 (test case
     (let ()
@@ -226,7 +226,7 @@
     (=
         '(int text symbol real real)
         (let (xs (list 1 "2" 'three 1/4 6.4))
-            (xs.map (resend 'type)))))
+            (list-map (resend 'type) xs))))
 
 (test promise
     (let (count (box 0))
@@ -311,7 +311,7 @@
                 (+ x y z))
             (spec nosuke (x y z p d q r)
                 true
-                ((send (list x y z p d q r) 'map) (_ _.to-text)))
+                (list-map (_ _.to-text) (list x y z p d q r)))
             (list
                 (nosuke 0)
                 (nosuke 2)

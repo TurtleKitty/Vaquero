@@ -5,6 +5,7 @@
 (include "number.scm")
 (include "symbol.scm")
 (include "text.scm")
+(include "pair.scm")
 
 (define vaquero-universal-messages '(answers? autos messages to-bool to-text type view))
 
@@ -47,6 +48,12 @@
 (define vaquero-send-text
    (vaquero-send-generic vaquero-send-text-vtable))
 
+(define vaquero-send-list
+   (vaquero-send-generic vaquero-send-list-vtable))
+
+(define vaquero-send-pair
+   (vaquero-send-generic vaquero-send-pair-vtable))
+
 (define vaquero-send-EOF
    (vaquero-send-generic vaquero-send-EOF-vtable))
 
@@ -57,186 +64,6 @@
         'null
         cont
         err))
-
-(define (vaquero-send-empty obj msg cont err)
-    (case msg
-        ((type empty? autos view to-bool to-text to-list head tail key val car cdr size)
-            (cont
-                (case msg
-                    ((type) 'list)
-                    ((autos) '(view empty? to-bool to-text to-list head tail key val size))
-                    ((empty?) #t)
-                    ((to-bool) #f)
-                    ((view to-list) '())
-                    ((to-text) "()")
-                    ((head tail key val car cdr) 'null)
-                    ((size) 0))))
-        (else (vaquero-send-list obj msg cont err))))
-
-(define (list-set! list k val)
-    (if (zero? k)
-        (set-car! list val)
-        (list-set! (cdr list) (- k 1) val)))
-
-(define (vaquero-send-list obj msg cont err)
-    (define msgs
-        '(empty? to-list to-vector to-table head key car head! tail val cdr tail! set! cons
-          size reverse has? append take drop apply fold reduce each map filter sort))
-    (define (ldefault msg)
-        (if (number? msg)
-            (if (> (length obj) msg)
-                (cont (list-ref obj msg))
-                (err (vaquero-error-object 'out-of-bounds `(,obj ,msg) "list: index out of bounds.") cont))
-            (idk obj msg cont err)))
-    (case msg
-        ((empty? type view to-bool to-list to-text to-vector head key car tail val cdr head! tail! set! cons size reverse has? append take drop apply messages answers?)
-            (cont
-                (case msg
-                    ((type) 'list)
-                    ((empty?) #f)
-                    ((autos) '(view empty? to-bool to-text to-list to-vector to-table head tail key val size reverse))
-                    ((view to-text) (vaquero-view obj))
-                    ((to-bool) #t)
-                    ((to-list) obj)
-                    ((to-vector) (list->vector obj))
-                    ((head key car) (car obj))
-                    ((tail val cdr) (cdr obj))
-                    ((head!) (lambda (v)   (set-car! obj v) v))
-                    ((tail!) (lambda (v)   (set-cdr! obj v) v))
-                    ((set!)
-                        (lambda (i v)
-                           (if (> (length obj) i)
-                               (begin (list-set! obj i v) v)
-                               (err (vaquero-error-object 'out-of-bounds `(,obj ,i) "list: index out of bounds.") cont))))
-                    ((cons) (lambda (v) (cons v obj)))
-                    ((size) (length obj))
-                    ((clone) (list-copy obj))
-                    ((reverse) (reverse obj))
-                    ((has?)
-                        (lambda (item)
-                            (if (member item obj)
-                                #t
-                                #f)))
-                    ((append) (lambda (other) (append obj other)))
-                    ((take) (lambda (n) (take obj n)))
-                    ((drop) (lambda (n) (drop obj n)))
-                    ((messages) msgs)
-                    ((answers?)
-                        (lambda (msg)
-                            (or
-                                (and (number? msg) (> (length obj) msg))
-                                ((vaquero-answerer msgs) msg))))
-                    ((apply)
-                        (vaquero-proc
-                            primitive-type
-                            'pair
-                            (lambda (args opts cont err)
-                                (if (pair? (car args))
-                                    (vaquero-send-list obj (caar args) cont err)
-                                    (err (vaquero-error-object 'bad-message! `(,obj ,args ,opts) "Message not understood.") cont))))))))
-        ((to-table)
-            (if (not (every pair? obj))
-                (err (vaquero-error-object 'not-an-associative-list! `(send ,obj to-table) "list: to-table only works on associative lists." ) cont)
-                (let ((r (vaquero-table)))
-                    (define vars (htr r 'vars))
-                    (for-each (lambda (p) (hts! vars (car p) (cdr p))) obj)
-                    (cont r))))
-        ((fold)
-            (vaquero-ho
-                '(lambda (xs)
-                    (lambda (acc funk)
-                        (if xs.empty?
-                            acc
-                            (xs.tail.fold (funk acc xs.head) funk))))
-                obj
-                cont
-                err))
-        ((reduce)
-            (vaquero-ho
-                '(lambda (xs)
-                    (lambda (acc funk)
-                        (if xs.empty?
-                            acc
-                            (funk xs.head (xs.tail.reduce acc funk)))))
-                obj
-                cont
-                err))
-        ((each)
-            (vaquero-ho
-                '(lambda (xs)
-                    (lambda (funk)
-                        (if xs.empty?
-                            null
-                            (seq
-                                (funk xs.head)
-                                (xs.tail.each funk)))))
-                obj
-                cont
-                err))
-        ((map)
-            (vaquero-ho
-                '(lambda (xs)
-                    (lambda (funk)
-                        (xs.reduce '() (lambda (x y) (pair (funk x) y)))))
-                obj
-                cont
-                err))
-        ((filter)
-            (vaquero-ho
-                '(lambda (xs)
-                    (lambda (funk)
-                        (xs.reduce '() (lambda (x y) (if (funk x) (pair x y) y)))))
-                obj
-                cont
-                err))
-        ((sort)
-            (vaquero-ho
-                '(lambda (xs)
-                    (lambda (funk)
-                        (def merge (lambda (a b)
-                            (if a.size.zero?
-                                b
-                                (if b.size.zero?
-                                    a
-                                    (if (funk a.head b.head)
-                                        (pair a.0 (merge a.tail b))
-                                        (pair b.0 (merge a b.tail)))))))
-                        (def sort (lambda (yarr)
-                            (def len yarr.size)
-                            (if (< len 2)
-                                yarr
-                                (seq
-                                    (def half (send (/ len 2) 'floor))
-                                    (merge (sort (yarr.take half)) (sort (yarr.drop half)))))))
-                        (sort xs)))
-                obj
-                cont
-                err))
-        (else (ldefault msg))))
-
-(define (vaquero-send-pair obj msg cont err)
-    (define msgs
-        '(empty? view to-text to-bool to-list to-table head key car tail val cdr head! tail! cons size clone))
-    (define msgs+ (append msgs '(messages answers? type)))
-    (if (member msg msgs+)
-        (cont 
-            (case msg
-                ((type) 'pair)
-                ((view to-text) (vaquero-view obj))
-                ((autos) '(view empty? to-bool to-text to-list to-table head tail key val size))
-                ((to-bool) #t)
-                ((to-list) (list (car obj) (cdr obj)))
-                ((to-table) (vaquero-table (car obj) (cdr obj)))
-                ((head key car) (car obj))
-                ((tail val cdr) (cdr obj))
-                ((head!) (lambda (v) (set-car! obj v) v))
-                ((tail!) (lambda (v) (set-cdr! obj v) v))
-                ((cons) (lambda (v) (cons v obj)))
-                ((size) 2)
-                ((clone) (cons (car obj) (cdr obj)))
-                ((messages) msgs)
-                ((answers?) (vaquero-answerer msgs))))
-        (idk obj msg cont err)))
 
 (define (vaquero-send-primitive obj msg cont err)
     (define msgs '(view code to-bool to-text env arity apply))
@@ -776,7 +603,6 @@
         (int        . ,vaquero-send-int)
         (real       . ,vaquero-send-real)
         (text       . ,vaquero-send-text)
-        (empty      . ,vaquero-send-empty)
         (list       . ,vaquero-send-list)
         (pair       . ,vaquero-send-pair)
         (primitive  . ,vaquero-send-primitive)

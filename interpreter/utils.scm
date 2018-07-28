@@ -167,7 +167,6 @@
       ((integer? obj)    'int)
       ((number? obj)     'real)
       ((string? obj)     'text)
-      ((null? obj)       'empty)
       ((list? obj)       'list)
       ((pair? obj)       'pair)
       ((procedure? obj)  'primitive)
