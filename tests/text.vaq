@@ -24,8 +24,8 @@
 (test text-set!
    (= "3"
       (let (two "2")
-      (seq (two.set! 0 "3")
-            two))))
+         (seq (two.set! 0 "3")
+               two))))
 
 (test text-alphabetic?
    (and str.alphabetic?

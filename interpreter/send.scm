@@ -4,8 +4,9 @@
 (include "null.scm")
 (include "number.scm")
 (include "symbol.scm")
+(include "text.scm")
 
-(define vaquero-universal-messages '(type view messages autos answers? to-bool to-text))
+(define vaquero-universal-messages '(answers? autos messages to-bool to-text type view))
 
 (define (vaquero-send obj msg cont err)
    (define obj-type (vaquero-type obj))
@@ -43,134 +44,11 @@
 (define vaquero-send-real
    (vaquero-send-generic vaquero-send-real-vtable))
 
+(define vaquero-send-text
+   (vaquero-send-generic vaquero-send-text-vtable))
+
 (define vaquero-send-EOF
    (vaquero-send-generic vaquero-send-EOF-vtable))
-
-(define (vaquero-send-text obj msg cont err)
-    (define msgs
-        '(view clone to-bool to-symbol to-keyword to-number
-          to-list to-text to-stream size chomp index take drop
-          trim ltrim rtrim lpad rpad set! split match capture replace
-          alphabetic? numeric? whitespace? uc? lc? uc lc))
-    (define (build-regex re flags)
-        (define opts
-            (append
-                (list re 'fast 'utf8)
-                (filter
-                    (lambda (x) (not (eq? x 'g)))
-                    (map string->symbol (string-split flags "")))))
-        (apply irregex opts))
-    (define me-answers? (vaquero-answerer msgs))
-    (case msg
-        ((type view autos clone to-bool to-symbol to-keyword to-number to-list to-text to-stream size chomp index alphabetic? numeric? whitespace? uc? lc? uc lc take drop trim ltrim rtrim lpad rpad)
-            (cont
-                (case msg
-                    ((type) 'text)
-                    ((view) obj)
-                    ((autos) '(view to-bool to-symbol to-text to-keyword to-number to-list to-stream size chomp ltrim rtrim trim alphabetic? numeric? whitespace? uc? lc? uc lc))
-                    ((clone) (string-copy obj))
-                    ((to-bool) (not (eq? (string-length obj) 0)))
-                    ((to-symbol) (string->symbol obj))
-                    ((to-keyword) (string->keyword obj))
-                    ((to-number) (string->number obj))
-                    ((to-list) (string->list obj))
-                    ((to-vector) (list->vector (string->list obj)))
-                    ((to-text) obj)
-                    ((to-stream) (open-input-string obj))
-                    ((alphabetic?) (cont (every char-alphabetic? (string->list obj))))
-                    ((numeric?)    (cont (if (string->number obj) #t #f)))
-                    ((whitespace?) (cont (every char-whitespace? (string->list obj))))
-                    ((uc?)  (cont (every char-upper-case? (string->list obj))))
-                    ((lc?)  (cont (every char-lower-case? (string->list obj))))
-                    ((uc)   (string-upcase obj))
-                    ((lc)   (string-downcase obj))
-                    ((take) (lambda (n) (string-take obj n)))
-                    ((drop) (lambda (n) (string-drop obj n)))
-                    ((trim) (string-trim-both obj))
-                    ((ltrim) (string-trim obj))
-                    ((rtrim) (string-trim-right obj))
-                    ((lpad) (lambda (pad n) (string-pad obj n (string-ref pad 0))))
-                    ((rpad) (lambda (pad n) (string-pad-right obj n (string-ref pad 0))))
-                    ((chomp) (string-chomp obj))
-                    ((index) (lambda (which) (substring-index which obj)))
-                    ((size) (string-length obj))
-                    ((messages) msgs)
-                    ((answers?)
-                        (lambda (msg)
-                            (or
-                                (and (number? msg) (> (string-length obj) msg))
-                                (me-answers? msg)))))))
-        ((split)
-            (cont
-                (vaquero-proc
-                    primitive-type
-                    'text
-                    (lambda (args opts cont err)
-                        (define flags (vaquero-send-atomic opts 'flags))
-                        (define re (build-regex (car args) (if (eq? 'null flags) "" flags)))
-                        (cont (irregex-split re obj))))))
-        ((match)
-            (cont
-                (vaquero-proc
-                    primitive-type
-                    'text
-                    (lambda (args opts cont err)
-                        (define flags (vaquero-send-atomic opts 'flags))
-                        (define re (build-regex (car args) (if (eq? 'null flags) "" flags)))
-                        (define rez (irregex-search re obj))
-                        (cont 
-                            (if rez
-                                #t
-                                #f))))))
-        ((capture)
-            (cont
-                (vaquero-proc
-                    primitive-type
-                    'text
-                    (lambda (args opts cont err)
-                        (define flags (vaquero-send-atomic opts 'flags))
-                        (define re (build-regex (car args) (if (eq? 'null flags) "" flags)))
-                        (cont
-                            (irregex-fold
-                                re
-                                (lambda (idx match acc)
-                                    (define n (irregex-match-num-submatches match))
-                                    (let loop ((this n) (matches '()))
-                                        (if (= this 0)
-                                            (cons matches acc)
-                                            (loop (- this 1) (cons (irregex-match-substring match this) matches)))))
-                                '()
-                                obj
-                                (lambda (idx acc) (reverse acc))))))))
-        ((replace)
-            (cont
-                (vaquero-proc
-                    primitive-type
-                    'text
-                    (lambda (args opts cont err)
-                        (define fopt (vaquero-send-atomic opts 'flags))
-                        (define flags (if (eq? 'null fopt) "" fopt))
-                        (define re (build-regex (car args) flags))
-                        (cont
-                            (if (string-contains flags "g")
-                                (apply irregex-replace/all (cons re (cons obj (cdr args))))
-                                (apply irregex-replace (cons re (cons obj (cdr args))))))))))
-        ((set!)
-            (cont 
-                (lambda (idx val)
-                    (if (not (number? idx))
-                        (err (vaquero-error-object 'not-a-number `(,obj ,idx) "text: set! requires a number as its first argument.") cont)
-                        (if (> idx (string-length obj))
-                            (err (vaquero-error-object 'out-of-bounds `(,obj ,idx) "text: index out of bounds.") cont)
-                            (begin
-                                (string-set! obj idx (string-ref val 0))
-                                obj))))))
-        (else
-            (if (number? msg)
-                (if (> (string-length obj) msg)
-                    (cont (string (string-ref obj msg)))
-                    (err (vaquero-error-object 'out-of-bounds `(,obj ,msg) "text: index out of bounds.") cont))
-                (idk obj msg cont err)))))
 
 (define (vaquero-ho code obj cont err)
     (vaquero-apply
