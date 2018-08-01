@@ -6,6 +6,7 @@
 (include "symbol.scm")
 (include "text.scm")
 (include "pair.scm")
+(include "proc.scm")
 
 (define vaquero-universal-messages '(answers? autos messages to-bool to-text type view))
 
@@ -54,6 +55,12 @@
 (define vaquero-send-pair
    (vaquero-send-generic vaquero-send-pair-vtable))
 
+(define vaquero-send-primitive
+   (vaquero-send-generic vaquero-send-primitive-vtable))
+
+(define vaquero-send-proc
+   (vaquero-send-generic vaquero-send-proc-vtable))
+
 (define vaquero-send-EOF
    (vaquero-send-generic vaquero-send-EOF-vtable))
 
@@ -64,31 +71,6 @@
         'null
         cont
         err))
-
-(define (vaquero-send-primitive obj msg cont err)
-    (define msgs '(view code to-bool to-text env arity apply))
-    (define msgs+ (append msgs '(messages answers? type autos)))
-    (if (member msg msgs+)
-        (cont 
-            (case msg
-                ((type) 'proc)
-                ((view) primitive-type)
-                ((code) '0xDEADBEEF)
-                ((to-bool) #t)
-                ((to-text) "0xDEADBEEF")
-                ((autos) '(view code to-bool to-text env arity))
-                ((env) 'global)
-                ((arity)
-                    (let ((pinfo (procedure-information obj)))
-                        (if (list? pinfo)
-                            (sub1 (length pinfo))
-                            '*)))
-                ((messages) msgs)
-                ((answers?) (vaquero-answerer msgs))
-                ((apply)
-                    (lambda (args opts)
-                        (apply obj args)))))
-        (idk obj msg cont err)))
 
 (define (vaquero-send-table obj msg cont err)
     (define msgs
@@ -249,28 +231,6 @@
                   ((to-text) (cont "object"))
                   ((to-bool) (cont (not (eq? 0 (length (hash-table-keys fields))))))
                   (else (vaquero-apply (htr obj 'default) (list msg) 'null cont err))))))))
-
-(define (vaquero-send-proc obj msg cont err)
-    (define msgs '(type view to-bool to-text arity code env formals apply))
-    (case msg
-        ((type) (cont (htr obj 'type)))
-        ((view) (cont `(,(htr obj 'type) ,(htr obj 'formals) ...)))
-        ((to-bool) (cont #t))
-        ((to-text) (cont (htr obj 'code)))
-        ((arity code env formals) (cont (htr obj msg)))
-        ((apply)
-            (cont 
-                (vaquero-proc
-                    primitive-type
-                    'proc
-                    (lambda (args opts cont err)
-                        (if (< (length args) 2)
-                            (err (vaquero-error-object 'arity `((send ,obj apply) ,args) "proc.apply requires 2 arguments!") cont)
-                            (vaquero-apply obj (car args) (cadr args) cont err))))))
-        ((messages) (cont msgs))
-        ((answers?) (cont (vaquero-answerer msgs)))
-        ((autos) (cont '(view to-bool to-text arity code env formals)))
-        (else (idk obj msg cont err))))
 
 (define (vaquero-send-env obj msg cont err)
     (define msgs '(view to-text def! merge! has? get pairs lookup parent extend expand eval load))
