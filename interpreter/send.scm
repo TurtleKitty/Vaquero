@@ -7,6 +7,7 @@
 (include "text.scm")
 (include "pair.scm")
 (include "proc.scm")
+(include "vector.scm")
 
 (define vaquero-universal-messages '(answers? autos messages to-bool to-text type view))
 
@@ -60,6 +61,9 @@
 
 (define vaquero-send-proc
    (vaquero-send-generic vaquero-send-proc-vtable))
+
+(define vaquero-send-vector
+   (vaquero-send-generic vaquero-send-vector-vtable))
 
 (define vaquero-send-EOF
    (vaquero-send-generic vaquero-send-EOF-vtable))
@@ -333,108 +337,6 @@
         ((messages) (cont msgs))
         ((answers?) (cont (vaquero-answerer msgs)))
         (else (cont (env-default msg)))))
-
-(define (vaquero-send-vector obj msg cont err)
-    (define msgs '(view to-bool to-text to-list pairs size clone has? get set! apply fold reduce map filter sort))
-    (define (vdefault msg)
-        (if (number? msg)
-            (if (> (vector-length obj) msg)
-                (cont (vector-ref obj msg))
-                (err (vaquero-error-object 'out-of-bounds `(,obj ,msg) "vector: index out of bounds.") cont))
-            (idk obj msg cont err)))
-    (case msg
-        ((type view autos to-bool to-text to-list pairs size clone has? get set! apply messages answers?)
-            (cont 
-                (case msg
-                    ((type) 'vector)
-                    ((view) (vaquero-view obj))
-                    ((to-bool) (not (eq? (vector-length obj) 0)))
-                    ((to-list) (vector->list obj))
-                    ((to-text) (apply string (vector->list obj)))
-                    ((autos) '(view to-text to-bool to-list size pairs clone))
-                    ((pairs) (vector->list (vector-map (lambda (i x) (cons i x)) obj)))
-                    ((size) (vector-length obj))
-                    ((clone) (vector-copy obj))
-                    ((has?)
-                        (lambda (item)
-                            (if (vector-index
-                                    (lambda (x) (eq? x item))
-                                    obj)
-                                #t
-                                #f)))
-                    ((get)
-                        (lambda (idx)
-                            (if (not (number? idx))
-                                (err (vaquero-error-object 'not-a-number `(,obj ,idx) "vector: get requires a number as its argument.") cont)
-                                (if (> idx (vector-length obj))
-                                    (err (vaquero-error-object 'out-of-bounds `(,obj ,msg) "vector: index out of bounds.") cont)
-                                    (vector-ref obj idx)))))
-                    ((set!)
-                        (lambda (idx val)
-                            (if (not (number? idx))
-                                (err (vaquero-error-object 'not-a-number `(,obj ,idx) "vector: set! requires a number as its first argument.") cont)
-                                (if (> idx (vector-length obj))
-                                    (err (vaquero-error-object 'out-of-bounds `(,obj ,msg) "vector: index out of bounds.") cont)
-                                    (begin
-                                        (vector-set! obj idx val)
-                                        obj)))))
-                    ((messages) msgs)
-                    ((answers?)
-                        (lambda (msg)
-                            (or
-                                (and (number? msg) (> (vector-length obj) msg))
-                                ((vaquero-answers msgs) msg))))
-                    ((apply)
-                        (vaquero-proc
-                            primitive-type
-                            'pair
-                            (lambda (args opts cont err)
-                                (vaquero-send-vector obj (caar args) cont err)))))))
-        ((fold)
-            (vaquero-ho
-                '(lambda (vec)
-                    (lambda (acc funk)
-                        (vec.to-list.fold acc funk)))
-                obj
-                cont
-                err))
-        ((reduce)
-            (vaquero-ho
-                '(lambda (vec)
-                    (lambda (acc funk)
-                        (vec.to-list.reduce acc funk)))
-                obj
-                cont
-                err))
-        ((map)
-            (vaquero-ho
-                '(lambda (vec)
-                    (lambda (funk)
-                        (def mapped (vec.to-list.map funk))
-                        mapped.to-vector))
-                obj
-                cont
-                err))
-        ((filter)
-            (vaquero-ho
-                '(lambda (vec)
-                    (lambda (funk)
-                        (def mapped (vec.to-list.filter funk))
-                        mapped.to-vector))
-                obj
-                cont
-                err))
-        ((sort)
-            (vaquero-ho
-                '(lambda (vec)
-                    (lambda (funk)
-                        (def sorted (vec.to-list.sort funk))
-                        sorted.to-vector))
-                obj
-                cont
-                err))
-        (else
-            (vdefault msg))))
 
 (define (vaquero-send-stream obj msg cont err)
     (case msg

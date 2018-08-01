@@ -23,7 +23,10 @@
                (idk obj msg cont err)))
 
          (method answers?
-            (cont (lambda (msg) (hte? vaquero-send-list-vtable msg))))
+            (cont (lambda (msg)
+               (or
+                  (and (number? msg) (> (length obj) msg))
+                  (hte? vaquero-send-list-vtable msg)))))
 
          (method autos
             (cont '(autos messages type view empty? to-bool to-text to-list to-vector to-table head tail key val size reverse clone)))
