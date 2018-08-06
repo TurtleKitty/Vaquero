@@ -16,8 +16,11 @@
       (method to-bool
          (cont obj))
 
-      (method to-symbol
-         (cont (if obj 'true 'false)))
+      (method view
+         (cont
+            (if (or (eq? obj 'false) (not obj))
+               'false
+               'true)))
 
       (method to-text
          (cont (if obj "true" "false")))
@@ -31,9 +34,9 @@
            (messages   . ,messages)
            (not        . ,bool-not)
            (to-bool    . ,to-bool)
-           (to-symbol  . ,to-symbol)
+           (to-symbol  . ,view)
            (to-text    . ,to-text)
            (type       . ,type)
-           (view       . ,to-symbol)
+           (view       . ,view)
            (default    . ,idk)))))
 

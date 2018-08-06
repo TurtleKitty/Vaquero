@@ -7,8 +7,8 @@
 (test vector-apply (= (vick 5) 0)) 
 
 (test vector-type        (= vick.type 'vector))
-(test vector-false       (= empty.to-bool false))
 (test vector-true        (= vick.to-bool true))
+(test vector-false       (= empty.to-bool false))
 (test vector-to-list     (= vick.to-list '(8 6 7 5 3 0 9)))
 (test vector-pairs       (= veck.pairs (list '(0 . 3) '(1 . 2) '(2 . 1))))
 (test vector-size        (= vick.size 7))
