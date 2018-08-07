@@ -7,6 +7,7 @@
 (include "text.scm")
 (include "pair.scm")
 (include "proc.scm")
+(include "stream.scm")
 (include "vector.scm")
 
 (define vaquero-universal-messages '(answers? autos messages to-bool to-text type view))
@@ -64,6 +65,12 @@
 
 (define vaquero-send-vector
    (vaquero-send-generic vaquero-send-vector-vtable))
+
+(define vaquero-send-source
+   (vaquero-send-generic vaquero-send-source-vtable))
+
+(define vaquero-send-sink
+   (vaquero-send-generic vaquero-send-sink-vtable))
 
 (define vaquero-send-EOF
    (vaquero-send-generic vaquero-send-EOF-vtable))
@@ -338,142 +345,28 @@
         ((answers?) (cont (vaquero-answerer msgs)))
         (else (cont (env-default msg)))))
 
-(define (vaquero-send-stream obj msg cont err)
-    (case msg
-        ((type view to-bool to-stream input? output? open?)
-            (cont 
-                (case msg
-                    ((type) 'stream)
-                    ((view to-text) obj)
-                    ((to-bool) #t)
-                    ((to-stream) obj)
-                    ((input?) (input-port? obj))
-                    ((output?) (output-port? obj))
-                    ((open?) (not (port-closed? obj))))))
-        (else
-            (if (input-port? obj)
-                (vaquero-send-input-stream obj msg cont err) 
-                (vaquero-send-output-stream obj msg cont err)))))
-
-(define (vaquero-send-input-stream obj msg cont err)
-    (define msgs
-        '(view to-bool input? output? open? close
-          ready? read read-rune peek-rune read-line read-text read-lines to-text to-list to-bool
-          read-n read-while read-until skip-n skip-while skip-until))
-    (case msg
-        ((ready? autos read read-seq read-rune peek-rune read-line read-text read-lines
-          read-n read-while read-until skip-n skip-while skip-until to-text to-list to-bool
-          messages answers?)
-            (if (port-closed? obj)
-                (err (vaquero-error-object 'input-stream-closed `(send ,obj ,msg) "Input stream closed.") cont)
-                (cont 
-                    (case msg
-                        ((autos)    '(view to-text to-bool to-list ready? input? output? open? read read-seq read-rune peek-rune read-line read-lines read-text))
-                        ((ready? to-bool) (char-ready? obj))
-                        ((read)      (vaquero-read obj))
-                        ((read-seq)  (vaquero-read-file obj))
-                        ((read-rune) (string (read-char obj)))
-                        ((peek-rune) (string (peek-char obj)))
-                        ((read-line) (read-line obj))
-                        ((read-lines to-list) (read-lines obj))
-                        ((read-text to-text)  (read-string #f obj))
-                        ((read-n)
-                            (lambda (n)
-                                (read-string n obj)))
-                        ((read-while)
-                            (lambda (s)
-                                (define runes (string->list s))
-                                (let loop ((tok (peek-char obj)) (acc '()))
-                                    (if (member tok runes)
-                                        (let ((t (read-char obj)))
-                                            (loop (peek-char obj) (cons t acc)))
-                                        (list->string (reverse acc))))))
-                        ((read-until)
-                            (lambda (s)
-                                (define runes (string->list s))
-                                (let loop ((tok (peek-char obj)) (acc '()))
-                                    (if (member tok runes)
-                                        (list->string (reverse acc))
-                                        (let ((t (read-char obj)))
-                                            (loop (peek-char obj) (cons t acc)))))))
-                        ((skip-n)
-                            (lambda (n)
-                                (read-string n obj)
-                                'null))
-                        ((skip-while)
-                            (lambda (s)
-                                (define runes (string->list s))
-                                (let loop ((tok (peek-char obj)))
-                                    (if (member tok runes)
-                                        (begin
-                                            (read-char obj)
-                                            (loop (peek-char obj)))
-                                        'null))))
-                        ((skip-until)
-                            (lambda (s)
-                                (define runes (string->list s))
-                                (let loop ((tok (peek-char obj)))
-                                    (if (member tok runes)
-                                        'null
-                                        (begin
-                                            (read-char obj)
-                                            (loop (peek-char obj)))))))
-                        ((messages) msgs)
-                        ((answers?) (vaquero-answerer msgs))))))
-        ((close) (close-input-port obj) (cont 'null))
-        (else (idk msg obj cont err))))
-
-(define (vaquero-send-output-stream obj msg cont err)
-    (define msgs
-        '(input? output? open? write print say nl flush close))
-    (case msg
-        ((write print say nl autos)
-            (if (port-closed? obj)
-                (err (vaquero-error-object 'output-stream-closed `(send ,obj ,msg) "Output stream closed.") cont)
-                (cont
-                    (case msg
-                        ((autos) '(view to-bool ready? input? output? open? nl close)) 
-                        ((write)
-                            (lambda (x)
-                                (vaquero-write x obj)
-                                'null))
-                        ((print)
-                            (lambda (x)
-                                (vaquero-print x obj)
-                                'null))
-                        ((say)
-                            (lambda (x)
-                                (vaquero-print x obj)
-                                (newline obj)
-                                'null))
-                        ((nl) (newline obj) 'null)))))
-        ((messages) (cont msgs))
-        ((answers?) (cont (vaquero-answerer msgs)))
-        ((flush) (flush-output obj) (cont 'null))
-        ((close) (close-output-port obj) (cont 'null))
-        (else (idk msg obj cont err))))
-
 (define (vaquero-send-wtf obj msg cont err)
    (err (vaquero-error-object 'wtf-was-that? `(send ,obj ,msg) "Unknown object!")))
 
 (define vaquero-send-vtable
    (alist->hash-table
-      `((null       . ,vaquero-send-null)
-        (bool       . ,vaquero-send-bool)
-        (symbol     . ,vaquero-send-symbol)
-        (keyword    . ,vaquero-send-symbol)
-        (int        . ,vaquero-send-int)
-        (real       . ,vaquero-send-real)
-        (text       . ,vaquero-send-text)
-        (list       . ,vaquero-send-list)
-        (pair       . ,vaquero-send-pair)
-        (primitive  . ,vaquero-send-primitive)
-        (vector     . ,vaquero-send-vector)
-        (stream     . ,vaquero-send-stream)
-        (env        . ,vaquero-send-env)
-        (table      . ,vaquero-send-table)
-        (proc       . ,vaquero-send-proc)
-        (object     . ,vaquero-send-object)
-        (eof        . ,vaquero-send-EOF)
-        (WTF        . ,vaquero-send-wtf))))
+      `((null         . ,vaquero-send-null)
+        (bool         . ,vaquero-send-bool)
+        (symbol       . ,vaquero-send-symbol)
+        (keyword      . ,vaquero-send-symbol)
+        (int          . ,vaquero-send-int)
+        (real         . ,vaquero-send-real)
+        (text         . ,vaquero-send-text)
+        (list         . ,vaquero-send-list)
+        (pair         . ,vaquero-send-pair)
+        (primitive    . ,vaquero-send-primitive)
+        (vector       . ,vaquero-send-vector)
+        (source       . ,vaquero-send-source)
+        (sink         . ,vaquero-send-sink)
+        (env          . ,vaquero-send-env)
+        (table        . ,vaquero-send-table)
+        (proc         . ,vaquero-send-proc)
+        (object       . ,vaquero-send-object)
+        (eof          . ,vaquero-send-EOF)
+        (WTF          . ,vaquero-send-wtf))))
 

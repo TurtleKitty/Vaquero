@@ -504,41 +504,41 @@
          (proc read-symbol (p)
             p.read.to-symbol)
          (proc read-array (p)
-            p.read-rune ; discard opening [
-            (loop go (next p.peek-rune items ())
+            p.read-char ; discard opening [
+            (loop go (next p.peek-char items ())
                (when (eof? next)
                   (error 'json-read-error items "Unexpected EOF in JSON array!"))
                (if next.whitespace?
-                   (seq p.read-rune (go p.peek-rune items))
+                   (seq p.read-char (go p.peek-char items))
                    (case next
-                      ("]")     (seq p.read-rune items.reverse)
-                      (",")     (seq p.read-rune (go p.peek-rune items))
+                      ("]")     (seq p.read-char items.reverse)
+                      (",")     (seq p.read-char (go p.peek-char items))
                       default:
                          (let (item (reader p))
-                             (go p.peek-rune (items.cons item)))))))
+                             (go p.peek-char (items.cons item)))))))
          (proc read-object (p)
-            p.read-rune ; discard opening {
-            (loop go (next p.peek-rune items (table))
+            p.read-char ; discard opening {
+            (loop go (next p.peek-char items (table))
                (when (eof? next)
                   (error 'json-read-error items "Unexpected EOF in JSON object!"))
                (if next.whitespace?
-                  (seq p.read-rune (go p.peek-rune items))
+                  (seq p.read-char (go p.peek-char items))
                   (case next
-                     ("}")  (seq p.read-rune items)
-                     (",")  (seq p.read-rune (go p.peek-rune items))
+                     ("}")  (seq p.read-char items)
+                     (",")  (seq p.read-char (go p.peek-char items))
                      default:
                         (let (key (send (reader p) 'to-symbol))
                            (p.skip-while " :\t\n")
                            (let (val (reader p))
                               (items.set! key val)
-                              (go p.peek-rune items)))))))
+                              (go p.peek-char items)))))))
          (proc reader (p)
-            (def next p.peek-rune)
+            (def next p.peek-char)
             (when (eof? next)
                (return next))
             (if next.whitespace?
                (seq
-                  p.read-rune
+                  p.read-char
                   (reader p))
                (case next
                   ("\"")    (read-text p)
