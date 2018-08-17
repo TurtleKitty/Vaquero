@@ -10,6 +10,7 @@
 (include "stream.scm")
 (include "vector.scm")
 (include "table.scm")
+(include "env.scm")
 
 (define vaquero-universal-messages '(answers? autos messages to-bool to-text type view))
 
@@ -63,6 +64,9 @@
 
 (define vaquero-send-proc
    (vaquero-send-generic vaquero-send-proc-vtable))
+
+(define vaquero-send-env
+   (vaquero-send-generic vaquero-send-env-vtable))
 
 (define vaquero-send-vector
    (vaquero-send-generic vaquero-send-vector-vtable))
@@ -120,108 +124,6 @@
                   ((to-text) (cont "object"))
                   ((to-bool) (cont (not (eq? 0 (length (hash-table-keys fields))))))
                   (else (vaquero-apply (htr obj 'default) (list msg) 'null cont err))))))))
-
-(define (vaquero-send-env obj msg cont err)
-    (define msgs '(view to-text def! merge! has? get pairs lookup parent extend expand eval load))
-    (define undefineds (list not-found will-exist 'null))
-    (define vars (htr obj 'vars))
-    (define (env-default msg)
-        (lookup obj msg
-            (lambda (val)
-               (if (eq? val not-found)
-                  (err (vaquero-error-object 'message-not-understood `(send ,obj ,msg) "Message not understood.") cont)
-                  val))
-            err))
-    (case msg
-        ((get has? to-bool keys values pairs)
-            (vaquero-send-table vars msg cont err))
-        ((type) (cont 'env))
-        ((view to-text)
-            (vaquero-view obj))
-        ((autos) (cont '(view to-text to-bool keys values pairs)))
-        ((def!)
-            (cont
-                (vaquero-proc
-                    primitive-type
-                    'env
-                    (lambda (args opts cont err)
-                        (define getter (vaquero-send-table vars 'get  top-cont err))
-                        (define setter (vaquero-send-table vars 'set! top-cont err))
-                        (if (null? args)
-                           (cont 'null)
-                           (let loop ((def-name (car args)) (def-val (cadr args)) (the-rest (cddr args)))
-                              (define current (getter def-name))
-                              (if (member current undefineds)
-                                 (begin
-                                    (setter def-name def-val)
-                                    (if (null? the-rest)
-                                       (cont def-val)
-                                       (loop (car the-rest) (cadr the-rest) (cddr the-rest))))
-                                 (err (vaquero-error-object 'name-already-defined `(def ,def-name ,def-val) "env: name is already defined.") cont))))))))
-        ((merge!)
-            (cont
-               (vaquero-proc
-                  primitive-type
-                  'env
-                  (lambda (args opts cont err)
-                     (define (arg-fail form)
-                        (err (vaquero-error-object 'argument-fail form "env: merge! requires an environment as an argument.") cont))
-                     (if (not (pair? args))
-                        (arg-fail '(env.merge!))
-                        (let ((other-env (car args)))
-                           (if (not (eq? 'env (vaquero-send-atomic other-env 'type)))
-                              (arg-fail '(env.merge! WAT))
-                              (let ((def-this (vaquero-send-atomic obj 'def!))
-                                    (other-vars (hash-table->alist (htr (htr other-env 'vars) 'vars))))
-                                 (if (not (pair? other-vars))
-                                    (cont obj)
-                                    (let loop ((v (car other-vars)) (vs (cdr other-vars)) (flat '()))
-                                       (define nu-flat (cons (car v) (cons (cdr v) flat)))
-                                       (if (pair? vs)
-                                          (loop (car vs) (cdr vs) nu-flat)
-                                          (vaquero-apply def-this nu-flat 'null (lambda (x) (cont obj)) err))))))))))))
-        ((lookup)
-            (cont
-                (vaquero-proc
-                    primitive-type
-                    'env
-                    (lambda (args opts cont err)
-                        (lookup
-                            obj
-                            (car args)
-                            (lambda (val)
-                                (cont
-                                    (if (eq? val not-found)
-                                        'null
-                                        val)))
-                            err)))))
-        ((extend)
-            (cont
-                (vaquero-proc
-                    primitive-type
-                    'env
-                    (lambda (args opts cont err)
-                        (let loop ((names '()) (vals '()) (left args))
-                            (if (eq? '() left)
-                                (extend obj names vals cont err)
-                                (loop (cons (car left) names) (cons (cadr left) vals) (cddr left))))))))
-        ((parent)
-            (cont (htr obj 'parent)))
-        ((eval)
-            (cont
-                (lambda (code)
-                    (vaquero-eval code obj))))
-        ((expand)
-            (cont
-                (lambda (code)
-                    (vaquero-expand code obj))))
-        ((load)
-            (cont
-               (lambda (stream)
-                   (vaquero-eval (vaquero-read-file stream) obj))))
-        ((messages) (cont msgs))
-        ((answers?) (cont (vaquero-answerer msgs)))
-        (else (cont (env-default msg)))))
 
 (define vaquero-send-vtable
    (alist->hash-table

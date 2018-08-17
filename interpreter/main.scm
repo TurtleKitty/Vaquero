@@ -78,7 +78,6 @@ END
 (include "eval_apply")    
 (include "compiler")
 (include "sys")
-(include "env")
 (include "modules")
 (include "repl")
 (include "start")
