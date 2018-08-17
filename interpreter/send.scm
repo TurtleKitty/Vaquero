@@ -9,6 +9,7 @@
 (include "proc.scm")
 (include "stream.scm")
 (include "vector.scm")
+(include "table.scm")
 
 (define vaquero-universal-messages '(answers? autos messages to-bool to-text type view))
 
@@ -66,6 +67,9 @@
 (define vaquero-send-vector
    (vaquero-send-generic vaquero-send-vector-vtable))
 
+(define vaquero-send-table
+   (vaquero-send-generic vaquero-send-table-vtable))
+
 (define vaquero-send-source
    (vaquero-send-generic vaquero-send-source-vtable))
 
@@ -75,134 +79,8 @@
 (define vaquero-send-EOF
    (vaquero-send-generic vaquero-send-EOF-vtable))
 
-(define (vaquero-ho code obj cont err)
-    (vaquero-apply
-        (vaquero-compile-method code)
-        (list obj)
-        'null
-        cont
-        err))
-
-(define (vaquero-send-table obj msg cont err)
-    (define msgs
-        '(view size clone to-bool get put set! rm del! has? apply keys values pairs to-list to-opt to-text merge fold reduce map filter))
-    (define vars (htr obj 'vars))
-    (define (rdefault msg)
-        (if (hte? vars msg)
-            (htr vars msg)
-            'null))
-    (case msg
-        ((type view size autos clone to-bool get put set! rm del! has? apply keys values pairs to-list to-opt to-text merge messages answers?)
-            (cont
-                (case msg
-                    ((type) 'table)
-                    ((view to-text)
-                         (vaquero-view obj))
-                    ((size)
-                         (hash-table-size vars))
-                    ((autos)
-                         '(view size clone to-bool to-list to-text keys values pairs))
-                    ((clone)
-                        (let ((noob (vaquero-table)))
-                            (hts! noob 'vars (hash-table-copy vars))
-                            noob))
-                    ((to-bool)
-                        (> (hash-table-size vars) 0))
-                    ((get)
-                        (lambda (k)
-                            (if (hte? vars k)
-                                (htr vars k)
-                                'null)))
-                    ((put)
-                        (lambda args
-                            (define noob (vaquero-table))
-                            (hts! noob 'vars (hash-table-copy vars))
-                            (vaquero-send-table
-                                noob
-                                'set!
-                                (lambda (setter!)
-                                    (apply setter! args)
-                                    noob)
-                                err)))
-                    ((set!)
-                        (lambda args
-                            (for-pairs (lambda (k v) (hts! vars k v)) args)
-                            'null))
-                    ((rm)
-                        (lambda args
-                            (define noob (vaquero-table))
-                            (hts! noob 'vars (hash-table-copy vars))
-                            (vaquero-send-table
-                                noob
-                                'del!
-                                (lambda (deleter!)
-                                    (apply deleter! args)
-                                    noob)
-                                err)))
-                    ((del!)
-                        (lambda args
-                            (map (lambda (k) (htd! vars k)) args)
-                            'null))
-                    ((has?)
-                        (lambda (x)
-                            (hte? vars x)))
-                    ((apply)
-                        (vaquero-proc
-                            primitive-type
-                            'table
-                            (lambda (args opts cont err)
-                                (vaquero-send-table obj (caar args) cont err))))
-                    ((keys) (htks vars))
-                    ((values) (htvs vars))
-                    ((pairs to-list) (hash-table->alist vars))
-                    ((to-opt)
-                        (fold
-                            (lambda (p xs)
-                                (cons (symbol->keyword (car p)) (cons (cdr p) xs)))
-                            '()
-                            (hash-table->alist vars)))
-                    ((messages) msgs)
-                    ((answers?)
-                        (lambda (msg)
-                            (or 
-                                (hte? vars msg)
-                                ((vaquero-answerer msgs) msg))))
-                    ((merge)
-                        (lambda (other)
-                            (define nuvars (hash-table-merge (htr other 'vars) vars))
-                            (define noob (mkht))
-                            (hts! noob 'type 'table)
-                            (hts! noob 'vars nuvars)
-                            noob)))))
-            ((fold) (vaquero-send-list
-                        (hash-table->alist vars)
-                        'fold
-                        cont
-                        err))
-            ((reduce) (vaquero-send-list
-                        (hash-table->alist vars)
-                        'reduce
-                        cont
-                        err))
-            ((map)
-                (vaquero-ho
-                    '(lambda (rec)
-                        (lambda (funk)
-                            (def mapped (rec.to-list.map funk))
-                            mapped.to-table))
-                    obj
-                    cont
-                    err))
-            ((filter) 
-                (vaquero-ho
-                    '(lambda (rec)
-                        (lambda (funk)
-                            (def mapped (rec.to-list.filter funk))
-                            mapped.to-table))
-                    obj
-                    cont
-                    err))
-            (else (cont (rdefault msg)))))
+(define (vaquero-send-wtf obj msg cont err)
+   (err (vaquero-error-object 'wtf-was-that? `(send ,obj ,msg) "Unknown object!")))
 
 (define (vaquero-send-object obj msg cont err)
    (define fields  (htr obj 'fields))
@@ -344,9 +222,6 @@
         ((messages) (cont msgs))
         ((answers?) (cont (vaquero-answerer msgs)))
         (else (cont (env-default msg)))))
-
-(define (vaquero-send-wtf obj msg cont err)
-   (err (vaquero-error-object 'wtf-was-that? `(send ,obj ,msg) "Unknown object!")))
 
 (define vaquero-send-vtable
    (alist->hash-table
