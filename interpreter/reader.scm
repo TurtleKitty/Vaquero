@@ -126,7 +126,7 @@
       (let loop ((token (peek-char port)) (acc '()))
          (cond
             ((eof-object? token)
-               (vaquero-error 'read-error EOF "read error: unexpected EOF in template literal!"))
+               (vaquero-error 'read-error 'EOF "read error: unexpected EOF in template literal!"))
             ((eq? token #\})
                (read-char port)
                (if (eq? #\} (peek-char port))

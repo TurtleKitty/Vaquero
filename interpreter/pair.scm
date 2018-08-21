@@ -60,13 +60,13 @@
          (method head
             (cont
                (if (eq? obj '())
-                  null
+                  'null
                   (car obj))))
 
          (method tail
             (cont
                (if (eq? obj '())
-                  null
+                  'null
                   (cdr obj))))
 
          (method head!
