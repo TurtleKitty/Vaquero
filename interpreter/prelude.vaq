@@ -323,7 +323,7 @@
    %(guard
       (proc (e k)
          ($thnk)
-         (fail e)) 
+         (fail e))
       (gate
          (let ($v (seq @rest))
             ($thnk)
@@ -568,7 +568,7 @@
                (table? thing) (cat "{" (comma-fy (list-map (lambda (kv) (cat (json-out kv.key.to-text) ":" (json-out kv.val))) thing.to-list)) "}")
                (list? thing)   (cat "[" (comma-fy (list-map json-out thing)) "]")
                (pair? thing)   (cat "[" (json-out thing.head) "," (json-out thing.tail) "]")
-               default: 
+               default:
                   (if (thing.responds? 'to-json)
                      thing.to-json
                      (error 'json-write-error thing "json.write - unknown-type"))))
@@ -693,7 +693,7 @@
    (def expr-val (gensym))
    (proc define (name n)
       %(def $name (send $expr-val $n)))
-   (def defz (map define names (range 0 names.size.dec))) 
+   (def defz (map define names (range 0 names.size.dec)))
    %(seq
       (def $expr-val (seq @rest))
       @defz))
@@ -707,7 +707,7 @@
       (cat (cat.apply (xs.drop 2) (: with "/")) ".vaq"))
    (def uri (cat "https://raw.githubusercontent.com" user repo "master" module-path with: "/"))
    %(use $name $uri))
- 
+
 ; reserving for future use
 
 (def ! null)

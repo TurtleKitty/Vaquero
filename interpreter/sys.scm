@@ -170,7 +170,7 @@
    (let ((response (read)))
       (let ((r (string-ref (symbol->string response) 0)))
          (if (or (eq? r #\y) (eq? r #\Y))
-            (begin 
+            (begin
                (display "Ok, mad hacker.  Hope you have a fallout shelter.")
                (newline)
                (let loop ((n 5))

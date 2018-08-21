@@ -20,7 +20,7 @@
         (let ((cmd (string->symbol (car args))))
             (case cmd
                 ((repl) (vaquero-repl))
-                ((eval) 
+                ((eval)
                     (let ((code-str (fname)))
                         (define code
                             (vaquero-read-file

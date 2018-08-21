@@ -83,7 +83,7 @@
                   (if (check-vaquero-quote code)
                      code
                      (exit)))
-               (else 
+               (else
                   (if (symbol? head)
                      (let ((obj (look-it-up head)))
                         (if (vaquero-op? obj)

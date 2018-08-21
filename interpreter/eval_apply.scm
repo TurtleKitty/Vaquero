@@ -14,7 +14,7 @@
            err))
    (cond
       ((procedure? obj)
-         (cont 
+         (cont
             (handle-exceptions exn
                (err
                   (handle-exceptions exn

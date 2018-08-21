@@ -119,7 +119,7 @@
                (if (< (length code) 4)
                   (syntax-error code "proc: at least one body form is required." usage)
                   #t))))
-      (let ((args arg1)) 
+      (let ((args arg1))
          (if (not (list? args))
             (syntax-error code "anon proc: second argument must be a list of formals." usage)
             (if (< (length code) 3)
@@ -161,7 +161,7 @@
    (if (< (length code) 3)
       (syntax-error code "guard: too few arguments." usage)
       #t))
-      
+
 (define (check-vaquero-fail code)
    (define usage '(fail <object>))
    (if (< (length code) 2)

@@ -175,7 +175,7 @@
          (else
             (let ((t (read-char port)))
                (loop (peek-char port) (cons t acc) texts))))))
-      
+
 
 (define (vaquero-read-quote port)
    (read-char port)
@@ -222,7 +222,7 @@
 		(let ((changed (transform form)))
 			(if (equal? form changed)
 				changed
-				(begin 
+				(begin
 					;(display form) (display " -> ") (display changed) (newline) (newline)
 					changed)))
 		form))

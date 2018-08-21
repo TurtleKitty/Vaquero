@@ -181,13 +181,13 @@
       (let ((p
          (vaquero-proc
             code
-            env 
+            env
             (lambda (args opts cont err)
                (if (not (= arity (length args)))
                   (err (list 'arity code (sprintf "This lambda requires ~A arguments. Given: " arity) args) cont)
                   (let* ((fargs (if (pair? args) (take args arity) '())))
                      (extend
-                        env 
+                        env
                         formals
                         fargs
                         (lambda (noob)
@@ -208,7 +208,7 @@
    (if (check-formals formals)
       (vaquero-proc
          code
-         env 
+         env
          (lambda (args opts cont err)
             (if (< (length args) arity)
                (err (list 'arity code (sprintf "This procedure requires at least ~A arguments. Given: " arity) args) cont)
@@ -216,7 +216,7 @@
                   (the-rest (if (pair? args) (drop args arity) '()))
                   (returner cont))
                   (extend
-                     env 
+                     env
                      (append formals '(opt rest return))
                      (append fargs (list opts the-rest returner))
                      (lambda (noob)
@@ -369,7 +369,7 @@
    (frag
       (fn-c
          env
-         (lambda (f) 
+         (lambda (f)
             (args-c
                env
                (lambda (args)

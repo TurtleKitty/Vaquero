@@ -101,7 +101,7 @@
          (cont (htr obj msg)))
 
       (method proc-apply
-         (cont 
+         (cont
             (vaquero-proc
                primitive-type
                'proc

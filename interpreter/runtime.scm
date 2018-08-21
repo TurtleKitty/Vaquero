@@ -31,7 +31,7 @@
 (include "objects")
 (include "send")
 (include "macro_expander")
-(include "eval_apply")    
+(include "eval_apply")
 (include "compiler")
 (include "modules")
 (include "sockets")
