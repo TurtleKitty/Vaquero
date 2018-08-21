@@ -1,4 +1,20 @@
 
+(define (vaquero-proc code env compiled)
+   (define this (mkht))
+   (define (tset! k v) (hts! this k v))
+   (tset! 'type 'proc)
+   (tset! 'env env)
+   (tset! 'code code)
+   (tset! 'exec compiled)
+   (if (pair? code)
+      (let ((formals ((if (eq? (car code) 'op) caddr cadr) code)))
+         (tset! 'formals formals)
+         (tset! 'arity (length formals)))
+      (begin
+         (tset! 'formals '())
+         (tset! 'arity 0)))
+   this)
+
 (define vaquero-send-primitive-vtable
    (let ()
       (method answers?

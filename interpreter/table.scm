@@ -1,4 +1,15 @@
 
+(define (vaquero-table . args)
+   (define this (mkht))
+   (define vars (mkht))
+   (hts! this 'type 'table)
+   (for-pairs
+      (lambda (k v)
+         (hts! vars k v))
+      args)
+   (hts! this 'vars vars)
+   this)
+
 (define-syntax get-table-vars
    (ir-macro-transformer
       (lambda (expr inject compare)

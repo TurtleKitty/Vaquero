@@ -33,6 +33,7 @@
 (include "macro_expander")
 (include "eval_apply")    
 (include "compiler")
-(include "sys")
 (include "modules")
+(include "sockets")
+(include "sys")
 

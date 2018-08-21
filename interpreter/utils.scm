@@ -301,6 +301,10 @@
 
 (define (the-end v) (exit))
 
+(define (vaquero-gensym #!optional (name "gensym"))
+   (string->symbol
+      (string-append name "-" (uuid-v4))))
+
 (define (compile-and-apply-prog program cont err)
    (define compiled-scheme-lambda (vaquero-compile program))
    (define compiled-vaquero-lambda

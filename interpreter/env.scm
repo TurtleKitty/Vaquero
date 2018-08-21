@@ -1,4 +1,12 @@
 
+(define (vaquero-environment parent)
+   (define this (mkht))
+   (define vars (vaquero-table))
+   (hts! this 'type 'env)
+   (hts! this 'vars vars)
+   (hts! this 'parent (if parent parent 'null))
+   this)
+
 (define vaquero-send-env-vtable
    (let ()
       (define undefineds (list not-found will-exist 'null))
