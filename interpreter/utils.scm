@@ -38,10 +38,10 @@
                (loop (fn key val) (cddr pairs)))))))
 
 (define-syntax method
-    (ir-macro-transformer
-        (lambda (expr inject compare)
-            (let ((name (cadr expr)) (body (cddr expr)))
-                `(define (,name ,(inject 'obj) ,(inject 'msg) ,(inject 'cont) ,(inject 'err)) ,@body)))))
+   (ir-macro-transformer
+      (lambda (expr inject compare)
+         (let ((name (cadr expr)) (body (cddr expr)))
+            `(define (,name ,(inject 'obj) ,(inject 'msg) ,(inject 'cont) ,(inject 'err)) ,@body)))))
 
 (define (vaquero-error name form message)
    (display "ERROR: ") (display message) (newline)

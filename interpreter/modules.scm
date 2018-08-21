@@ -2,15 +2,15 @@
 (define vaquero-modules (mkht))
 
 (define (def-vaquero-module path)
-    (define has? (hte? vaquero-modules path))
-    (if has?
-        (htr vaquero-modules path)
-        (let ((expanded (read-expand-cache-prog path (local-env))))
-            (define mod-id (uuid-v4))
-            (define module (cons mod-id expanded))
-            (hts! vaquero-modules path module)
-            (find-modules expanded)
-            module)))
+   (define has? (hte? vaquero-modules path))
+   (if has?
+      (htr vaquero-modules path)
+      (let ((expanded (read-expand-cache-prog path (local-env))))
+         (define mod-id (uuid-v4))
+         (define module (cons mod-id expanded))
+         (hts! vaquero-modules path module)
+         (find-modules expanded)
+         module)))
 
 (define (vaquero-module-id path)
    (car (htr vaquero-modules path)))
