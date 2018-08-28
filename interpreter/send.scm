@@ -102,7 +102,7 @@
             (let ((view-proc (htr fields 'view)))
                (if (member 'apply (vaquero-send-atomic view-proc 'messages))
                   (vaquero-apply view-proc '() 'null identity err)
-                  (err (vaquero-error-object 'view-must-answer-apply `(send ,obj 'view) "The object answered 'view with a non-applicative."))))
+                  (err (vaquero-error-object 'view-must-answer-apply `(send ,obj 'view) "The object answered 'view with a non-applicative.") cont)))
             (get-msgs)))
       (apply vector (cons type the-view)))
    (case msg
