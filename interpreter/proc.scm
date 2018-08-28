@@ -1,19 +1,20 @@
 
+(define-record-type vaq-proc
+   (vaquero-procedure type code env exec formals arity)
+   vaquero-proc?
+   (type vaquero-proc-type)
+   (code vaquero-proc-code)
+   (env vaquero-proc-env)
+   (exec vaquero-proc-exec)
+   (formals vaquero-proc-formals)
+   (arity vaquero-proc-arity))
+
 (define (vaquero-proc code env compiled)
-   (define this (mkht))
-   (define (tset! k v) (hts! this k v))
-   (tset! 'type 'proc)
-   (tset! 'env env)
-   (tset! 'code code)
-   (tset! 'exec compiled)
-   (if (pair? code)
-      (let ((formals ((if (eq? (car code) 'op) caddr cadr) code)))
-         (tset! 'formals formals)
-         (tset! 'arity (length formals)))
-      (begin
-         (tset! 'formals '())
-         (tset! 'arity 0)))
-   this)
+   (define formals
+      (if (pair? code)
+         ((if (eq? (car code) 'op) caddr cadr) code)
+         '()))
+   (vaquero-procedure 'proc code env compiled formals (length formals)))
 
 (define vaquero-send-primitive-vtable
    (let ()
@@ -89,13 +90,25 @@
          (cont #t))
 
       (method to-text
-         (cont (htr obj 'code)))
+         (cont (vaquero-proc-code obj)))
 
       (method type
-         (cont (htr obj 'type)))
+         (cont (vaquero-proc-type obj)))
 
       (method view
-         (cont `(,(htr obj 'type) ,(htr obj 'formals) ...)))
+         (cont `(,(vaquero-proc-type obj) ,(vaquero-proc-formals obj) ...)))
+
+      (method arity
+         (cont (vaquero-proc-arity obj)))
+
+      (method code
+         (cont (vaquero-proc-code obj)))
+
+      (method env
+         (cont (vaquero-proc-env obj)))
+
+      (method formals
+         (cont (vaquero-proc-formals obj)))
 
       (method get-attr
          (cont (htr obj msg)))
@@ -118,10 +131,10 @@
            (to-text    . ,to-text)
            (type       . ,type)
            (view       . ,view)
-           (arity      . ,get-attr)
-           (code       . ,get-attr)
-           (env        . ,get-attr)
-           (formals    . ,get-attr)
+           (arity      . ,arity)
+           (code       . ,code)
+           (env        . ,env)
+           (formals    . ,formals)
            (apply      . ,proc-apply)
            (default    . ,idk)))))
 

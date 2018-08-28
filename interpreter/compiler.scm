@@ -15,7 +15,7 @@
             seq)))
    (define names (get-names seq))
    (define haz? (vaquero-send-env env 'has? top-cont top-err))
-   (define needed (filter (lambda (n) (not (haz? n)))  names))
+   (define needed (filter (lambda (n) (not (haz? n))) names))
    (define margs (flatten (zip needed (make-list (length needed) will-exist))))
    (if (> (length margs) 0)
       (apply mutate! (cons env (cons cont (cons err margs))))
@@ -174,44 +174,70 @@
             #t)))
      #t))
 
-(define (make-vaquero-lambda code env formals body)
-   (define arity (length formals))
-   (define bodies-c (vaquero-seq-subcontractor body #f))
-   (if (check-formals formals)
-      (let ((p
-         (vaquero-proc
-            code
-            env
-            (lambda (args opts cont err)
-               (if (not (= arity (length args)))
-                  (err (list 'arity code (sprintf "This lambda requires ~A arguments. Given: " arity) args) cont)
-                  (let* ((fargs (if (pair? args) (take args arity) '())))
-                     (extend
-                        env
-                        formals
-                        fargs
-                        (lambda (noob)
-                           (bodies-c noob cont err))
-                        err)))))))
-         (hts! p 'type 'lambda)
-         p)
-      (vaquero-error 'bad-formals-in-lambda code "Bad formals!")))
-
 (define (vaquero-compile-lambda code)
-   (let ((formals (cadr code)) (bodies (cddr code)))
-      (frag
-         (cont (make-vaquero-lambda code env formals bodies)))))
+   (define type (car code))
+   (define formals (cadr code))
+   (define bodies (cddr code))
+   (define arity (length formals))
+   (define bodies-c (vaquero-seq-subcontractor bodies #f))
+   (frag
+      (define exec
+         (lambda (args opts cont err)
+            (if (not (= arity (length args)))
+               (err (list 'arity code (sprintf "This lambda requires ~A arguments. Given: " arity) args) cont)
+               (let* ((fargs (if (pair? args) (take args arity) '())))
+                  (extend
+                     env
+                     formals
+                     fargs
+                     (lambda (noob)
+                        (bodies-c noob cont err))
+                     err)))))
+      (cont
+         (if (check-formals formals)
+            (vaquero-procedure type code env exec formals arity)
+            (vaquero-error 'bad-formals-in-lambda code "Bad formals!")))))
 
-(define (make-vaquero-proc code env formals bodies)
+(define (vaquero-compile-proc code)
+   (define is-named (symbol? (cadr code)))
+   (if is-named
+      (vaquero-compile `(def ,(cadr code) (proc ,(caddr code) ,@(cdddr code))))
+      (let ((formals (cadr code)) (bodies (cddr code)))
+         (define type (car code))
+         (define arity (length formals))
+         (define bodies-c (vaquero-seq-subcontractor bodies #t))
+         (frag
+            (define exec
+               (lambda (args opts cont err)
+                  (if (< (length args) arity)
+                     (err (list 'arity code (sprintf "This procedure requires at least ~A arguments. Given: " arity) args) cont)
+                     (let* ((fargs (if (pair? args) (take args arity) '()))
+                        (the-rest (if (pair? args) (drop args arity) '()))
+                        (returner cont))
+                        (extend
+                           env
+                           (append formals '(opt rest return))
+                           (append fargs (list opts the-rest returner))
+                           (lambda (noob)
+                              (bodies-c noob cont err))
+                           err)))))
+            (cont
+               (if (check-formals formals)
+                  (vaquero-procedure type code env exec formals arity)
+                  (vaquero-error 'bad-formals-in-proc code "Bad formals!")))))))
+
+(define (vaquero-compile-op code)
+   (define type (car code))
+   (define name (cadr code))
+   (define formals (caddr code))
+   (define bodies (cdddr code))
    (define arity (length formals))
    (define bodies-c (vaquero-seq-subcontractor bodies #t))
-   (if (check-formals formals)
-      (vaquero-proc
-         code
-         env
+   (frag
+      (define exec
          (lambda (args opts cont err)
             (if (< (length args) arity)
-               (err (list 'arity code (sprintf "This procedure requires at least ~A arguments. Given: " arity) args) cont)
+               (err (list 'arity code (sprintf "This operator requires at least ~A arguments. Given: " arity) args) cont)
                (let* ((fargs (if (pair? args) (take args arity) '()))
                   (the-rest (if (pair? args) (drop args arity) '()))
                   (returner cont))
@@ -222,23 +248,7 @@
                      (lambda (noob)
                         (bodies-c noob cont err))
                      err)))))
-      (vaquero-error 'bad-formals-in-proc code "Bad formals!")))
-
-(define (vaquero-compile-proc code)
-   (define is-named (symbol? (cadr code)))
-   (if is-named
-      (vaquero-compile `(def ,(cadr code) (proc ,(caddr code) ,@(cdddr code))))
-      (let ((formals (cadr code)) (bodies (cddr code)))
-         (frag
-            (cont (make-vaquero-proc code env formals bodies))))))
-
-(define (vaquero-compile-op code)
-   (define name (cadr code))
-   (define formals (caddr code))
-   (define bodies (cdddr code))
-   (frag
-      (let ((thing (make-vaquero-proc code env formals bodies)))
-         (hts! thing 'type 'op)
+      (let ((thing (vaquero-procedure type code env exec formals arity)))
          (mutate!
             env
             (lambda (null)

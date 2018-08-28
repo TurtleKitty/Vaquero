@@ -20,7 +20,7 @@
          (glookup x)
          (lookup env x top-cont expand-err)))
    (define (vaquero-op? obj)
-      (and (hash-table? obj) (eq? (htr obj 'type) 'op)))
+      (and (vaquero-proc? obj) (eq? (vaquero-proc-type obj) 'op)))
    (define (apply-op mac code env)
       (let ((arg-pair (prepare-vaquero-args (cdr code))))
          (define args (car arg-pair))

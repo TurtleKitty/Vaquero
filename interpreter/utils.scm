@@ -173,12 +173,12 @@
       ((vector? obj)       'vector)
       ((input-port? obj)   'source)
       ((output-port? obj)  'sink)
+      ((vaquero-proc? obj) 'proc)
       ((hash-table? obj)
          (let ((t (htr obj 'type)))
             (case t
                ((env)             'env)
                ((table)           'table)
-               ((lambda proc op)  'proc)
                (else              'object))))
       ((eof-object? obj) 'eof)
       (else 'WTF)))

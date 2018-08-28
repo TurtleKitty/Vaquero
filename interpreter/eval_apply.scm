@@ -26,11 +26,8 @@
                         (list 'message   ((condition-property-accessor 'exn 'message) exn))))
                   (lambda (ys) (cont (apply obj ys))))
                (apply obj xs))))
-      ((hash-table? obj)
-         (let ((type (htr obj 'type)))
-            (if (or (eq? type 'lambda) (eq? type 'op) (eq? type 'proc))
-               ((htr obj 'exec) xs opts cont err)
-               (apply-or-die))))
+      ((vaquero-proc? obj)
+         ((vaquero-proc-exec obj) xs opts cont err))
       (else (apply-or-die))))
 
 (define (vaquero-apply-wrapper obj)
