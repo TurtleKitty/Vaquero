@@ -87,11 +87,11 @@
    (err (vaquero-error-object 'wtf-was-that? `(send ,obj ,msg) "Unknown object!")))
 
 (define (vaquero-send-object obj msg cont err)
-   (define fields  (htr obj 'fields))
-   (define resends (htr obj 'resends))
-   (define autos   (htr obj 'autos))
+   (define fields  (vaquero-obj-fields obj))
+   (define forwards (vaquero-obj-forwards obj))
+   (define autos   (vaquero-obj-autos obj))
    (define (get-msgs)
-      (append (hash-table-keys fields) (hash-table-keys resends)))
+      (append (hash-table-keys fields) (hash-table-keys forwards)))
    (define (vaquero-object-view obj)
       (define type
          (if (hte? fields 'type)
@@ -117,13 +117,13 @@
                (if (hte? autos msg)
                   (vaquero-apply v '() 'null cont err) ; exec the thunk
                   (cont v)))
-            (if (hte? resends msg)
-               (vaquero-send (htr resends msg) msg cont err)
+            (if (hte? forwards msg)
+               (vaquero-send (htr forwards msg) msg cont err)
                (case msg
                   ((type) (cont 'object))
                   ((to-text) (cont "object"))
                   ((to-bool) (cont (not (eq? 0 (length (hash-table-keys fields))))))
-                  (else (vaquero-apply (htr obj 'default) (list msg) 'null cont err))))))))
+                  (else (vaquero-apply (vaquero-obj-default obj) (list msg) 'null cont err))))))))
 
 (define vaquero-send-vtable
    (alist->hash-table

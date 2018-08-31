@@ -221,12 +221,12 @@
             'global
             (lambda (args opts cont err)
                (define autos (vaquero-send-atomic opts 'auto))
-               (define rsend (vaquero-send-atomic opts 'resend))
+               (define fwd (vaquero-send-atomic opts 'forward))
                (define default ((vaquero-send-atomic opts 'get) 'default))
                (if (eq? autos 'null) (set! autos #f) #f)
-               (if (eq? rsend 'null) (set! rsend #f) #f)
+               (if (eq? fwd 'null) (set! fwd #f) #f)
                (if (eq? default 'null) (set! default #f) #f)
-               (cont (vaquero-object args autos rsend default)))))
+               (cont (vaquero-object args autos fwd default)))))
       (define vaquero-math-object
          (vaquero-object
             (list

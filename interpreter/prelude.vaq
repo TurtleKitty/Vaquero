@@ -620,7 +620,7 @@
       (object
          'type type
          'unseal unseal
-         resend: %(($obj @forward))))
+         forward: %(($obj @forward))))
 
    sealed)
 

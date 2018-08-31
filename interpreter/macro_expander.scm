@@ -97,8 +97,8 @@
                                        ; make damn sure it's a package and op
                                        (not (eq? pkg not-found))
                                        (eq? 'module (vaquero-send pkg 'type top-cont expand-err))
-                                       (hte? (htr pkg 'fields) msg)
-                                       (not (eq? will-exist (htr (htr pkg 'fields) msg))))
+                                       (hte? (vaquero-obj-fields pkg) msg)
+                                       (not (eq? will-exist (htr (vaquero-obj-fields pkg) msg))))
                                    (let ((mac (vaquero-send-object pkg msg top-cont expand-err)))
                                      (if (vaquero-op? mac)
                                         (apply-op mac code env)
