@@ -93,6 +93,11 @@
       (method table-values
          (cont (htvs obj)))
 
+      (method vaquero-table-merge
+         (cont
+            (lambda (other)
+               (hash-table-merge other obj))))
+
       (method table-apply
          (cont
             (vaquero-proc
@@ -129,7 +134,4 @@
            (values     . ,table-values)
            (apply      . ,table-apply)
            (default    . ,table-default)))))
-
-;(define (vaquero-table-merge table other)
-;   (hash-table-merge other obj))
 

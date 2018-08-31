@@ -38,7 +38,7 @@
 
 (define (vaquero-read-error-handler e kont)
    (debug 'read-error
-      (if (and (hash-table? e) (eq? (vaquero-send-atomic e 'type) 'error))
+      (if (vaquero-error? e)
          (map (lambda (f) (vaquero-view (vaquero-send-atomic e f))) '(name form to-text))
          (vaquero-view e)))
    (exit))

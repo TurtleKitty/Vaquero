@@ -345,8 +345,14 @@
                (seq
                   (box.set! 0 v)
                   v))
-      'inc! (lambda () (box.set! 0 (+ box.0 1)))
-      'dec! (lambda () (box.set! 0 (- box.0 1)))
+      'inc! (lambda ()
+               (def x (+ box.0 1))
+               (box.set! 0 x)
+               x)
+      'dec! (lambda ()
+               (def x (- box.0 1))
+               (box.set! 0 x)
+               x)
       auto: '(get view inc! dec!)))
 
 (op qw ()

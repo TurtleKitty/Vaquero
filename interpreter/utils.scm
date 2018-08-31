@@ -50,6 +50,9 @@
 (define (vaquero-error-object name form to-text)
    (vaquero-object `(type error name ,name form ,form to-text ,to-text message ,to-text view (error ,name ,form ,to-text)) #f #f #f))
 
+(define (vaquero-error? obj)
+   (and (vaquero-object? obj) (eq? (vaquero-send-atomic obj 'type) 'error)))
+
 (define (vaquero-bool obj cont err)
    (vaquero-send obj 'to-bool cont err))
 

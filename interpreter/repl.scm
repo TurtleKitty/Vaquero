@@ -7,7 +7,7 @@
       (define repl-err
          (lambda (ex continue)
             (debug 'runtime-error
-               (if (and (hash-table? ex) (eq? (vaquero-send-atomic ex 'type) 'error))
+               (if (vaquero-error? ex)
                   (map (lambda (f) (vaquero-view (vaquero-send-atomic ex f))) '(name form to-text))
                   (vaquero-view ex)))
             (loop env)))
@@ -32,16 +32,13 @@
                               (define mom    (vaquero-env-parent env))
                               (define evars  (vaquero-env-vars env))
                               (define mvars  (vaquero-env-vars mom))
-                              (vaquero-send-table mvars 'merge
-                                 (lambda (fn)
-                                    (define nuvars (fn evars))
-                                    (define print-me (if (eof-object? v) 'EOF v))
-                                    (vaquero-env-set-vars! mom nuvars)
-                                    (vaquero-env-set-parent! noob mom)
-                                    (vaquero-write print-me stdout)
-                                    (newline)
-                                    (loop noob))
-                                repl-err))
+                              (define nuvars (hash-table-merge evars mvars))
+                              (define print-me (if (eof-object? v) 'EOF v))
+                              (vaquero-env-set-vars! mom nuvars)
+                              (vaquero-env-set-parent! noob mom)
+                              (vaquero-write print-me stdout)
+                              (newline)
+                              (loop noob))
                          repl-err))
                      (begin
                         (display "Syntax error!\n")

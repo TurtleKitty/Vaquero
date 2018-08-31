@@ -4,7 +4,7 @@
 (define expand-err
    (lambda (ex continue)
       (debug 'compile-error
-         (if (and (hash-table? ex) (eq? (vaquero-send-atomic ex 'type) 'error))
+         (if (vaquero-error? ex)
             (map (lambda (f) (vaquero-view (vaquero-send-atomic ex f))) '(name form to-text))
             (vaquero-view ex)))
       (exit)))
