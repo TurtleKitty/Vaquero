@@ -234,7 +234,7 @@
               (write      . ,stream-write)
               (print      . ,stream-print)
               (say        . ,stream-say)
-              (nl         . .nl)
+              (nl         . ,nl)
               (flush      . ,flush)
               (close      . ,close)
               (default    . ,idk))))))
