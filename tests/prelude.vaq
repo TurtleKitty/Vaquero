@@ -143,7 +143,7 @@
         (def rv
             (while (< i.get 20)
                 (total.set! (+ total.get i.get))
-                (i.set! i.get.inc)
+                i.inc!
                 (list i.get total.get)))
         (= rv '(20 190))))
 
@@ -151,7 +151,7 @@
     (let (i (cell 0) total (cell 0))
         (def rv
             (while (< i.get 20)
-                (i.set! i.get.inc)
+                i.inc!
                 (when (mod i.get 3)
                     (next (list 'next i.get total.get)))
                 (total.set! (+ total.get i.get))
@@ -162,7 +162,7 @@
     (let (i (cell 0) total (cell 0))
         (def rv
             (while (< i.get 20)
-                (i.set! i.get.inc)
+                i.inc!
                 (when (> total.get 30)
                     (last (list 'last i.get total.get)))
                 (total.set! (+ total.get i.get))
@@ -171,13 +171,13 @@
 
 (test for
     (= 210
-        (for (i (cell 0) total (cell 0)) (<= i.get 20) (i.set! i.get.inc)
+        (for (i (cell 0) total (cell 0)) (<= i.get 20) i.inc!
             (total.set! (+ total.get i.get))
             total.get)))
 
 (test for-next
     (= 110
-        (for (i (cell 0) total (cell 0)) (<= i.get 20) (i.set! i.get.inc)
+        (for (i (cell 0) total (cell 0)) (<= i.get 20) i.inc!
             (when (mod i.get 2)
                 (next total))
             (total.set! (+ total.get i.get))
@@ -185,7 +185,7 @@
 
 (test for-redo
     (= 220
-        (for (i (cell 0) total (cell 0)) (<= i.get 20) (i.set! i.get.inc)
+        (for (i (cell 0) total (cell 0)) (<= i.get 20) i.inc!
             (when (mod total.get 2)
                 (total.set! total.get.inc)
                 (redo total))
@@ -194,7 +194,7 @@
 
 (test for-last
     (= 105
-        (for (i (cell 0) total (cell 0)) (<= i.get 20) (i.set! i.get.inc)
+        (for (i (cell 0) total (cell 0)) (<= i.get 20) i.inc!
             (when (> total.get 100)
                 (last total.get))
             (total.set! (+ total.get i.get))
@@ -236,7 +236,7 @@
         (def p
             (promise
                 (seq
-                    (count.set! count.get.inc)
+                    count.inc!
                     (* 3 4))))
         (and
             (= 'promise p.type)
