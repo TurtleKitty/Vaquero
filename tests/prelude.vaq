@@ -48,12 +48,15 @@
 (test table?
     (table? (: x 1 y 2)))
 
-(test box
-   (= '(0 7)
-      (let (x (box 0))
-         (def y x.val)
+(test cell
+   (= '(7 0 8)
+      (let (x (cell 0))
+         (def y x.get)
          (x.set! 7)
-         (list y x.val))))
+         x.inc!
+         (def z x.get)
+         x.dec!
+         (list x.get y z))))
 
 (test append
     (= '(1 2 3 4 5) (append '(1 2) '(3) '(4 5))))
@@ -136,84 +139,84 @@
             (= 16   (foo 4)))))
 
 (test while
-    (let (i (box 0) total (box 0))
+    (let (i (cell 0) total (cell 0))
         (def rv
-            (while (< i.val 20)
-                (total.set! (+ total.val i.val))
-                (i.set! i.val.inc)
-                (list i.val total.val)))
+            (while (< i.get 20)
+                (total.set! (+ total.get i.get))
+                (i.set! i.get.inc)
+                (list i.get total.get)))
         (= rv '(20 190))))
 
 (test while-next
-    (let (i (box 0) total (box 0))
+    (let (i (cell 0) total (cell 0))
         (def rv
-            (while (< i.val 20)
-                (i.set! i.val.inc)
-                (when (mod i.val 3)
-                    (next (list 'next i.val total.val)))
-                (total.set! (+ total.val i.val))
-                (list i.val total.val)))
+            (while (< i.get 20)
+                (i.set! i.get.inc)
+                (when (mod i.get 3)
+                    (next (list 'next i.get total.get)))
+                (total.set! (+ total.get i.get))
+                (list i.get total.get)))
         (= rv '(next 20 63))))
 
 (test while-last
-    (let (i (box 0) total (box 0))
+    (let (i (cell 0) total (cell 0))
         (def rv
-            (while (< i.val 20)
-                (i.set! i.val.inc)
-                (when (> total.val 30)
-                    (last (list 'last i.val total.val)))
-                (total.set! (+ total.val i.val))
-                (list i.val total.val)))
+            (while (< i.get 20)
+                (i.set! i.get.inc)
+                (when (> total.get 30)
+                    (last (list 'last i.get total.get)))
+                (total.set! (+ total.get i.get))
+                (list i.get total.get)))
         (= rv '(last 9 36))))
 
 (test for
     (= 210
-        (for (i (box 0) total (box 0)) (<= i.val 20) (i.set! i.val.inc)
-            (total.set! (+ total.val i.val))
-            total.val)))
+        (for (i (cell 0) total (cell 0)) (<= i.get 20) (i.set! i.get.inc)
+            (total.set! (+ total.get i.get))
+            total.get)))
 
 (test for-next
     (= 110
-        (for (i (box 0) total (box 0)) (<= i.val 20) (i.set! i.val.inc)
-            (when (mod i.val 2)
+        (for (i (cell 0) total (cell 0)) (<= i.get 20) (i.set! i.get.inc)
+            (when (mod i.get 2)
                 (next total))
-            (total.set! (+ total.val i.val))
-            total.val)))
+            (total.set! (+ total.get i.get))
+            total.get)))
 
 (test for-redo
     (= 220
-        (for (i (box 0) total (box 0)) (<= i.val 20) (i.set! i.val.inc)
-            (when (mod total.val 2)
-                (total.set! total.val.inc)
+        (for (i (cell 0) total (cell 0)) (<= i.get 20) (i.set! i.get.inc)
+            (when (mod total.get 2)
+                (total.set! total.get.inc)
                 (redo total))
-            (total.set! (+ total.val i.val))
-            total.val)))
+            (total.set! (+ total.get i.get))
+            total.get)))
 
 (test for-last
     (= 105
-        (for (i (box 0) total (box 0)) (<= i.val 20) (i.set! i.val.inc)
-            (when (> total.val 100)
-                (last total.val))
-            (total.set! (+ total.val i.val))
-            total.val)))
+        (for (i (cell 0) total (cell 0)) (<= i.get 20) (i.set! i.get.inc)
+            (when (> total.get 100)
+                (last total.get))
+            (total.set! (+ total.get i.get))
+            total.get)))
 
 (test each
-    (let (items (range 1 5) total (box 0))
+    (let (items (range 1 5) total (cell 0))
         (each n items
-            (total.set! (+ total.val n)))
-        (= total.val 15)))
+            (total.set! (+ total.get n)))
+        (= total.get 15)))
 
 (test each-vector
-    (let (items (apply vector (range 1 5) (:)) total (box 0))
+    (let (items (apply vector (range 1 5) (:)) total (cell 0))
         (each n items
-            (total.set! (+ total.val n)))
-        (= total.val 15)))
+            (total.set! (+ total.get n)))
+        (= total.get 15)))
 
 (test each-table
-    (let (items (: x 1 y 2 z 3 u 4 v 5) total (box 0))
+    (let (items (: x 1 y 2 z 3 u 4 v 5) total (cell 0))
         (each n items
-            (total.set! (+ total.val n.val)))
-        (= total.val 15)))
+            (total.set! (+ total.get n.val)))
+        (= total.get 15)))
 
 (test _
     (= '(2 4 9)
@@ -229,17 +232,17 @@
             (list-map (resend 'type) xs))))
 
 (test promise
-    (let (count (box 0))
+    (let (count (cell 0))
         (def p
             (promise
                 (seq
-                    (count.set! count.val.inc)
+                    (count.set! count.get.inc)
                     (* 3 4))))
         (and
             (= 'promise p.type)
             (= 12 p.value)
             (= 12 p.value)
-            (= 1 count.val))))
+            (= 1 count.get))))
 
 (test seal
    (let ()

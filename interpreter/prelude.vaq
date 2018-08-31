@@ -335,17 +335,19 @@
          (say (list (quote $name) 'ok))
          (log (list (quote $name) 'FAIL)))))
 
-(proc box (value)
-   (def the-box (vector value))
+(proc cell (value)
+   (def box (vector value))
    (object
-      'type 'box
-      'view (lambda () (list the-box.0))
+      'type 'cell
+      'view (lambda () (list box.0))
+      'get  (lambda () box.0)
       'set! (lambda (v)
                (seq
-                  (the-box.set! 0 v)
+                  (box.set! 0 v)
                   v))
-      'val  (lambda () the-box.0)
-      auto: '(val view)))
+      'inc! (lambda () (box.set! 0 (+ box.0 1)))
+      'dec! (lambda () (box.set! 0 (- box.0 1)))
+      auto: '(get view inc! dec!)))
 
 (op qw ()
    (pair 'list (list-map (lambda (x) x.to-text) rest)))
@@ -415,7 +417,7 @@
    (def opt-arity (if opt.arity opt.arity 5))
    (qq
       (def (unq name)
-         (let (default (box (proc () (unqs (pair body rest))))
+         (let (default (cell (proc () (unqs (pair body rest))))
                clauses (vector.apply (list-map (_ ()) (range 0 $opt-arity)) (:)))
             (proc add-clause! (pred body)
                (def idx pred.arity)
@@ -430,7 +432,7 @@
                   (def cs (clauses n))
                   (proc n-zero ()
                      (if n.zero?
-                        (default.val.apply args options)
+                        (default.get.apply args options)
                         (go n.dec)))
                   (if (not (pair? cs))
                      (n-zero)
@@ -442,7 +444,7 @@
                               (n-zero)))))))
             (proc view ()
                (send
-                  (pair clauses (pair 'default default.val))
+                  (pair clauses (pair 'default default.get))
                   'view))
             (object
                'add-clause! add-clause!
@@ -581,17 +583,17 @@
 
 (op promise (expr) ; lazy evaluation
    (def result (gensym))
-   %(let ($result (box null))
+   %(let ($result (cell null))
       (object
          auto: '(value)
          'type 'promise
          'view '(promise $expr)
          'value (lambda ()
-                   (if (is? (send $result (quote val)) null)
+                   (if (is? (send $result (quote get)) null)
                       (seq
                          ((send $result (quote set!)) $expr)
-                         (send $result (quote val)))
-                      (send $result (quote val)))))))
+                         (send $result (quote get)))
+                      (send $result (quote get)))))))
 
 (proc seal (obj)
    (def passed  (or opt.pass ()))

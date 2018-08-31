@@ -1,10 +1,11 @@
 
-(def runs (box 0))
+(def runs (cell 0))
 
 (proc omega (x)
-    (runs.set! runs.val.inc)
-    (sys.say (list 'run runs.val))
-    (x x))
+   runs.inc!
+   (say (list 'run runs.get))
+   stdout.flush
+   (x x))
 
 (omega omega) ; KABOOM
 
