@@ -29,7 +29,7 @@
             (cont (lambda (msg) (hte? vaquero-send-source-vtable msg))))
 
          (method autos
-            (cont '(view to-text to-bool to-list ready? input? output? open? read read-seq read-rune peek-rune read-line read-lines read-text)))
+            (cont '(view to-text to-bool to-list ready? input? output? open? read read-seq read-char peek-char read-line read-lines read-text)))
 
          (method messages
             (cont (htks vaquero-send-source-vtable)))
