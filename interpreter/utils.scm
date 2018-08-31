@@ -85,14 +85,14 @@
                               (lambda (p xs)
                                  (cons (helper (car p) nu-visited) (cons (helper (cdr p) nu-visited) xs)))
                               '()
-                              (hash-table->alist (htr obj 'vars))))))
+                              (hash-table->alist obj)))))
                      ((env)
                         (apply vector (cons 'env
                            (fold
                               (lambda (p xs)
                                  (cons (helper (car p) nu-visited) (cons (helper (cdr p) nu-visited) xs)))
                               '()
-                              (hash-table->alist (htr (htr obj 'vars) 'vars))))))))))
+                              (hash-table->alist (vaquero-env-vars obj))))))))))
          (if (eq? obj-type 'WTF)
             '???
             (vaquero-send-atomic obj 'view))))
@@ -110,9 +110,6 @@
    (eq? x 'null))
 
 (define (vaquero-equal? x y)
-   (define (no-way)
-      (vaquero-error 'bad-= (list '= x y) (list "= cannot compare objects " x " and " y "!"))
-      #f)
    (cond
       ((and (number? x) (number? y))
          (= x y))
@@ -143,16 +140,11 @@
                         #f)))
                #f)))
       ((and (hash-table? x) (hash-table? y))
-         (let ((xt (htr x 'type)) (yt (htr y 'type)))
-            (if (not (eq? xt yt))
-               #f
-               (case xt
-                  ((env lambda proc op) (eq? x y))
-                  ((table)
-                     (let ((x-pairs (sort-symbol-alist (hash-table->alist (htr x 'vars))))
-                          (y-pairs (sort-symbol-alist (hash-table->alist (htr y 'vars)))))
-                        (vaquero-equal? x-pairs y-pairs)))
-                  (else (no-way))))))
+         (let ((x-pairs (sort-symbol-alist (hash-table->alist x)))
+               (y-pairs (sort-symbol-alist (hash-table->alist y))))
+            (vaquero-equal? x-pairs y-pairs)))
+      ((or (vaquero-proc? x) (vaquero-env? x) (vaquero-object? x))
+         (eq? x y))
       (else
          (equal? x y))))
 
@@ -176,13 +168,8 @@
       ((vaquero-proc? obj)    'proc)
       ((vaquero-env? obj)     'env)
       ((vaquero-object? obj)  'object)
-      ((hash-table? obj)
-         (let ((t (htr obj 'type)))
-            (case t
-               ((env)    'env)
-               ((table)  'table)
-               (else     'object))))
-      ((eof-object? obj) 'eof)
+      ((hash-table? obj)      'table)
+      ((eof-object? obj)      'eof)
       (else 'WTF)))
 
 (define (vaquero-type-ord x)

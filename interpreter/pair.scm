@@ -50,8 +50,7 @@
             (if (not (every pair? obj))
                (err (vaquero-error-object 'not-an-associative-list! `(send ,obj to-table) "list: to-table only works on associative lists." ) cont)
                (let ((r (vaquero-table)))
-                  (define vars (htr r 'vars))
-                  (for-each (lambda (p) (hts! vars (car p) (cdr p))) obj)
+                  (for-each (lambda (p) (hts! r (car p) (cdr p))) obj)
                   (cont r))))
 
          (method empty?

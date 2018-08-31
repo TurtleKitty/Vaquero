@@ -96,7 +96,7 @@
                          (if (not (vaquero-env? other-env))
                             (arg-fail '(env.merge! WAT))
                             (let ((def-this (vaquero-send-atomic obj 'def!))
-                                  (other-vars (hash-table->alist (htr (vaquero-env-vars other-env) 'vars)))) ; FIXME when altering tables
+                                  (other-vars (hash-table->alist (vaquero-env-vars other-env))))
                                (if (not (pair? other-vars))
                                   (cont obj)
                                   (let loop ((v (car other-vars)) (vs (cdr other-vars)) (flat '()))

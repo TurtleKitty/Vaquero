@@ -1,26 +1,17 @@
 
 (define (vaquero-table . args)
    (define this (mkht))
-   (define vars (mkht))
-   (hts! this 'type 'table)
    (for-pairs
       (lambda (k v)
-         (hts! vars k v))
+         (hts! this k v))
       args)
-   (hts! this 'vars vars)
    this)
-
-(define-syntax get-table-vars
-   (ir-macro-transformer
-      (lambda (expr inject compare)
-         `(define ,(inject 'vars) (,(inject 'htr) ,(inject 'obj) ,(inject ''vars))))))
 
 (define vaquero-send-table-vtable
    (let ()
       (method answers?
-         (get-table-vars)
          (cont (lambda (msg)
-            (or (hte? vars msg)
+            (or (hte? obj msg)
                 (hte? vaquero-send-table-vtable msg)))))
 
       (method autos
@@ -30,12 +21,10 @@
          (cont (htks vaquero-send-table-vtable)))
 
       (method to-bool
-         (get-table-vars)
-         (cont (> (hash-table-size vars) 0)))
+         (cont (> (hash-table-size obj) 0)))
 
       (method to-list
-         (get-table-vars)
-         (cont (hash-table->alist vars)))
+         (cont (hash-table->alist obj)))
 
       (method to-text
          (cont (vaquero-view obj)))
@@ -44,30 +33,23 @@
          (cont 'table))
 
       (method clone
-         (get-table-vars)
          (cont
-            (let ((noob (vaquero-table)))
-                (hts! noob 'vars (hash-table-copy vars))
-                noob)))
+            (hash-table-copy obj)))
 
       (method size
-         (get-table-vars)
-         (cont (hash-table-size vars)))
+         (cont (hash-table-size obj)))
 
       (method get
-         (get-table-vars)
          (cont
             (lambda (k)
-               (if (hte? vars k)
-                  (htr vars k)
+               (if (hte? obj k)
+                  (htr obj k)
                   'null))))
 
       (method put
-         (get-table-vars)
          (cont
             (lambda args
-               (define noob (vaquero-table))
-               (hts! noob 'vars (hash-table-copy vars))
+               (define noob (hash-table-copy obj))
                (vaquero-send-table
                   noob
                   'set!
@@ -77,11 +59,9 @@
                   err))))
 
       (method rm
-         (get-table-vars)
          (cont
             (lambda args
-               (define noob (vaquero-table))
-               (hts! noob 'vars (hash-table-copy vars))
+               (define noob (hash-table-copy obj))
                (vaquero-send-table
                   noob
                   'del!
@@ -91,32 +71,27 @@
                   err))))
 
       (method table-set!
-         (get-table-vars)
          (cont
             (lambda args
-                (for-pairs (lambda (k v) (hts! vars k v)) args)
+                (for-pairs (lambda (k v) (hts! obj k v)) args)
                 'null)))
 
       (method del!
-         (get-table-vars)
          (cont
             (lambda args
-               (map (lambda (k) (htd! vars k)) args)
+               (map (lambda (k) (htd! obj k)) args)
                'null)))
 
       (method has?
-         (get-table-vars)
          (cont
             (lambda (x)
-               (hte? vars x))))
+               (hte? obj x))))
 
       (method table-keys
-         (get-table-vars)
-         (cont (htks vars)))
+         (cont (htks obj)))
 
       (method table-values
-         (get-table-vars)
-         (cont (htvs vars)))
+         (cont (htvs obj)))
 
       (method table-apply
          (cont
@@ -127,10 +102,9 @@
                   (vaquero-send-table obj (caar args) cont err)))))
 
       (method table-default
-         (get-table-vars)
          (cont
-            (if (hte? vars msg)
-               (htr vars msg)
+            (if (hte? obj msg)
+               (htr obj msg)
                'null)))
 
       (alist->hash-table
@@ -156,11 +130,6 @@
            (apply      . ,table-apply)
            (default    . ,table-default)))))
 
-(define (vaquero-table-merge table other)
-   (get-table-vars)
-   (define nuvars (hash-table-merge (htr other 'vars) vars))
-   (define noob (mkht))
-   (hts! noob 'type 'table)
-   (hts! noob 'vars nuvars)
-   noob)
+;(define (vaquero-table-merge table other)
+;   (hash-table-merge other obj))
 
