@@ -1,17 +1,12 @@
 
 (define-record-type vaq-env
-   (vaquero-env parent vars)
+   (vaquero-env vars parent)
    vaquero-env?
-   (parent vaquero-env-parent)
-   (vars vaquero-env-vars))
+   (vars vaquero-env-vars vaquero-env-set-vars!)
+   (parent vaquero-env-parent vaquero-env-set-parent!))
 
 (define (vaquero-environment parent)
-   (define this (mkht))
-   (define vars (vaquero-table))
-   (hts! this 'type 'env)
-   (hts! this 'vars vars)
-   (hts! this 'parent (if parent parent 'null))
-   this)
+   (vaquero-env (vaquero-table) (if parent parent 'null)))
 
 (define vaquero-send-env-vtable
    (let ()
@@ -27,8 +22,7 @@
          (cont (htks vaquero-send-env-vtable)))
 
       (method to-bool
-         (get-table-vars)
-         (vaquero-send-table vars 'to-bool cont err))
+         (vaquero-send-table (vaquero-env-vars obj) 'to-bool cont err))
 
       (method type
          (cont 'env))
@@ -37,27 +31,22 @@
          (vaquero-view obj))
 
       (method get
-         (get-table-vars)
-         (vaquero-send-table vars 'get cont err))
+         (vaquero-send-table (vaquero-env-vars obj) 'get cont err))
 
       (method has?
-         (get-table-vars)
-         (vaquero-send-table vars 'has? cont err))
+         (vaquero-send-table (vaquero-env-vars obj) 'has? cont err))
 
       (method env-keys
-         (get-table-vars)
-         (vaquero-send-table vars 'keys cont err))
+         (vaquero-send-table (vaquero-env-vars obj) 'keys cont err))
 
       (method env-values
-         (get-table-vars)
-         (vaquero-send-table vars 'values cont err))
+         (vaquero-send-table (vaquero-env-vars obj) 'values cont err))
 
       (method pairs
-         (get-table-vars)
-         (vaquero-send-table vars 'pairs cont err))
+         (vaquero-send-table (vaquero-env-vars obj) 'pairs cont err))
 
       (method env-def!
-         (get-table-vars)
+         (define vars (vaquero-env-vars obj))
          (cont
             (vaquero-proc
                primitive-type
@@ -104,10 +93,10 @@
                    (if (not (pair? args))
                       (arg-fail '(env.merge!))
                       (let ((other-env (car args)))
-                         (if (not (eq? 'env (vaquero-send-atomic other-env 'type)))
+                         (if (not (vaquero-env? other-env))
                             (arg-fail '(env.merge! WAT))
                             (let ((def-this (vaquero-send-atomic obj 'def!))
-                                  (other-vars (hash-table->alist (htr (htr other-env 'vars) 'vars))))
+                                  (other-vars (hash-table->alist (htr (vaquero-env-vars other-env) 'vars)))) ; FIXME when altering tables
                                (if (not (pair? other-vars))
                                   (cont obj)
                                   (let loop ((v (car other-vars)) (vs (cdr other-vars)) (flat '()))
@@ -128,7 +117,7 @@
                          (loop (cons (car left) names) (cons (cadr left) vals) (cddr left))))))))
 
       (method env-parent
-         (cont (htr obj 'parent)))
+         (cont (vaquero-env-parent obj)))
 
       (method vaq-env-eval
          (cont
@@ -409,14 +398,10 @@
                (lambda (getter)
                   (cont (getter x)))
                err)
-            (vaquero-send-env
-               env
-               'parent
-               (lambda (mom)
-                  (if (and mom (not (eq? mom 'null)))
-                     (lookup mom x cont err)
-                     (cont not-found)))
-               err)))
+            (let ((mom (vaquero-env-parent env)))
+               (if (and mom (not (eq? mom 'null)))
+                  (lookup mom x cont err)
+                  (cont not-found)))))
       err))
 
 (define (extend env names vals cont err)
