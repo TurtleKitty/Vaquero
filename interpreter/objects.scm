@@ -1,4 +1,12 @@
 
+(define-record-type vaq-obj
+   (vaquero-udf fields autos forwards default)
+   vaquero-object?
+   (fields vaquero-obj-fields)
+   (autos vaquero-obj-autos)
+   (forwards vaquero-obj-forwards)
+   (default vaquero-obj-default))
+
 (define (vaquero-object args autos resends initial)
    (define this (mkht))
    (define fields (mkht))

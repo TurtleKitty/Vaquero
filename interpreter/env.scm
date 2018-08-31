@@ -1,4 +1,10 @@
 
+(define-record-type vaq-env
+   (vaquero-env parent vars)
+   vaquero-env?
+   (parent vaquero-env-parent)
+   (vars vaquero-env-vars))
+
 (define (vaquero-environment parent)
    (define this (mkht))
    (define vars (vaquero-table))
