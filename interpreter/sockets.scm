@@ -3,7 +3,7 @@
    (define l (unix-listen path))
    (vaquero-object
       (list
-         'type   'fs-listener
+         'type   '(fs listener)
          'view   (list 'fs-listener path)
          'to-bool #t
          'path   path
@@ -20,7 +20,7 @@
 (define (vaquero-fs-socket path in out)
    (vaquero-object
       (list
-         'type   'fs-socket
+         'type   '(fs socket source sink stream)
          'view   (list 'socket path)
          'to-bool #t
          'path path
@@ -40,7 +40,7 @@
    (define l (tcp-listen port 100 host))
    (vaquero-object
       (list
-         'type   'tcp-listener
+         'type   '(tcp listener)
          'view   (list 'tcp-listener host port)
          'to-bool #t
          'port   (tcp-listener-port l)
@@ -59,7 +59,7 @@
    (define-values (l-port r-port) (tcp-port-numbers in))
    (vaquero-object
       (list
-         'type   'tcp-socket
+         'type   '(tcp socket source sink stream)
          'view   (list 'socket l-addr l-port '-> r-addr r-port)
          'to-bool #t
          'local-addr l-addr

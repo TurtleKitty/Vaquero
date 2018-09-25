@@ -26,7 +26,7 @@
          (cont (if obj "true" "false")))
 
       (method type
-         (cont 'bool))
+         (cont '(bool)))
 
       (alist->hash-table
          `((answers?   . ,answers?)

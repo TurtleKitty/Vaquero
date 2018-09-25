@@ -1,7 +1,7 @@
 
 ; primitives
 
-(test primitive-type (= pair.type 'proc))
+(test primitive-type (= pair.type '(lambda)))
 (test primitive-view (= pair.view 'primitive-procedure))
 (test primitive-code (= pair.code '0xDEADBEEF))
 (test primitive-true (= pair.to-bool true))
@@ -19,7 +19,7 @@
             (+ x y opt.z)
             (+ x y))))
 
-(test proc-type (= foo.type 'proc))
+(test proc-type (= foo.type '(proc lambda)))
 (test proc-view (= foo.view %(proc (x y) $(send "..." 'to-symbol))))
 (test proc-code (= foo.code '(proc (x y) (if opt.z (+ x y opt.z) (+ x y)))))
 (test proc-true (= foo.to-bool true))

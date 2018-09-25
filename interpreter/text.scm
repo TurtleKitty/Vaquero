@@ -21,7 +21,7 @@
          (cont (htks vaquero-send-text-vtable)))
 
       (method type
-         (cont 'text))
+         (cont '(text)))
 
       (method view
          (cont obj))

@@ -10,7 +10,7 @@
 (def fb "  foonballardy!!!  \n")
 (def complicated "foo: x&1 bar : y&2 baz:z&3 quux :u&4, quakz: v&5")
 
-(test text-type (= str.type 'text))
+(test text-type (= str.type '(text)))
 (test text-true (= str.to-bool true))
 (test text-false (= empty.to-bool false))
 (test text-to-symbol (= str.to-symbol 'vaquero))

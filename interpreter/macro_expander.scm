@@ -20,7 +20,7 @@
          (glookup x)
          (lookup env x top-cont expand-err)))
    (define (vaquero-op? obj)
-      (and (vaquero-proc? obj) (eq? (vaquero-proc-type obj) 'op)))
+      (and (vaquero-proc? obj) (equal? (vaquero-proc-type obj) '(op))))
    (define (apply-op mac code env)
       (let ((arg-pair (prepare-vaquero-args (cdr code))))
          (define args (car arg-pair))
@@ -96,7 +96,7 @@
                                 (if (and
                                        ; make damn sure it's a package and op
                                        (not (eq? pkg not-found))
-                                       (eq? 'module (vaquero-send pkg 'type top-cont expand-err))
+                                       (equal? '(module) (vaquero-send pkg 'type top-cont expand-err))
                                        (hte? (vaquero-obj-fields pkg) msg)
                                        (not (eq? will-exist (htr (vaquero-obj-fields pkg) msg))))
                                    (let ((mac (vaquero-send-object pkg msg top-cont expand-err)))
@@ -129,7 +129,7 @@
                (if (null? names)
                   nu-rval
                   (loop (car names) (cdr names) nu-rval))))
-         (define module (vaquero-object (cons 'type (cons 'module pkg-args)) #f #f #f))
+         (define module (vaquero-object (cons 'type (cons '(module) pkg-args)) #f #f #f))
          (vaquero-apply def-env! (list package-name module) 'null top-cont expand-err)))
    code)
 

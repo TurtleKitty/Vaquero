@@ -5,7 +5,7 @@
    (list 'lambda () (pair 'seq rest)))
 
 (proc isa? (thing type)
-   (= thing.type type))
+   (thing.type.has? type))
 
 (proc bool? (thing)
    (isa? thing 'bool))
@@ -103,7 +103,7 @@
 
 (proc error (name form message)
    (fail
-      (object 'type 'error
+      (object 'type '(error)
               'name name
               'form form
               'view (list 'error name form message)
@@ -169,7 +169,7 @@
    (proc constant? (expr)
       (if (pair? expr)
          (= expr.head 'quote)
-         (send (= 'symbol expr.type) 'not)))
+         (send (= '(symbol) expr.type) 'not)))
    (proc combine-skeletons (left right expr)
       (cond
          (and (constant? left) (constant? right))
@@ -338,7 +338,7 @@
 (proc cell (value)
    (def box (vector value))
    (object
-      'type 'cell
+      'type '(cell)
       'view (lambda () (list box.0))
       'get  (lambda () box.0)
       'set! (lambda (v)
@@ -592,7 +592,7 @@
    %(let ($result (cell null))
       (object
          auto: '(value)
-         'type 'promise
+         'type '(promise)
          'view '(promise $expr)
          'value (lambda ()
                    (if (is? (send $result (quote get)) null)
@@ -605,7 +605,7 @@
    (def passed  (or opt.pass ()))
    (def hidden  (or opt.hide ()))
    (def secret  (or opt.secret null))
-   (def type    'sealed-object)
+   (def type    '(sealed-object))
 
    (proc none-shall-pass (m)
        (not (hidden.has? m)))

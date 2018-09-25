@@ -36,7 +36,7 @@
             (cont (htks vaquero-send-int-vtable)))
 
          (method type
-            (cont 'int))
+            (cont '(int number)))
 
          (method view
             (cont obj))
@@ -100,7 +100,7 @@
             (cont (htks vaquero-send-real-vtable)))
 
          (method type
-            (cont 'real))
+            (cont '(real number)))
 
          (method view
             (cont (* 1.0 obj)))

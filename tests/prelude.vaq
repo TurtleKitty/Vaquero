@@ -226,10 +226,10 @@
             ((_ (* _ _)) 3))))
 
 (test resend
-    (=
-        '(int text symbol real real)
-        (let (xs (list 1 "2" 'three 1/4 6.4))
-            (list-map (resend 'type) xs))))
+   (= '(int text symbol real real)
+      (list-map (resend 'head)
+         (let (xs (list 1 "2" 'three 1/4 6.4))
+            (list-map (resend 'type) xs)))))
 
 (test promise
     (let (count (cell 0))
@@ -239,7 +239,7 @@
                     count.inc!
                     (* 3 4))))
         (and
-            (= 'promise p.type)
+            (= '(promise) p.type)
             (= 12 p.value)
             (= 12 p.value)
             (= 1 count.get))))
@@ -253,7 +253,7 @@
       (proc handler (e k) true)
 
       (and
-         (= sr.type 'sealed-object)
+         (= sr.type '(sealed-object))
          (and (= sr.x 1) (= sr.y 2))
          (guard
             handler

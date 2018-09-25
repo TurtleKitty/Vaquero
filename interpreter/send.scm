@@ -96,7 +96,7 @@
       (define type
          (if (hte? fields 'type)
             (htr fields 'type)
-            'object))
+            '(object)))
       (define the-view
          (if (hte? fields 'view)
             (let ((view-proc (htr fields 'view)))
@@ -120,7 +120,7 @@
             (if (hte? forwards msg)
                (vaquero-send (htr forwards msg) msg cont err)
                (case msg
-                  ((type) (cont 'object))
+                  ((type) (cont '(object)))
                   ((to-text) (cont "object"))
                   ((to-bool) (cont (not (eq? 0 (length (hash-table-keys fields))))))
                   (else (vaquero-apply (vaquero-obj-default obj) (list msg) 'null cont err))))))))

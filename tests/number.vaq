@@ -18,11 +18,11 @@
 
 (test int-type
     (and
-        (= 'int zero.type)
-        (= 'int one.type)))
+        (= '(int number) zero.type)
+        (= '(int number) one.type)))
 
 (test real-type
-    (= 'real pi.type))
+    (= '(real number) pi.type))
 
 (test to-bool
    (and zero.to-bool.not

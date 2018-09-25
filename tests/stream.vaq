@@ -3,7 +3,7 @@
 (def fb "   foonballardy!!!   ")
 (def lines "uno\ndos\ntres")
 
-(test stream-type    (and (= stdin.type 'source) (= stdout.type 'sink)))
+(test stream-type    (and (= stdin.type '(source stream)) (= stdout.type '(sink stream))))
 (test stream-to-bool (= stdout.to-bool true))
 (test input?  (and stdin.input? (not stdout.input?)))
 (test output? (and (not stdin.output?) stdout.output?))

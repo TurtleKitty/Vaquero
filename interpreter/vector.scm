@@ -20,7 +20,7 @@
          (cont (apply string (vector->list obj))))
 
       (method type
-         (cont 'vector))
+         (cont '(vector)))
 
       (method view
          (cont (vaquero-view obj)))

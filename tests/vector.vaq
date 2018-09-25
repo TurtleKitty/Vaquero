@@ -6,7 +6,7 @@
 (test vector-access (and (= vick.0 8) (= vick.3 5) (= vick.6 9)))
 (test vector-apply (= (vick 5) 0)) 
 
-(test vector-type        (= vick.type 'vector))
+(test vector-type        (= vick.type '(vector)))
 (test vector-true        (= vick.to-bool true))
 (test vector-false       (= empty.to-bool false))
 (test vector-to-list     (= vick.to-list '(8 6 7 5 3 0 9)))

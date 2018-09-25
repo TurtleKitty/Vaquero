@@ -23,7 +23,7 @@
          (cont ""))
 
       (method type
-         (cont 'null))
+         (cont '(null)))
 
       (method view
          (cont 'null))

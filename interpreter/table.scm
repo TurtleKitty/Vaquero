@@ -30,7 +30,7 @@
          (cont (vaquero-view obj)))
 
       (method type
-         (cont 'table))
+         (cont '(table)))
 
       (method clone
          (cont

@@ -10,11 +10,19 @@
    (arity vaquero-proc-arity))
 
 (define (vaquero-proc code env compiled)
+   (define proc-type
+      (if (pair? code)
+         (let ((operator (car code)))
+            (if (eq? 'op operator)
+               '(op)
+               (if (eq? 'proc operator)
+                  '(proc lambda)
+                  '(lambda))))))
    (define formals
       (if (pair? code)
          ((if (eq? (car code) 'op) caddr cadr) code)
          '()))
-   (vaquero-procedure 'proc code env compiled formals (length formals)))
+   (vaquero-procedure proc-type code env compiled formals (length formals)))
 
 (define vaquero-send-primitive-vtable
    (let ()
@@ -28,7 +36,7 @@
          (cont (htks vaquero-send-primitive-vtable)))
 
       (method type
-         (cont 'proc))
+         (cont '(lambda)))
 
       (method view
          (cont primitive-type))

@@ -20,7 +20,7 @@
          (cont (symbol->string obj)))
 
       (method type
-         (cont 'symbol))
+         (cont '(symbol)))
 
       (alist->hash-table
          `((answers?   . ,answers?)

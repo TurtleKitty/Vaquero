@@ -76,7 +76,7 @@
                ,@body
                ; end body
                (def ,object-name
-                  (apply object (pair 'type (pair 'module
+                  (apply object (pair 'type (pair '(module)
                      ((proc ,loop-name (,expo ,expos ,rval)
                         (def nu-rval (pair ,expo (pair ((send env 'lookup) ,expo) ,rval)))
                         (if ,expos

@@ -20,7 +20,7 @@
          (cont "END OF LINE."))
 
       (method type
-         (cont 'EOF))
+         (cont '(EOF)))
 
       (method view
          (cont 'EOF))

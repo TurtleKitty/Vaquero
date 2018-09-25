@@ -8,7 +8,7 @@
 (def deep-1 (: x 2 y (: foo 3 bar (: baz 5))))
 (def deep-2 (: x 2 y (: foo 3 bar (: baz 5))))
 
-(test table-type (= simp.type 'table))
+(test table-type (= simp.type '(table)))
 (test table-true (= true simp.to-bool))
 (test table-false (= false barerec.to-bool))
 

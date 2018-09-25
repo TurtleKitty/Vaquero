@@ -35,7 +35,7 @@
             (cont (htks vaquero-send-source-vtable)))
 
          (method type
-            (cont 'source))
+            (cont '(source stream)))
 
          (method ready?
             (char-ready? obj))
@@ -184,7 +184,7 @@
             (cont (htks vaquero-send-sink-vtable)))
 
          (method type
-            (cont 'sink))
+            (cont '(sink stream)))
 
          (method stream-write
             (if-alive obj msg cont err

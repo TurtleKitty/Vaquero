@@ -175,7 +175,7 @@
      #t))
 
 (define (vaquero-compile-lambda code)
-   (define type (car code))
+   (define type '(lambda))
    (define formals (cadr code))
    (define bodies (cddr code))
    (define arity (length formals))
@@ -203,7 +203,7 @@
    (if is-named
       (vaquero-compile `(def ,(cadr code) (proc ,(caddr code) ,@(cdddr code))))
       (let ((formals (cadr code)) (bodies (cddr code)))
-         (define type (car code))
+         (define type '(proc lambda))
          (define arity (length formals))
          (define bodies-c (vaquero-seq-subcontractor bodies #t))
          (frag
@@ -227,7 +227,7 @@
                   (vaquero-error 'bad-formals-in-proc code "Bad formals!")))))))
 
 (define (vaquero-compile-op code)
-   (define type (car code))
+   (define type '(op))
    (define name (cadr code))
    (define formals (caddr code))
    (define bodies (cdddr code))
