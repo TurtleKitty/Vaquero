@@ -6,6 +6,7 @@
 (include "symbol.scm")
 (include "text.scm")
 (include "pair.scm")
+(include "tuple.scm")
 (include "proc.scm")
 (include "stream.scm")
 (include "vector.scm")
@@ -59,6 +60,9 @@
 (define vaquero-send-pair
    (vaquero-send-generic vaquero-send-pair-vtable))
 
+(define vaquero-send-tuple
+   (vaquero-send-generic vaquero-send-tuple-vtable))
+
 (define vaquero-send-primitive
    (vaquero-send-generic vaquero-send-primitive-vtable))
 
@@ -95,8 +99,8 @@
    (define (vaquero-object-view obj)
       (define type
          (if (hte? fields 'type)
-            (htr fields 'type)
-            '(object)))
+            (car (htr fields 'type))
+            'object))
       (define the-view
          (if (hte? fields 'view)
             (let ((view-proc (htr fields 'view)))

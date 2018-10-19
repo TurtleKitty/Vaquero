@@ -104,7 +104,7 @@
          (cont (vaquero-proc-type obj)))
 
       (method view
-         (cont `(,(vaquero-proc-type obj) ,(vaquero-proc-formals obj) ...)))
+         (cont `(,(car (vaquero-proc-type obj)) ,(vaquero-proc-formals obj) ...)))
 
       (method arity
          (cont (vaquero-proc-arity obj)))

@@ -163,7 +163,7 @@
             (cont (lambda (msg) (hte? vaquero-send-pair-vtable msg))))
 
          (method autos
-            (cont '(autos messages type view empty? to-bool to-text head tail key val size clone)))
+            (cont '(autos messages type view to-bool to-text head tail key val size clone)))
 
          (method messages
             (cont (htks vaquero-send-pair-vtable)))

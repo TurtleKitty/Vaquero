@@ -198,6 +198,14 @@
                          (vector-map (lambda (i x) (vector-set! v i x)) (list->vector args))
                          v)
                       (apply vector args))))))
+      (define vaquero-make-tuple
+         (vaquero-proc
+            primitive-type
+            'global
+            (lambda (args opts cont err)
+               (if (not (eq? (modulo (length args) 2) 0))
+                  (err (vaquero-error-object 'uneven-pairs (cons 'tuple args) "tuple requires an even number of arguments."))
+                  (cont (apply vaquero-tuple args))))))
       (define vaquero-make-table
          (vaquero-proc
             primitive-type
@@ -335,7 +343,10 @@
              (cons 'vector? vector?)
              (cons 'text? string?)
              (cons 'rand random)
+             (cons 'tuple vaquero-make-tuple)
+             (cons 'tuple? vaquero-tuple?)
              (cons 'table vaquero-make-table)
+             (cons 'table? hash-table?)
              (cons 'object vaquero-make-object)
              (cons 'send vaquero-send-global)
              (cons 'math vaquero-math-object)

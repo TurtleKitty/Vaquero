@@ -33,9 +33,6 @@
 (proc null? (thing)
    (is? thing null))
 
-(proc table? (thing)
-   (isa? thing 'table))
-
 (proc eof? (x)
    (isa? x 'EOF))
 
