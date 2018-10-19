@@ -16,6 +16,8 @@
          (begin
             (write 'REPL-FAIL (current-error-port))
             (newline (current-error-port))
+            (write exn (current-error-port))
+            (newline (current-error-port))
             (read-line stdin) ; let's just do away with that
             (loop env))
          (let ((expr (vaquero-read stdin)))

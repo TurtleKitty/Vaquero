@@ -128,7 +128,7 @@
                #f)))
       ((and (pair? x) (pair? y))
          (and (vaquero-equal? (car x) (car y)) (vaquero-equal? (cdr x) (cdr y))))
-      ((and (vaquero-tuple? x) (vaquero-tuple y))
+      ((and (vaquero-tuple? x) (vaquero-tuple? y))
          (let ((x-pairs (sort-symbol-alist (vaq-tuple-fields x)))
                (y-pairs (sort-symbol-alist (vaq-tuple-fields y))))
             (vaquero-equal? x-pairs y-pairs)))

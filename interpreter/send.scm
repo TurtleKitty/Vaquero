@@ -140,6 +140,7 @@
         (text         . ,vaquero-send-text)
         (list         . ,vaquero-send-list)
         (pair         . ,vaquero-send-pair)
+        (tuple        . ,vaquero-send-tuple)
         (primitive    . ,vaquero-send-primitive)
         (vector       . ,vaquero-send-vector)
         (source       . ,vaquero-send-source)

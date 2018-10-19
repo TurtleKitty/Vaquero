@@ -1,5 +1,5 @@
 #!/bin/sh
 
 cd interpreter
-rlwrap csi -script main.scm $1 $2 $3
+rlwrap csi -R r7rs -script main.scm $1 $2 $3
 

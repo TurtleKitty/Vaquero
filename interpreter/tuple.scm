@@ -26,22 +26,25 @@
 
 (define vaquero-send-tuple-vtable
    (let ()
+      (define (fieldlist t)
+         (map car (vaq-tuple-fields t)))
+
       (method answers?
          (cont
             (lambda (msg)
-               (define fields (vaq-tuple-fields obj))
+               (define fields (fieldlist obj))
                (define fields! (fields->fields! fields))
                (or (hte? vaquero-send-tuple-vtable msg)
-                   (member? msg fields)
-                   (member? msg fields!)))))
+                   (if (member msg fields) #t #f)
+                   (if (member msg fields!) #t #f)))))
 
       (method autos
          (cont (append '(autos clone messages size to-bool to-text type view)
-                        (map car (vaq-tuple-fields obj)))))
+                        (fieldlist obj))))
 
       (method tuple-clone
          (cont
-            (vaquero-tuple (list-copy (vaq-tuple-fields obj) (vaq-tuple-size obj)))))
+            (vaquero-tuple (alist-copy (vaq-tuple-fields obj)) (vaq-tuple-size obj))))
 
       (method tuple-add
          (cont (lambda (k v)
@@ -50,12 +53,12 @@
 
       (method tuple-del
          (cont (lambda (k)
-            (define new-fields (filter (lambda (x) (not (eq? x k)))
-                                       (list-copy (vaq-tuple-fields))))
+            (define new-fields (filter (lambda (p) (not (eq? k (car p))))
+                                       (list-copy (vaq-tuple-fields obj))))
             (vaquero-tuple new-fields (length new-fields)))))
 
       (method messages
-         (let ((fields (vaq-tuple-fields obj)))
+         (let ((fields (fieldlist obj)))
             (let ((fields! (fields->fields! fields)))
                (cont (append (htks vaquero-send-tuple-vtable) fields fields!)))))
 
@@ -64,9 +67,6 @@
 
       (method type
          (cont '(tuple)))
-
-      (method view
-         (cont "xyzzy"))
 
       (method to-bool
          (cont (if (= 0 (vaq-tuple-size obj)) #f #t)))
@@ -78,21 +78,21 @@
          (cont (vaq-tuple-fields obj)))
 
       (method tuple-fields
-         (cont (map car (vaq-tuple-fields obj))))
+         (cont (fieldlist obj)))
 
       (method tuple-default
-         (cont
-            (let ((fields (vaq-tuple-fields obj)))
-               (if (null? fields)
-                  (idk obj msg cont err)
-                  (let ((kv (assoc msg obj)))
-                     (if kv
-                        (cdr kv)
-                        (let ((kv! (assoc (unbang msg) obj)))
-                           (if kv!
+         (let ((fields (vaq-tuple-fields obj)))
+            (if (null? fields)
+               (idk obj msg cont err)
+               (let ((kv (assoc msg fields)))
+                  (if kv
+                     (cont (cdr kv))
+                     (let ((kv! (assoc (unbang msg) fields)))
+                        (if kv!
+                           (cont 
                               (lambda (v)
-                                 (set-cdr! kv! v))
-                              (idk obj msg cont err)))))))))
+                                 (set-cdr! kv! v)))
+                           (idk obj msg cont err))))))))
 
       (alist->hash-table
          `((answers?   . ,answers?)
