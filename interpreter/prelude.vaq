@@ -152,8 +152,8 @@
 
 (op cond ()
    (def default
-      (if (opt.get 'default)
-         (opt.get 'default)
+      (if (opt.get 'else)
+         (opt.get 'else)
          (list 'error ''cond-no-matching-clause (list 'pair ''cond (list 'quote rest)) "(cond... ) form fell through!")))
    (if (< rest.size 2)
       (error 'syntax-error (pair 'cond rest) "(cond ...) should have at least one predicate and consequent.")
@@ -178,7 +178,7 @@
             (list 'list left)
          (and (pair? right) (= right.head 'list))
             (pair 'list (pair left right.tail))
-         default: (list 'pair left right)))
+         else: (list 'pair left right)))
    (proc expand-quasiquote (expr nesting)
       (cond
          (send (pair? expr) 'not)
@@ -205,7 +205,7 @@
                   (expand-quasiquote expr.head nesting.dec)
                   (expand-quasiquote expr.tail nesting)
                   expr))
-         default:
+         else:
             (combine-skeletons
                (expand-quasiquote expr.head nesting)
                (expand-quasiquote expr.tail nesting)
@@ -220,8 +220,8 @@
 
 (op case (val)
    (def default
-      (if (opt.get 'default)
-         (opt.get 'default)
+      (if (opt.get 'else)
+         (opt.get 'else)
          (list 'error ''case-no-matching-clause (list 'pair ''case (list 'quote rest)) "(case ...) form fell through!")))
    (if (< rest.size 2)
       (error 'syntax-error (pair 'case rest) "(case ...) should have at least one predicate and consequent.")
@@ -518,7 +518,7 @@
                    (case next
                       ("]")     (seq p.read-char items.reverse)
                       (",")     (seq p.read-char (go p.peek-char items))
-                      default:
+                      else:
                          (let (item (reader p))
                              (go p.peek-char (items.cons item)))))))
          (proc read-object (p)
@@ -531,7 +531,7 @@
                   (case next
                      ("}")  (seq p.read-char items)
                      (",")  (seq p.read-char (go p.peek-char items))
-                     default:
+                     else:
                         (let (key (send (reader p) 'to-symbol))
                            (p.skip-while " :\t\n")
                            (let (val (reader p))
@@ -553,7 +553,7 @@
                   ("}")     (error 'json-read-error txt "Unexpected } !")
                   ("-" "0" "1" "2" "3" "4" "5" "6" "7" "8" "9")
                       (read-num p)
-                  default:
+                  else:
                      (let (this-guy (read-symbol p))
                         (if (not (syms.has? this-guy))
                            (error 'json-read-error this-guy "Unquoted string!")
@@ -573,7 +573,7 @@
                (table? thing) (cat "{" (comma-fy (list-map (lambda (kv) (cat (json-out kv.key.to-text) ":" (json-out kv.val))) thing.to-list)) "}")
                (list? thing)   (cat "[" (comma-fy (list-map json-out thing)) "]")
                (pair? thing)   (cat "[" (json-out thing.head) "," (json-out thing.tail) "]")
-               default:
+               else:
                   (if (thing.responds? 'to-json)
                      thing.to-json
                      (error 'json-write-error thing "json.write - unknown-type"))))
@@ -690,7 +690,7 @@
    (cond
       (= xs ()) ()
       (not (pair? xs)) (list xs)
-      default: (append (flatten xs.head)
+      else: (append (flatten xs.head)
                        (flatten xs.tail))))
 
 (op bind (names)

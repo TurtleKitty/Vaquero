@@ -84,7 +84,7 @@
                 (= x 0) 'foo
                 (= x 1) 'bar
                 (= x 2) (+ x x x)
-                default: (* x x)))
+                else: (* x x)))
         (and
             (= 'foo (foo 0))
             (= 'bar (foo 1))
@@ -130,7 +130,7 @@
                 (0) 'foo
                 (1) 'bar
                 (2 3) (+ x x x)
-                default: (* x x)))
+                else: (* x x)))
         (and
             (= 'foo (foo 0))
             (= 'bar (foo 1))
