@@ -65,20 +65,23 @@
       (apply vector (cons name lst)))
    (define (helper obj visited)
       (define obj-type (vaquero-type obj))
-      (if (member obj-type '(tuple pair list vector table env))
+      (if (member obj-type '(tuple set pair list vector table env))
          (let ((seen (member obj visited eq?)))
             (if seen
                'cyclical-reference
                (let* ((nu-visited (cons obj visited))
+                      (help-list (lambda (x) (helper x nu-visited)))
                       (pair->list (lambda (p xs)
                         (cons (helper (car p) nu-visited) (cons (helper (cdr p) nu-visited) xs))))
-                      (help-list (lambda (xs)
+                      (help-alist (lambda (xs)
                         (fold pair->list '() xs))))
                   (case obj-type
                      ((list)
-                        (map (lambda (x) (helper x nu-visited)) obj))
+                        (map help-list obj))
                      ((tuple)
-                        (vector-name 'tuple (help-list (vaq-tuple-fields obj))))
+                        (vector-name 'tuple (help-alist (vaq-tuple-fields obj))))
+                     ((set)
+                        (vector-name 'set (map help-list (htks (vaquero-set-items obj)))))
                      ((pair)
                         (cons (helper (car obj) nu-visited) (helper (cdr obj) nu-visited)))
                      ((vector)
@@ -91,9 +94,9 @@
                                     (vector-set! noob (+ i 1) (helper (vector-ref obj i) nu-visited))
                                     (loop (+ i 1)))))))
                      ((table)
-                        (vector-name 'table (help-list (hash-table->alist obj))))
+                        (vector-name 'table (help-alist (hash-table->alist obj))))
                      ((env)
-                        (vector-name 'env (help-list (hash-table->alist (vaquero-env-vars obj)))))))))
+                        (vector-name 'env (help-alist (hash-table->alist (vaquero-env-vars obj)))))))))
          (if (eq? obj-type 'WTF)
             '???
             (vaquero-send-atomic obj 'view))))
@@ -109,6 +112,12 @@
 
 (define (vaquero-null? x)
    (eq? x 'null))
+
+(define (vaquero-member? x xs)
+   (not (eq? #f (member x xs vaquero-equal?))))
+
+(define (make-list-tester xs)
+   (lambda (x) (vaquero-member? x xs)))
 
 (define (vaquero-equal? x y)
    (cond
@@ -132,6 +141,12 @@
          (let ((x-pairs (sort-symbol-alist (vaq-tuple-fields x)))
                (y-pairs (sort-symbol-alist (vaq-tuple-fields y))))
             (vaquero-equal? x-pairs y-pairs)))
+      ((and (vaquero-set? x) (vaquero-set? y))
+         (let ((x-list (htks (vaquero-set-items x)))
+               (y-list (htks (vaquero-set-items y))))
+            (define mem-x? (make-list-tester x-list))
+            (define mem-y? (make-list-tester y-list))
+            (and (every mem-x? y-list) (every mem-y? x-list))))
       ((and (vector? x) (vector? y))
          (let ((len (vector-length x)))
             (if (= len (vector-length y))
@@ -173,6 +188,7 @@
       ((vaquero-proc? obj)    'proc)
       ((vaquero-env? obj)     'env)
       ((vaquero-tuple? obj)   'tuple)
+      ((vaquero-set? obj)     'set)
       ((vaquero-object? obj)  'object)
       ((hash-table? obj)      'table)
       ((eof-object? obj)      'eof)

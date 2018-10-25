@@ -206,6 +206,12 @@
                (if (not (eq? (modulo (length args) 2) 0))
                   (err (vaquero-error-object 'uneven-pairs (cons 'tuple args) "tuple requires an even number of arguments."))
                   (cont (apply make-vaquero-tuple args))))))
+      (define vaquero-make-set
+         (vaquero-proc
+            primitive-type
+            'global
+            (lambda (args opts cont err)
+               (cont (apply make-vaquero-set args)))))
       (define vaquero-make-table
          (vaquero-proc
             primitive-type
@@ -345,6 +351,8 @@
              (cons 'rand random)
              (cons 'tuple vaquero-make-tuple)
              (cons 'tuple? vaquero-tuple?)
+             (cons 'set vaquero-make-set)
+             (cons 'set? vaquero-set?)
              (cons 'table vaquero-make-table)
              (cons 'table? hash-table?)
              (cons 'object vaquero-make-object)

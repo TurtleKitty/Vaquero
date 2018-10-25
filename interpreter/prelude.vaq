@@ -230,8 +230,8 @@
          (qq
             (let ((unq cval) (unq val))
                (unq
-                  (loop go (set rest.0 conseq rest.1 remaining rest.tail.tail)
-                     (def pred (qq ((send (quote (unq set)) 'has?) (unq cval))))
+                  (loop go (stuff rest.0 conseq rest.1 remaining rest.tail.tail)
+                     (def pred (qq ((send (quote (unq stuff)) 'has?) (unq cval))))
                      (if remaining
                         (list 'if pred conseq (go remaining.0 remaining.1 remaining.tail.tail))
                         (list 'if pred conseq default)))))))))

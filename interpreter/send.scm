@@ -7,6 +7,7 @@
 (include "text.scm")
 (include "pair.scm")
 (include "tuple.scm")
+(include "set.scm")
 (include "proc.scm")
 (include "stream.scm")
 (include "vector.scm")
@@ -62,6 +63,9 @@
 
 (define vaquero-send-tuple
    (vaquero-send-generic vaquero-send-tuple-vtable))
+
+(define vaquero-send-set
+   (vaquero-send-generic vaquero-send-set-vtable))
 
 (define vaquero-send-primitive
    (vaquero-send-generic vaquero-send-primitive-vtable))
@@ -141,6 +145,7 @@
         (list         . ,vaquero-send-list)
         (pair         . ,vaquero-send-pair)
         (tuple        . ,vaquero-send-tuple)
+        (set          . ,vaquero-send-set)
         (primitive    . ,vaquero-send-primitive)
         (vector       . ,vaquero-send-vector)
         (source       . ,vaquero-send-source)
