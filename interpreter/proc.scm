@@ -127,7 +127,8 @@
                primitive-type
                'proc
                (lambda (args opts cont err)
-                  (if (< (length args) 1)
+                  (define min-args (if (eq? 'lambda (vaquero-proc-type obj)) 1 2))
+                  (if (< (length args) min-args)
                      (err (vaquero-error-object 'arity `((send ,obj apply) ,args) "proc.apply requires arguments!") cont)
                      (vaquero-apply obj (car args) (cadr args) cont err))))))
 
