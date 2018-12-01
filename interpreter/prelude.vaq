@@ -19,6 +19,9 @@
 (proc op? (thing)
    (isa? thing 'op))
 
+(proc apply? (thing)
+   (thing.answers? 'apply))
+
 (proc symbol? (thing)
    (isa? thing 'symbol))
 
@@ -629,7 +632,7 @@
       %($'$name @rest)))
 
 (proc any? (f xs)
-   (when (not (proc? f))
+   (when (not (apply? f))
       (error 'bad-argument %(any? $f $xs @rest)
                            "any?: first argument must be a procedure."))
    (def ys xs.to-list)
@@ -641,7 +644,7 @@
             false))))
 
 (proc every? (f xs)
-   (when (not (proc? f))
+   (when (not (apply? f))
       (error 'bad-argument %(every? $f $xs @rest) "every?: first argument must be a procedure."))
    (def ys xs.to-list)
    (loop go (z ys.head zs ys.tail)
@@ -652,7 +655,7 @@
          false)))
 
 (proc map (f xs) ; general map
-   (when (not (proc? f))
+   (when (not (apply? f))
       (error 'bad-argument %(map $f $xs @rest) "map: first argument must be a procedure."))
    (proc get-heads (xs)
       (list-map (resend 'head) xs))
@@ -667,7 +670,7 @@
             noo.reverse))))
 
 (proc fold (kons knil) ; general fold
-   (when (not (proc? kons))
+   (when (not (apply? kons))
       (error 'bad-argument %(fold $kons $knil @rest) "fold: first argument must be a procedure."))
    (def lists (list-map (resend 'to-list) rest))
    (proc fold-m (kons knil lists)
