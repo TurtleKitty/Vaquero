@@ -85,11 +85,11 @@
 
 (proc identity (x) x)
 
-(proc append (xs ys)
-   (def rv (xs.append ys))
+(proc append (xs)
    (if rest
-      (append.apply (pair rv rest) null)
-      rv))
+      (let (rv (xs.append rest.head))
+         (append.apply (pair rv rest.tail) null))
+      xs))
 
 (proc apply (f args options)
    (f.apply args options))
