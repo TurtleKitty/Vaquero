@@ -14,9 +14,7 @@
    (isa? thing 'lambda))
 
 (proc proc? (thing)
-   (or
-      (isa? thing 'lambda)
-      (isa? thing 'proc)))
+   (isa? thing 'proc))
 
 (proc op? (thing)
    (isa? thing 'op))
@@ -103,7 +101,7 @@
       (object 'type '(error)
               'name name
               'form form
-              'view (list 'error name form message)
+              'view (list 'ERROR name form message)
               'message message
               'to-text message)))
 
@@ -264,10 +262,10 @@
          acc
          (list-fold f (f xs.head acc) xs.tail)))
 
-   (proc list-reduce (f acc xs)
+   (proc list-foldr (f acc xs)
       (if xs.empty?
          acc
-         (f xs.head (list-reduce f acc xs.tail))))
+         (f xs.head (list-foldr f acc xs.tail))))
 
    (proc list-map (f xs)
       (if xs
@@ -275,7 +273,7 @@
          ()))
 
    (proc list-filter (f xs)
-      (list-reduce (lambda (x y) (if (f x) (pair x y) y)) '() xs))
+      (list-foldr (lambda (x y) (if (f x) (pair x y) y)) '() xs))
 
    (def list-sort
       (let ()
@@ -420,22 +418,20 @@
    (def opt-arity (if opt.arity opt.arity 5))
    (qq
       (def (unq name)
-         (let (default (cell (proc () (unqs (pair body rest))))
+         (let (default (proc () (unqs (pair body rest)))
                clauses (vector.apply (list-map (_ ()) (range 0 $opt-arity)) (:)))
             (proc add-clause! (pred body)
                (def idx pred.arity)
                (clauses.set!
                   idx
                   (pair (pair pred body) (clauses idx))))
-            (proc set-default! (body)
-               (default.set! body))
             (proc gen-apply (args options)
                (def arity args.size)
                (loop go (n arity)
                   (def cs (clauses n))
                   (proc n-zero ()
                      (if n.zero?
-                        (default.get.apply args options)
+                        (default.apply args options)
                         (go n.dec)))
                   (if (not (pair? cs))
                      (n-zero)
@@ -447,11 +443,10 @@
                               (n-zero)))))))
             (proc view ()
                (send
-                  (pair clauses (pair 'default default.get))
+                  (pair clauses (pair 'default default))
                   'view))
             (object
                'add-clause! add-clause!
-               'set-default! set-default!
                'apply gen-apply
                'view view
                'arity $opt-arity
