@@ -300,7 +300,6 @@
          (lambda (f xs)
             (sort f xs)))))
 
-
 (op _ (body)
    (def uscore (gensym))
    (def bodies (pair body rest))
@@ -417,48 +416,95 @@
                    _)
                rest))))))
 
-(op gen (name body)
-   (def opt-arity (if opt.arity opt.arity 5))
-   (qq
-      (def (unq name)
-         (let (default (proc () (unqs (pair body rest)))
-               clauses (vector.apply (list-map (_ ()) (range 0 $opt-arity)) (:)))
-            (proc add-clause! (pred body)
-               (def idx pred.arity)
-               (clauses.set!
-                  idx
-                  (pair (pair pred body) (clauses idx))))
-            (proc gen-apply (args options)
-               (def arity args.size)
-               (loop go (n arity)
-                  (def cs (clauses n))
-                  (proc n-zero ()
-                     (if n.zero?
-                        (default.apply args options)
-                        (go n.dec)))
-                  (if (not (pair? cs))
-                     (n-zero)
-                     (loop jump (x cs.head xs cs.tail)
-                        (if (x.head.apply args options)
-                           (x.tail.apply args options)
-                           (if (pair? xs)
-                              (jump xs.head xs.tail)
-                              (n-zero)))))))
-            (proc view ()
-               (send
-                  (pair clauses (pair 'default default))
-                  'view))
-            (object
-               'add-clause! add-clause!
-               'apply gen-apply
-               'view view
-               'arity $opt-arity
-               (unq 'auto:) '(view)))))) ; not sure why (unq (quote keyword:)) works, but I'll take it
+(proc gen-x-prod (xs ys)
+   (cond
+      xs.to-bool.not ys
+      ys.to-bool.not xs
+      else:
+         (apply append
+            (list-map
+               (lambda (x) 
+                  (list-map
+                     (lambda (y)
+                        (if (pair? x)
+                           (append x (list y))
+                           (list x y)))
+                     ys))
+               xs)
+            (:))))
 
-(op spec (name args pred body)
-   (qq ((send (unq name) 'add-clause!)
-          (proc (unq args) (unq pred))
-          (proc (unq args) (unqs (pair body rest))))))
+(proc gen-x-prod-n (xs)
+   (if rest
+      (let (acc (gen-x-prod xs rest.head))
+         (gen-x-prod-n.apply (pair acc rest.tail) (:)))
+      xs))
+
+(op bind (names)
+   ; FIXME expand to destructure trees as well as lists
+   (def expr-val (gensym))
+   (proc define (name n)
+      %(def $name (send $expr-val $n)))
+   (def defz
+      (loop go (name names.head others names.tail n 0 acc ())
+         (def new-acc (pair (define name n) acc))
+         (if others
+            (go others.head others.tail n.inc new-acc)
+            new-acc.reverse)))
+   %(seq
+      (def $expr-val (seq @rest))
+      @defz))
+
+(op gen (name body)
+   %(def $name
+      (let (default (proc () @(pair body rest))
+            max-arity (cell 0)
+            clauses (:))
+         (proc add-clause! (formal-types handler)
+            (def this-arity formal-types.size)
+            (when (> this-arity max-arity.get)
+               (max-arity.set! this-arity))
+            (clauses.set! formal-types handler)) ; check for pre-existing - no overrides
+         (proc gen-apply (args options)
+            (def arity (math.min max-arity.get args.size))
+            (def signature (list-map (_ _.type) (args.take arity))) ; may need to add "object" to the end of each type list
+            (if (clauses.has? signature)
+               ((send (clauses.get signature) 'apply) args options)
+               (let (possible (gen-x-prod-n.apply signature null))
+                  (loop go (this possible.head others possible.tail)
+                     (if (clauses.has? this)
+                        (let (f (clauses.get this))
+                           (add-clause! signature f) ; cache result
+                           (f.apply args options))
+                        (if others
+                           (go others.head others.tail)
+                           (default.apply args options)))))))
+         (proc view ()
+            (send
+               (list clauses 'default default)
+               'view))
+         (object
+            'type '(gen proc lambda)
+            'add-clause! add-clause!
+            'apply gen-apply
+            'view view
+            (unq 'auto:) '(view))))) ; not sure why (unq (quote keyword:)) works, but I'll take it
+
+(op spec (name formal-types body)
+   (def mod-2 (mod formal-types.size 2))
+   (def good-args (and formal-types mod-2.to-bool.not))
+   (when good-args.not
+      (error 'bad-arguments
+              %(spec $name $formal-types $body @rest)
+              "spec: requires an alternating list of names and types, at least one pair."))
+   (bind (types formals)
+      (loop do (arg-type formal-types.head arg-name formal-types.tail.head types () names () remains formal-types.tail.tail)
+         (let (nu-types (pair arg-type types) nu-names (pair arg-name names))
+            (if remains
+               (do remains.head remains.tail.head nu-types nu-names remains.tail.tail)
+               (list nu-types.reverse nu-names.reverse)))))
+   %((send $name 'add-clause!)
+      (quote $types)
+      (proc $formals @(pair body rest))))
 
 (op assert (predicate)
    (with-gensyms (testy result)
@@ -654,20 +700,35 @@
             true)
          false)))
 
-(proc map (f xs) ; general map
-   (when (not (apply? f))
-      (error 'bad-argument %(map $f $xs @rest) "map: first argument must be a procedure."))
-   (proc get-heads (xs)
-      (list-map (resend 'head) xs))
-   (proc get-tails (xs)
-      (list-map (resend 'tail) xs))
-   (let (objz (pair xs rest))
-      (def lists (list-map (resend 'to-list) objz))
+(gen map
+   (error
+      'type-error
+      %(map @rest)
+      "map not defined for the supplied arguments."))
+
+(spec map (lambda f list xs)
+   (list-map f xs))
+
+(spec map (lambda f list xs list ys)
+   (proc get-heads (ls)
+      (list-map (resend 'head) ls))
+   (proc get-tails (ls)
+      (list-map (resend 'tail) ls))
+   (let (lists (append (list xs ys) rest))
       (loop go (heads (get-heads lists) tails (get-tails lists) results ())
          (def noo (pair (apply f heads null) results))
          (if (every? identity tails)
             (go (get-heads tails) (get-tails tails) noo)
             noo.reverse))))
+
+(spec map (lambda p vector v)
+   (def sz v.size)
+   (def noob (vector size: sz))
+   (loop go (n 0)
+      (noob.set! n (p (v n)))
+      (if (= n sz.dec)
+         noob
+         (go n.inc))))
 
 (proc fold (kons knil) ; general fold
    (when (not (apply? kons))
@@ -690,16 +751,6 @@
       (not (pair? xs)) (list xs)
       else: (append (flatten xs.head)
                        (flatten xs.tail))))
-
-(op bind (names)
-   ; FIXME expand to destructure trees as well as lists
-   (def expr-val (gensym))
-   (proc define (name n)
-      %(def $name (send $expr-val $n)))
-   (def defz (map define names (range 0 names.size.dec)))
-   %(seq
-      (def $expr-val (seq @rest))
-      @defz))
 
 (op github (name sym)
    (def txt sym.to-text)
