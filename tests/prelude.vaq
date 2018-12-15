@@ -207,7 +207,7 @@
         (= total.get 15)))
 
 (test each-vector
-    (let (items (apply vector (range 1 5) (:)) total (cell 0))
+    (let (items (apply vector (range 1 5)) total (cell 0))
         (each n items
             (total.set! (+ total.get n)))
         (= total.get 15)))

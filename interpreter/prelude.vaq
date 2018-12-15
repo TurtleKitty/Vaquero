@@ -91,7 +91,8 @@
          (append.apply (pair rv rest.tail) null))
       xs))
 
-(proc apply (f args options)
+(proc apply (f args)
+   (def options (if opt.opt opt.opt (table)))
    (f.apply args options))
 
 (proc papply (f)
@@ -109,15 +110,15 @@
               'to-text message)))
 
 (proc compose ()
-   ((proc (funz)
-      (def s funz.size)
-      (if (= s 0)
-         (error 'too-few-args %(compose @rest) "(compose ...) requires at least one argument.  It prefers more than one.")
-         (if (= s 1)
-            rest.head
-            (if (= s 2)
-               (proc () (funz.head (apply funz.tail.head rest opt)))
-               (compose funz.head (apply compose funz.tail null)))))) rest))
+   (def funz rest)
+   (def s funz.size)
+   (if (= s 0)
+      (error 'too-few-args %(compose @rest) "(compose ...) requires at least one argument.  It prefers more than one.")
+      (if (= s 1)
+         rest.head
+         (if (= s 2)
+            (proc () (funz.head (funz.tail.head.apply rest opt)))
+            (compose funz.head (apply compose funz.tail))))))
 
 (op loop (name vars)
    (proc sep (x y xs names vals)
@@ -431,7 +432,7 @@
                            (list x y)))
                      ys))
                xs)
-            (:))))
+            )))
 
 (proc gen-x-prod-n (xs)
    (if rest
@@ -716,7 +717,7 @@
       (list-map (resend 'tail) ls))
    (let (lists (append (list xs ys) rest))
       (loop go (heads (get-heads lists) tails (get-tails lists) results ())
-         (def noo (pair (apply f heads null) results))
+         (def noo (pair (apply f heads) results))
          (if (every? identity tails)
             (go (get-heads tails) (get-tails tails) noo)
             noo.reverse))))
@@ -738,12 +739,12 @@
       (if (any? (resend 'empty?) lists)
          knil
          (fold-m kons
-            (apply kons (append (list-map (resend 'head) lists) (list knil)) null)
+            (apply kons (append (list-map (resend 'head) lists) (list knil)))
             (list-map (resend 'tail) lists))))
    (fold-m kons knil lists))
 
 (proc zip (xs)
-   (apply map %($list $xs @rest) null))
+   (apply map %($list $xs @rest)))
 
 (proc flatten (xs)
    (cond
