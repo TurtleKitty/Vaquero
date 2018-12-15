@@ -1,7 +1,7 @@
 
 (def p (pair 'x 3))
 
-(test pair-type     (pair? p))
+(test pair-type     (= '(pair) p.type))
 (test pair-to-bool  p.to-bool)
 (test pair-head     (= p.head 'x))
 (test pair-tail     (= p.tail 3))

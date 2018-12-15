@@ -35,7 +35,7 @@
             (cont (htks vaquero-send-list-vtable)))
 
          (method type
-            (cont '(list pair tuple)))
+            (cont '(list pair)))
 
          (method to-bool
             (cont (not (eq? obj '()))))
@@ -169,7 +169,7 @@
             (cont (htks vaquero-send-pair-vtable)))
 
          (method type
-            (cont '(pair tuple)))
+            (cont '(pair)))
 
          (method to-bool
             (cont #t))

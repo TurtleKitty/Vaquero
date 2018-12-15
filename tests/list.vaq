@@ -6,7 +6,7 @@
 (test list-access (and (= ys.0 8) (= ys.3 5) (= ys.6 9)))
 (test list-apply (= (ys 5) 0))
 
-(test list-type        (= ys.type '(list pair tuple)))
+(test list-type        (= ys.type '(list pair)))
 (test list-not-null    (= (null? empty) false))
 (test list-view        (= ys.view '(8 6 7 5 3 0 9)))
 (test list-true        (= ys.to-bool true))
