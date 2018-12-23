@@ -361,25 +361,47 @@
             (not (every? is-1 ys))
             (not (every? is-1 zs)))))
 
-(test map
-    (let ()
-        (def xs '(1 2 3))
-        (def ys '(4 5 6))
-        (def zs '(7 8 9))
-        (proc bam! (x y z)
-            (* (+ x y) z))
-        (= '(35 56 81)
-           (map bam! xs ys zs))))
+(test map-list-1
+   (let (xs '(2 3 5))
+      (proc sq (x) (* x x))
+      (= '(4 9 25)
+         (map sq xs))))
+
+(test map-list-n
+   (let ()
+      (def xs '(1 2 3))
+      (def ys '(4 5 6))
+      (def zs '(7 8 9))
+      (proc bam! (x y z)
+         (* (+ x y) z))
+      (= '(35 56 81)
+         (map bam! xs ys zs))))
+
+(test map-vector-1
+   (let (v (vector 2 3 5))
+      (proc foo (p) (+ p.head p.tail 10))
+      (= #(vector 12 14 17)
+         (map foo v))))
+
+(test map-vector-n
+   (let ()
+      (def v1 (vector 1 2 3))
+      (def v2 (vector 2 3 5 7 11))
+      (def v3 (vector 3 4 5 7 9 11))
+      (proc boom (p1 p2 p3)
+         (pair p1.head (+ p1.tail p2.tail p3.tail)))
+      (= #(vector (0 . 6) (1 . 9) (2 . 13))
+         (map boom v1 v2 v3))))
 
 (test fold
-    (let ()
-        (def xs '(1 2 3))
-        (def ys '(4 5 6))
-        (def zs #(vector 7 8 9))
-        (proc zap! (x y z acc)
-            (+ x y z acc))
-        (= 45
-           (fold zap! 0 xs ys zs))))
+   (let ()
+      (def xs '(1 2 3))
+      (def ys '(4 5 6))
+      (def zs #(vector 7 8 9))
+      (proc zap! (x y z acc)
+         (+ x y z acc))
+      (= 45
+         (fold zap! 0 xs ys zs))))
 
 (test zip
     (let ()

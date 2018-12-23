@@ -726,7 +726,17 @@
    (def sz v.size)
    (def noob (vector size: sz))
    (loop go (n 0)
-      (noob.set! n (p (v n)))
+      (noob.set! n (p (pair n (v.get n))))
+      (if (= n sz.dec)
+         noob
+         (go n.inc))))
+
+(spec map (lambda p vector u vector v)
+   (def all (pair u (pair v rest)))
+   (def sz (apply math.min (map (resend 'size) all)))
+   (def noob (vector size: sz))
+   (loop go (n 0)
+      (noob.set! n (apply p (map (lambda (v) (pair n (v.get n))) all)))
       (if (= n sz.dec)
          noob
          (go n.inc))))
