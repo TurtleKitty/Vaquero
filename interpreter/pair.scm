@@ -53,6 +53,9 @@
                   (for-each (lambda (p) (hts! r (car p) (cdr p))) obj)
                   (cont r))))
 
+         (method to-set
+            (cont (apply make-vaquero-set obj)))
+
          (method empty?
             (cont (eq? obj '())))
 
@@ -130,10 +133,11 @@
               (autos      . ,autos)
               (messages   . ,messages)
               (to-bool    . ,to-bool)
+              (to-list    . ,to-list)
+              (to-set     . ,to-set)
+              (to-table   . ,to-table)
               (to-text    . ,to-text)
               (to-vector  . ,to-vector)
-              (to-table   . ,to-table)
-              (to-list    . ,to-list)
               (type       . ,type)
               (view       . ,view)
               (empty?     . ,empty?)
