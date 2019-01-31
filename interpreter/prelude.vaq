@@ -749,7 +749,6 @@
    ; FIXME do something better. External iterators?
    (send (map p s.to-list) 'to-set))
 
-; (spec map (lambda p set s)
 ; (gen fold
 ; (spec fold (lambda p list xs)
 ; (spec fold (lambda p list xs list ys)
