@@ -56,6 +56,14 @@
     (= (list '(x . 2) '(y . 3))
        (list-sort (lambda (a b) (< a.tail b.tail)) simp.to-list)))
 
+(test table-to-set
+   (= (set '(x . 2) '(y . 3))
+      simp.to-set))
+
+(test table-to-table
+   (= (: x 2 y 3)
+      simp.to-table))
+
 ;(test table-merge ; table equality is broken...
 ;    (seq
 ;        (def r1 (: x 1 y 2))

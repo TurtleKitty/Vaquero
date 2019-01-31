@@ -26,6 +26,12 @@
       (method to-list
          (cont (hash-table->alist obj)))
 
+      (method to-set
+         (cont (apply make-vaquero-set (hash-table->alist obj))))
+
+      (method to-table
+         (cont obj))
+
       (method to-text
          (cont (vaquero-view obj)))
 
@@ -118,6 +124,8 @@
            (messages   . ,messages)
            (to-bool    . ,to-bool)
            (to-list    . ,to-list)
+           (to-set     . ,to-set)
+           (to-table   . ,to-table)
            (to-text    . ,to-text)
            (pairs      . ,to-list)
            (view       . ,to-text)
