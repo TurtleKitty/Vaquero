@@ -1,6 +1,10 @@
 
 (define vaquero-send-vector-vtable
    (let ()
+      (define (get-pairs obj)
+         (vector->list
+            (vector-map (lambda (i x) (cons i x)) obj)))
+
       (method answers?
          (cont (lambda (msg)
             (or
@@ -28,13 +32,20 @@
       (method to-list
          (cont (vector->list obj)))
 
+      (method to-set
+         (cont (apply make-vaquero-set (get-pairs obj))))
+
+      (method to-table
+         (cont (vaquero-send-atomic (get-pairs obj) 'to-table)))
+
+      (method to-vector
+         (cont obj))
+
       (method clone
          (cont (vector-copy obj)))
 
       (method pairs
-         (cont
-            (vector->list
-               (vector-map (lambda (i x) (cons i x)) obj))))
+         (cont (get-pairs obj)))
 
       (method size
          (cont (vector-length obj)))
@@ -98,6 +109,9 @@
            (messages   . ,messages)
            (to-bool    . ,to-bool)
            (to-list    . ,to-list)
+           (to-set     . ,to-set)
+           (to-table   . ,to-table)
+           (to-vector  . ,to-vector)
            (to-text    . ,to-text)
            (type       . ,type)
            (view       . ,view)

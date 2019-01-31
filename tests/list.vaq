@@ -11,6 +11,8 @@
 (test list-view        (= ys.view '(8 6 7 5 3 0 9)))
 (test list-true        (= ys.to-bool true))
 (test list-false       (= empty.to-bool false))
+(test list-to-list     (= ys.to-list ys))
+(test list-to-set      (= ys.to-set (set 8 6 7 5 3 0 9)))
 (test list-to-table    (= alist.to-table (: x 1 y 2)))
 (test list-to-vector   (= ys.to-vector (vector 8 6 7 5 3 0 9)))
 (test list-head        (= ys.head 8))
