@@ -107,6 +107,11 @@
       (lambda (a b)
          (string<? (symbol->string (car a)) (symbol->string (car b))))))
 
+(define (vaquero-sort-alist ps)
+   (sort ps
+      (lambda (a b)
+         (vaquero-< (car a) (car b)))))
+
 (define (vaquero-bool? x)
    (or (eq? x 'true) (eq? x 'false)))
 
@@ -160,8 +165,8 @@
                         #f)))
                #f)))
       ((and (hash-table? x) (hash-table? y))
-         (let ((x-pairs (sort-symbol-alist (hash-table->alist x)))
-               (y-pairs (sort-symbol-alist (hash-table->alist y))))
+         (let ((x-pairs (vaquero-sort-alist (hash-table->alist x)))
+               (y-pairs (vaquero-sort-alist (hash-table->alist y))))
             (vaquero-equal? x-pairs y-pairs)))
       ((or (vaquero-proc? x) (vaquero-env? x) (vaquero-object? x))
          (eq? x y))
