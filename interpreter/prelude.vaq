@@ -741,6 +741,33 @@
          noob
          (go n.inc))))
 
+(spec map (lambda p table t)
+   ; FIXME do something better. External iterators?
+   (send (map p t.to-list) 'to-table))
+
+; (spec map (lambda p set s)
+; (gen fold
+; (spec fold (lambda p list xs)
+; (spec fold (lambda p list xs list ys)
+; (spec fold (lambda p vector v)
+; (spec fold (lambda p vector u vector v)
+; (spec fold (lambda p table t)
+; (spec fold (lambda p set s)
+; (gen foldr ?
+; (gen filter
+; (spec filter (lambda p list xs))
+; (spec filter (lambda p vector v))
+; (spec filter (lambda p table t))
+; (spec filter (lambda p set s))
+; (gen sort
+; (spec sort (lambda p list xs)
+; (spec sort (lambda p vector v)
+; (gen join
+; (spec join (list xs)
+; (spec join (vector v)
+; (spec join (table t)
+; (spec join (set s)
+
 (proc fold (kons knil) ; general fold
    (when (not (apply? kons))
       (error 'bad-argument %(fold $kons $knil @rest) "fold: first argument must be a procedure."))

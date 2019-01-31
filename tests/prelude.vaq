@@ -393,6 +393,15 @@
       (= #(vector (0 . 6) (1 . 9) (2 . 13))
          (map boom v1 v2 v3))))
 
+(test map-table-1
+   (let (t (: foo 2 bar 3 baz 5))
+      (def f
+         (lambda (kv)
+            %($kv.head . $(math.pow kv.tail 3))))
+      (= (map f t) (: foo 8 bar 27 baz 125))))
+
+(test map-set-1 false)
+
 (test fold
    (let ()
       (def xs '(1 2 3))
