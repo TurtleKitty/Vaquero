@@ -462,6 +462,8 @@
             clauses (:))
          (proc add-clause! (formal-types handler)
             (def this-arity formal-types.size)
+            (when (clauses.has? formal-types)
+               (error 'spec-already-defined %(spec $'$name $formal-types $handler) "Generic procedure specializations can not be redefined."))
             (when (> this-arity max-arity.get)
                (max-arity.set! this-arity))
             (clauses.set! formal-types handler)) ; check for pre-existing - no overrides
