@@ -474,7 +474,7 @@
             (clauses.set! formal-types handler))
          (proc gen-apply (args options)
             (def arity (math.min max-arity.get args.size))
-            (def signature (list-map (_ _.type) (args.take arity))) ; may need to add "object" to the end of each type list
+            (def signature (list-map (_ (append _.type '(object))) (args.take arity)))
             (if (cache.has? signature)
                ((send (cache.get signature) 'apply) args options)
                (let (possible (gen-x-prod-n.apply signature null))
