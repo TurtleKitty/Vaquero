@@ -459,24 +459,29 @@
    %(def $name
       (let (default (proc () @(pair body rest))
             max-arity (cell 0)
-            clauses (:))
+            clauses (:)
+            cache (:))
          (proc add-clause! (formal-types handler)
             (def this-arity formal-types.size)
+            ; check for pre-existing - no overrides
             (when (clauses.has? formal-types)
-               (error 'spec-already-defined %(spec $'$name $formal-types $handler) "Generic procedure specializations can not be redefined."))
+               (error 'spec-already-defined
+                      %(spec $'$name $formal-types $handler)
+                      "Generic procedure specializations can not be redefined."))
             (when (> this-arity max-arity.get)
                (max-arity.set! this-arity))
-            (clauses.set! formal-types handler)) ; check for pre-existing - no overrides
+            (cache.del!.apply cache.keys null)
+            (clauses.set! formal-types handler))
          (proc gen-apply (args options)
             (def arity (math.min max-arity.get args.size))
             (def signature (list-map (_ _.type) (args.take arity))) ; may need to add "object" to the end of each type list
-            (if (clauses.has? signature)
-               ((send (clauses.get signature) 'apply) args options)
+            (if (cache.has? signature)
+               ((send (cache.get signature) 'apply) args options)
                (let (possible (gen-x-prod-n.apply signature null))
                   (loop go (this possible.head others possible.tail)
                      (if (clauses.has? this)
                         (let (f (clauses.get this))
-                           (add-clause! signature f) ; cache result
+                           (cache.set! signature f) ; cache result
                            (f.apply args options))
                         (if others
                            (go others.head others.tail)
