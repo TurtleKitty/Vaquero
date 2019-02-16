@@ -804,12 +804,31 @@
    ; FIXME do something better. External iterators?
    (fold f init s.to-list))
 
+(gen filter
+   (error
+      'type-error
+      %(filter @rest)
+      "filter not defined for the supplied arguments."))
+
+(spec filter (lambda f list xs)
+   (list-filter f xs))
+
+(spec filter (lambda f vector v)
+   (def max v.size.dec)
+   (loop go (n 0 stack ())
+      (def val (v n))
+      (def noo (if (f val) (pair val stack) stack))
+      (if (= n max)
+         (apply vector noo.reverse)
+         (go n.inc noo))))
+
+(spec filter (lambda f table t)
+   (send (filter f t.to-list) 'to-table))
+
+(spec filter (lambda f set s)
+   (send (filter f s.to-list) 'to-set))
+
 ; (gen foldr ?
-; (gen filter
-; (spec filter (lambda p list xs))
-; (spec filter (lambda p vector v))
-; (spec filter (lambda p table t))
-; (spec filter (lambda p set s))
 ; (gen sort
 ; (spec sort (lambda p list xs)
 ; (spec sort (lambda p vector v)

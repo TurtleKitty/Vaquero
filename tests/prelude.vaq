@@ -434,11 +434,11 @@
 
 (test fold-table
    (let ()
-      (def t (: "foo" 2 "bar" 3))
+      (def t (: foo 2 bar 3))
       (proc combiner (x acc)
-         (pair (cat x.head "*" acc.head) (* x.tail acc.tail)))
-      (= (pair "bar*foo*" 6)
-         (fold combiner (pair "" 1) t))))
+         (acc.add x.head x.tail))
+      (= (set 'bar 'foo 2 3)
+         (fold combiner (set) t))))
 
 (test fold-set
    (let ()
@@ -446,13 +446,37 @@
       (= 30
          (fold * 1 s))))
 
+(test fitler-list
+   (let (xs '(foo 2 bar 3 baz 5))
+      (and
+         (= '(2 3 5) (filter num? xs))
+         (= '(foo bar baz) (filter symbol? xs)))))
+
+(test fitler-vector
+   (let (v #(vector foo 2 bar 3 baz 5))
+      (and
+         (=  (vector 2 3 5) (filter num? v))
+         (=  (vector 'foo 'bar 'baz) (filter symbol? v)))))
+
+(test fitler-set
+   (let (s (set 'foo 2 'bar 3 'baz 5))
+      (and
+         (= (set 2 3 5) (filter num? s))
+         (= (set 'foo 'bar 'baz) (filter symbol? s)))))
+
+(test fitler-table
+   (let (t (: foo 2 bar 3 baz 5))
+      (and
+         (= (: foo 2) (filter (lambda (p) (= p.head 'foo)) t))
+         (= (: baz 5) (filter (lambda (p) (= p.tail 5)) t)))))
+
 (test zip
-    (let ()
-        (def xs '(a b c))
-        (def ys '(1 2 3))
-        (def zs '(x y z))
-        (= '((a 1 x) (b 2 y) (c 3 z))
-           (zip xs ys zs))))
+   (let ()
+      (def xs '(a b c))
+      (def ys '(1 2 3))
+      (def zs '(x y z))
+      (= '((a 1 x) (b 2 y) (c 3 z))
+         (zip xs ys zs))))
 
 (test flatten
    (let ()
