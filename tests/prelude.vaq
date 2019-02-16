@@ -393,14 +393,14 @@
       (= #(vector (0 . 6) (1 . 9) (2 . 13))
          (map boom v1 v2 v3))))
 
-(test map-table-1
+(test map-table
    (let (t (: foo 2 bar 3 baz 5))
       (def f
          (lambda (kv)
             %($kv.head . $(math.pow kv.tail 3))))
       (= (map f t) (: foo 8 bar 27 baz 125))))
 
-(test map-set-1
+(test map-set
    (let (s (set 2 3 5))
       (def f (lambda (v) (+ 10 v)))
       (= (map f s) (set 12 13 15))))
@@ -414,6 +414,37 @@
          (+ x y z acc))
       (= 45
          (fold zap! 0 xs ys zs))))
+
+(test fold-list-1
+   (= 30 (fold (lambda (x acc) (* x acc)) 1 '(2 3 5)))) 
+
+(test fold-list-n
+   (let ()
+      (def multiplexer
+         (lambda (x y z acc) (pair (list x y z) acc))) 
+      (= '((3 c baz) (2 b bar) (1 a foo))
+         (fold multiplexer () '(1 2 3) '(a b c) '(foo bar baz)))))
+
+(test fold-vector-1
+   (= 30 (fold (lambda (x acc) (* x.tail acc)) 1 #(vector 2 3 5))))
+
+(test fold-vector-n
+   (= 3628800
+      (fold (lambda (x y z acc) (* x.tail y.tail z.tail acc)) 10 (vector 1 2 3) (vector 4 5 6) (vector 7 8 9))))
+
+(test fold-table
+   (let ()
+      (def t (: "foo" 2 "bar" 3))
+      (proc combiner (x acc)
+         (pair (cat x.head "*" acc.head) (* x.tail acc.tail)))
+      (= (pair "bar*foo*" 6)
+         (fold combiner (pair "" 1) t))))
+
+(test fold-set
+   (let ()
+      (def s (set 2 3 5))
+      (= 30
+         (fold * 1 s))))
 
 (test zip
     (let ()

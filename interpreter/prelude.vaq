@@ -756,13 +756,54 @@
    ; FIXME do something better. External iterators?
    (send (map p s.to-list) 'to-set))
 
-; (gen fold
-; (spec fold (lambda p list xs)
-; (spec fold (lambda p list xs list ys)
-; (spec fold (lambda p vector v)
-; (spec fold (lambda p vector u vector v)
-; (spec fold (lambda p table t)
-; (spec fold (lambda p set s)
+(gen fold
+   (error
+      'type-error
+      %(fold @rest)
+      "fold not defined for the supplied arguments."))
+
+(spec fold (lambda f object init list xs)
+   (list-fold f init xs))
+
+(spec fold (lambda f object init list xs list ys)
+   (when (not (apply? f))
+      (error 'bad-argument %(fold $f $init $xs $ys @rest) "fold: first argument must be a procedure."))
+   (def lists (pair xs (pair ys (list-map (resend 'to-list) rest))))
+   (proc fold-m (f init lists)
+      (if (any? (resend 'empty?) lists)
+         init
+         (fold-m f
+            (apply f (append (list-map (resend 'head) lists) (list init)))
+            (list-map (resend 'tail) lists))))
+   (fold-m f init lists))
+
+(spec fold (lambda f object init vector v)
+   (def sz v.size)
+   (def noob (vector size: sz))
+   (loop go (n 0 acc init)
+      (def new-acc (f (pair n (v.get n)) acc))
+      (if (= n sz.dec)
+         new-acc
+         (go n.inc new-acc))))
+
+(spec fold (lambda f object init vector u vector v)
+   (def all (pair u (pair v rest)))
+   (def sz (apply math.min (map (resend 'size) all)))
+   (loop go (n 0 acc init)
+      (def pair-up (lambda (v) (pair n (v.get n))))
+      (def new-acc (apply f (append (map pair-up all) (list acc))))
+      (if (= n sz.dec)
+         new-acc
+         (go n.inc new-acc))))
+
+(spec fold (lambda f object init table t)
+   ; FIXME do something better. External iterators?
+   (fold f init t.to-list))
+
+(spec fold (lambda f object init set s)
+   ; FIXME do something better. External iterators?
+   (fold f init s.to-list))
+
 ; (gen foldr ?
 ; (gen filter
 ; (spec filter (lambda p list xs))
@@ -777,18 +818,6 @@
 ; (spec join (vector v)
 ; (spec join (table t)
 ; (spec join (set s)
-
-(proc fold (kons knil) ; general fold
-   (when (not (apply? kons))
-      (error 'bad-argument %(fold $kons $knil @rest) "fold: first argument must be a procedure."))
-   (def lists (list-map (resend 'to-list) rest))
-   (proc fold-m (kons knil lists)
-      (if (any? (resend 'empty?) lists)
-         knil
-         (fold-m kons
-            (apply kons (append (list-map (resend 'head) lists) (list knil)))
-            (list-map (resend 'tail) lists))))
-   (fold-m kons knil lists))
 
 (proc zip (xs)
    (apply map %($list $xs @rest)))
