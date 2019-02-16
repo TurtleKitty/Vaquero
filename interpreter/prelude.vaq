@@ -828,10 +828,21 @@
 (spec filter (lambda f set s)
    (send (filter f s.to-list) 'to-set))
 
+(gen sort
+   (error
+      'type-error
+      %(sort @rest)
+      "sort not defined for the supplied arguments."))
+
+(spec sort (lambda f list xs)
+   (list-sort f xs))
+
+(spec sort (lambda f vector v)
+   ; FIXME this is lame.  implement quicksort or something
+   (send (list-sort f v.to-list) 'to-vector))
+
+
 ; (gen foldr ?
-; (gen sort
-; (spec sort (lambda p list xs)
-; (spec sort (lambda p vector v)
 ; (gen join
 ; (spec join (list xs)
 ; (spec join (vector v)

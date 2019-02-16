@@ -470,6 +470,12 @@
          (= (: foo 2) (filter (lambda (p) (= p.head 'foo)) t))
          (= (: baz 5) (filter (lambda (p) (= p.tail 5)) t)))))
 
+(test sort-list
+   (= '(2 3 5 7 11 13 17) (sort < (list 13 5 2 7 11 3 17))))
+
+(test sort-vector
+   (= (vector 2 3 5 7 11 13 17) (sort < (vector 13 5 2 7 11 3 17))))
+
 (test zip
    (let ()
       (def xs '(a b c))
