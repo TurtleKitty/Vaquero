@@ -93,16 +93,16 @@
             (lambda (x)
                (hte? obj x))))
 
+      (method table-union
+         (cont
+            (lambda (other)
+               (hash-table-merge other obj)))) ; the argument's key-value-pairs clobber the receiver's
+
       (method table-keys
          (cont (htks obj)))
 
       (method table-values
          (cont (htvs obj)))
-
-      (method vaquero-table-merge
-         (cont
-            (lambda (other)
-               (hash-table-merge other obj))))
 
       (method table-apply
          (cont
@@ -140,6 +140,7 @@
            (has?       . ,has?)
            (keys       . ,table-keys)
            (values     . ,table-values)
+           (union      . ,table-union)
            (apply      . ,table-apply)
            (default    . ,table-default)))))
 

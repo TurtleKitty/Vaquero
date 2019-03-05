@@ -64,37 +64,11 @@
    (= (: x 2 y 3)
       simp.to-table))
 
-;(test table-merge ; table equality is broken...
-;    (seq
-;        (def r1 (: x 1 y 2))
-;        (def r2 (: y 5 z 8))
-;        (and
-;            (= (r1.merge r2) (: x 1 y 5 z 8))  
-;            (= (r2.merge r1) (: x 1 y 2 z 8)))))
-
-;(def yor (: a 1 b 2 c 3 d 4 e 5))
-
-;(test table-fold
-;    (= 15
-;       (yor.fold 0 (lambda (total kv) (+ total kv.val)))))
-
-;(test table-reduce
-;    (= '(total . 120)
-;       (yor.reduce
-;            '(total . 1)
-;            (lambda (total kv) (pair 'total (* total.val kv.val))))))
-
-;(test table-map
-;    (let ()
-;        (proc square-pair (p)
-;            (pair p.key (* p.val p.val)))
-;        (def noob (yor.map square-pair))
-;        (= '(1 4 9 16 25) (list-sort < noob.values))))
-
-;(test table-filter
-;    (let ()
-;        (proc kill4 (p)
-;            (!= p.val 4))
-;        (def noob (yor.filter kill4))
-;        (= '(1 2 3 5) (list-sort < noob.values))))
+(test table-union
+    (seq
+        (def r1 (: x 1 y 2))
+        (def r2 (: y 5 z 8))
+        (and
+            (= (r1.union r2) (: x 1 y 5 z 8))  
+            (= (r2.union r1) (: x 1 y 2 z 8)))))
 
