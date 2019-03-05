@@ -57,6 +57,9 @@
                   #t
                   #f))))
 
+      (method v-append
+         (cont (lambda (other) (vector-append obj other))))
+
       (define (check-idx obj msg cont err idx funk)
          (if (not (number? idx))
             (err (vaquero-error-object 'not-a-number `(,obj ,idx) (string-join `("vector:" ,msg "requires a number as its argument.") " ")) cont)
@@ -122,5 +125,6 @@
            (get        . ,v-get)
            (set!       . ,v-set!)
            (apply      . ,v-apply)
+           (append     . ,v-append)
            (default    . ,v-default)))))
 
