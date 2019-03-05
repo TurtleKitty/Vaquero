@@ -21,7 +21,7 @@
          (cont (not (eq? 0 (vector-length obj)))))
 
       (method to-text
-         (cont (apply string (vector->list obj))))
+         (cont (vaquero-view obj)))
 
       (method type
          (cont '(vector)))
