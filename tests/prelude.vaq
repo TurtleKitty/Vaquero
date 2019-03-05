@@ -519,3 +519,38 @@
       (bind (a b c) '(2 3 5))
       (and (= a 2) (= b 3) (= c 5))))
 
+(test ensure-no-jump
+    ((proc ()
+        (def x (vector 1))
+        (def y
+            (ensure
+                (proc () (x.set! 0 3))
+                (seq (x.set! 0 2) (+ x.0 3))))
+        (and (= x.0 3) (= y 5)))))
+
+(test ensure-no-capture-across
+    ((proc ()
+        (def x (vector 1))
+        (def y
+            (gate
+                (* 10
+                    (ensure
+                        (proc () (x.set! 0 3))
+                        (seq
+                            (x.set! 0 5)
+                            (+ 2
+                                (capture k (k (k x.0)))))))))
+        (and (= x.0 3) (= y 90)))))
+
+(test ensure-error
+    ((proc ()
+        (def x (vector 1))
+        (def y
+            (guard
+                (proc (e k) (+ 7 e))
+                (ensure
+                    (proc () (x.set! 0 3))
+                    (seq
+                        (x.set! 0 5)
+                        (+ 2 (fail x.0))))))
+        (and (= x.0 3) (= y 12)))))
