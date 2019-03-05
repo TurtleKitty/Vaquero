@@ -58,8 +58,20 @@
          x.dec!
          (list x.get y z))))
 
-(test append
+(test append-list
     (= '(1 2 3 4 5) (append '(1 2) '(3) '(4 5))))
+
+(test append-vector
+    (= #(vector 1 2 3 4 5) (append #(vector 1 2) #(vector 3) #(vector 4 5))))
+
+(test union-set
+   (= (set 2 3 5 7 11) (union (set 5 2 3) (set 11 7))))
+
+(test union-table
+   (let (t1 (: foo 2 bar 3)
+         t2 (: bar 5 baz 7))
+      (and (= (: foo 2 bar 5 baz 7) (union t1 t2))
+           (= (: foo 2 bar 3 baz 7) (union t2 t1)))))
 
 (test papply
     (=

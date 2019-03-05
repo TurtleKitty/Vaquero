@@ -91,6 +91,12 @@
          (append.apply (pair rv rest.tail) null))
       xs))
 
+(proc union (xs)
+   (if rest
+      (let (rv (xs.union rest.head))
+         (union.apply (pair rv rest.tail) null))
+      xs))
+
 (proc apply (f args)
    (def options (if opt.opt opt.opt (table)))
    (f.apply args options))
