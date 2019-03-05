@@ -442,11 +442,18 @@
          (fold multiplexer () '(1 2 3) '(a b c) '(foo bar baz)))))
 
 (test fold-vector-1
-   (= 30 (fold (lambda (x acc) (* x.tail acc)) 1 #(vector 2 3 5))))
+   (= 30 (fold (lambda (x acc) (* x acc)) 1 #(vector 2 3 5))))
+
+(test fold-vector-1-with-indexes
+   (= 30 (fold (lambda (x acc) (* x.tail acc)) 1 #(vector 2 3 5) index: true)))
 
 (test fold-vector-n
    (= 3628800
-      (fold (lambda (x y z acc) (* x.tail y.tail z.tail acc)) 10 (vector 1 2 3) (vector 4 5 6) (vector 7 8 9))))
+      (fold (lambda (x y z acc) (* x y z acc)) 10 (vector 1 2 3) (vector 4 5 6) (vector 7 8 9))))
+
+(test fold-vector-n-with-indexes
+   (= 3628800
+      (fold (lambda (x y z acc) (* x.tail y.tail z.tail acc)) 10 (vector 1 2 3) (vector 4 5 6) (vector 7 8 9) index: true)))
 
 (test fold-table
    (let ()
