@@ -379,11 +379,27 @@
 
 (test map-vector-1
    (let (v (vector 2 3 5))
-      (proc foo (p) (+ p.head p.tail 10))
-      (= #(vector 12 14 17)
+      (proc foo (x) (+ x 10))
+      (= #(vector 12 13 15)
          (map foo v))))
 
+(test map-vector-1-with-indexes
+   (let (v (vector 2 3 5))
+      (proc foo (p) (+ p.head p.tail 10))
+      (= #(vector 12 14 17)
+         (map foo v index: true))))
+
 (test map-vector-n
+   (let ()
+      (def v1 (vector 1 2 3))
+      (def v2 (vector 2 3 5 7 11))
+      (def v3 (vector 3 4 5 7 9 11))
+      (proc boom (x1 x2 x3)
+         (+ x1 x2 x3))
+      (= #(vector 6 9 13)
+         (map boom v1 v2 v3))))
+
+(test map-vector-n-with-indexes
    (let ()
       (def v1 (vector 1 2 3))
       (def v2 (vector 2 3 5 7 11))
@@ -391,7 +407,7 @@
       (proc boom (p1 p2 p3)
          (pair p1.head (+ p1.tail p2.tail p3.tail)))
       (= #(vector (0 . 6) (1 . 9) (2 . 13))
-         (map boom v1 v2 v3))))
+         (map boom v1 v2 v3 index: true))))
 
 (test map-table
    (let (t (: foo 2 bar 3 baz 5))
