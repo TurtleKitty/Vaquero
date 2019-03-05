@@ -365,13 +365,6 @@
             x)))
    %(let $lets @rest))
 
-(op chain (obj)
-   (loop go (init obj cmd rest.head cmds rest.tail)
-      (def form %((send $init (quote $(send cmd 'head))) @(send cmd 'tail)))
-      (if cmds
-         (go form cmds.head cmds.tail)
-         form)))
-
 (op for (init pred update body)
    (def bodies (pair body rest))
    (with-gensyms (jump rv tmp kont)

@@ -112,17 +112,6 @@
         (=  (list (foo 0) (foo 9) (foo 23) (foo 42) (foo 153))
            '(null null is-a-biggun is-a-biggun is-a-biggun))))
 
-;(test chain
-;    (let ()
-;        (def xs (range 0 10))
-;        (proc foo (x) (* x x))
-;        (proc bar (x) (and (> x 10) (< x 100)))
-;        (= '(81 64 49 36 25 16)
-;            (chain xs
-;                (map foo)
-;                (filter bar)
-;                (sort >)))))
-
 (test case
     (let ()
         (proc foo (x)
@@ -290,42 +279,6 @@
 
             (list bar baz))))
 
-; FIXME
-; (test generic-procedures
-;     (= '(murakami 4 -4 1 5 16 6 ("1" "2" "3" "4" "5" "6" "7"))
-;         (let ()
-;             (gen nosuke 'murakami arity: 7) ; default case
-;             (spec nosuke (x)
-;                 x.pos?
-;                 (* x x))
-;             (spec nosuke (x)
-;                 x.neg?
-;                 (- (* x x)))
-;             (spec nosuke (x y)
-;                 (> x y)
-;                 (+ x y))
-;             (spec nosuke (x y)
-;                 (< x y)
-;                 (- y x))
-;             (spec nosuke (x y)
-;                 (= x y)
-;                 (* x y))
-;             (spec nosuke (x y z)
-;                 rest.size.zero?
-;                 (+ x y z))
-;             (spec nosuke (x y z p d q r)
-;                 true
-;                 (list-map (_ _.to-text) (list x y z p d q r)))
-;             (list
-;                 (nosuke 0)
-;                 (nosuke 2)
-;                 (nosuke -2)
-;                 (nosuke 2 3)
-;                 (nosuke 3 2)
-;                 (nosuke 4 4)
-;                 (nosuke 1 2 3)
-;                 (nosuke 1 2 3 4 5 6 7)))))
-
 (test ndx
     ((thunk
         (def roll (ndx 10 6)) ; fireball!
@@ -360,6 +313,8 @@
             (every? is-1 xs)
             (not (every? is-1 ys))
             (not (every? is-1 zs)))))
+
+; the generic HOF tests below should suffice to test gen as well
 
 (test map-list-1
    (let (xs '(2 3 5))
