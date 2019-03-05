@@ -417,7 +417,7 @@
                    _)
                rest))))))
 
-(proc gen-x-prod (xs ys)
+(proc vaquero-internal-x-prod (xs ys)
    (cond
       xs.to-bool.not ys
       ys.to-bool.not xs
@@ -434,10 +434,10 @@
                xs)
             )))
 
-(proc gen-x-prod-n (xs)
+(proc vaquero-internal-x-prod-n (xs)
    (if rest
-      (let (acc (gen-x-prod xs rest.head))
-         (gen-x-prod-n.apply (pair acc rest.tail) (:)))
+      (let (acc (vaquero-internal-x-prod xs rest.head))
+         (vaquero-internal-x-prod-n.apply (pair acc rest.tail) (:)))
       xs))
 
 (op bind (names)
@@ -477,7 +477,7 @@
             (def signature (list-map (_ (append _.type '(object))) (args.take arity)))
             (if (cache.has? signature)
                ((send (cache.get signature) 'apply) args options)
-               (let (possible (gen-x-prod-n.apply signature null))
+               (let (possible (vaquero-internal-x-prod-n.apply signature null))
                   (loop go (this possible.head others possible.tail)
                      (if (clauses.has? this)
                         (let (f (clauses.get this))
