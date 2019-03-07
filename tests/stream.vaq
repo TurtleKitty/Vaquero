@@ -3,10 +3,11 @@
 (def fb "   foonballardy!!!   ")
 (def lines "uno\ndos\ntres")
 
-(test stream-type    (= stdout.type 'stream))
+(test stream-type    (and (= stdin.type '(source stream)) (= stdout.type '(sink stream))))
 (test stream-to-bool (= stdout.to-bool true))
 (test input?  (and stdin.input? (not stdout.input?)))
 (test output? (and (not stdin.output?) stdout.output?))
+
 (test open?
     (let (p fb.to-stream)
         (def was? p.open?)
@@ -24,19 +25,19 @@
 (test stream-read-seq
     (= '(seq (foo (bar baz)) (quux 2 3)) sexprs.to-stream.read-seq))
 
-(test stream-read-rune
+(test stream-read-char
     (let (p fb.trim.to-stream)
-        (def r1 p.read-rune)
-        (def r2 p.read-rune)
-        (def r3 p.read-rune)
+        (def r1 p.read-char)
+        (def r2 p.read-char)
+        (def r3 p.read-char)
         (and (= r1 "f") (= r2 "o") (= r3 "o"))))
 
-(test stream-peek-rune
+(test stream-peek-char
     (let (p fb.trim.to-stream)
-        (def r1 p.peek-rune)
-        (def r2 p.peek-rune)
-        (def r3 p.read-rune)
-        (def r4 p.peek-rune)
+        (def r1 p.peek-char)
+        (def r2 p.peek-char)
+        (def r3 p.read-char)
+        (def r4 p.peek-char)
         (and (= r1 "f") (= r2 "f") (= r3 "f") (= r4 "o"))))
 
 (test stream-read-line
@@ -78,15 +79,15 @@
 (test stream-skip-n
     (let (p fb.to-stream)
         (p.skip-n 5)
-        (= "o" p.peek-rune)))
+        (= "o" p.peek-char)))
 
 (test stream-skip-while
     (let (p fb.to-stream)
         (p.skip-while " ")
-        (= "f" p.peek-rune)))
+        (= "f" p.peek-char)))
 
 (test stream-skip-until
     (let (p fb.to-stream)
         (p.skip-until "b")
-        (= "b" p.peek-rune)))
+        (= "b" p.peek-char)))
 

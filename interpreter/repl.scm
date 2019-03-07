@@ -7,14 +7,16 @@
       (define repl-err
          (lambda (ex continue)
             (debug 'runtime-error
-               (if (and (hash-table? ex) (eq? (vaquero-send-atomic ex 'type) 'error))
+               (if (vaquero-error? ex)
                   (map (lambda (f) (vaquero-view (vaquero-send-atomic ex f))) '(name form to-text))
                   (vaquero-view ex)))
             (loop env)))
       (display "vaquero> ")
       (handle-exceptions exn
          (begin
-            (vaquero-write exn (current-error-port))
+            (write 'REPL-FAIL (current-error-port))
+            (newline (current-error-port))
+            (write exn (current-error-port))
             (newline (current-error-port))
             (read-line stdin) ; let's just do away with that
             (loop env))
@@ -29,19 +31,16 @@
                            env
                            (lambda (v)
                               (define noob   (local-env))
-                              (define mom    (htr env 'parent))
-                              (define evars  (htr env 'vars))
-                              (define mvars  (htr mom 'vars))
-                              (vaquero-send-table mvars 'merge
-                                 (lambda (fn)
-                                    (define nuvars (fn evars))
-                                    (define print-me (if (eof-object? v) 'EOF v))
-                                    (hts! mom  'vars nuvars)
-                                    (hts! noob 'parent mom)
-                                    (vaquero-write print-me stdout)
-                                    (newline)
-                                    (loop noob))
-                                repl-err))
+                              (define mom    (vaquero-env-parent env))
+                              (define evars  (vaquero-env-vars env))
+                              (define mvars  (vaquero-env-vars mom))
+                              (define nuvars (hash-table-merge evars mvars))
+                              (define print-me (if (eof-object? v) 'EOF v))
+                              (vaquero-env-set-vars! mom nuvars)
+                              (vaquero-env-set-parent! noob mom)
+                              (vaquero-write print-me stdout)
+                              (newline)
+                              (loop noob))
                          repl-err))
                      (begin
                         (display "Syntax error!\n")

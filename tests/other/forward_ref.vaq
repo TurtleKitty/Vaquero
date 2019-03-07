@@ -2,12 +2,9 @@
 ; not sure if I should worry about this or not...
 
 (test proc-forward-reference
-    (=  33
-        (let ()
-            (def x (xyzzy 3))
+   (=  33
+      (let (x (xyzzy 3))
+         x)))
 
-            (proc xyzzy (x)
-                (* x 11))
-
-            x)))
+(proc xyzzy (x) (* x 11))
 

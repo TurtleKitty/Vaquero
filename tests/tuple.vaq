@@ -1,0 +1,26 @@
+
+(def t0 (tuple))
+(def t1 (tuple 'foo 2 'bar 3 'baz 5))
+(def t2 (tuple 'foo 2 'bar 3 'baz 5))
+(def t3 (tuple 'x 7 'y 11))
+
+(test tuple-type     (tuple? t0))
+(test tuple-to-bool  (and t0.to-bool.not t1.to-bool))
+(test tuple-size     (and (= t0.size 0) (= t1.size 3)))
+(test tuple-equal    (and (not (= t0 t1)) (= t1 t2)))
+(test tuple-get      (and (= t1.foo 2) (= t3.x 7)))
+(test tuple-add      (= (tuple 'x 7 'y 11 'z 13) (t3.add 'z 13)))
+(test tuple-del      (= (tuple 'x 7) (t3.del 'y)))
+(test tuple-fields   (= '(bar baz foo) (list-sort < t1.fields)))
+
+(test tuple-clone
+   (let (noob t3.clone)
+      (def yes (= noob t3))
+      (noob.y! 23)
+      (and yes (not (= noob t3)))))
+
+(test tuple-set!
+   (seq
+      (t2.foo! 42)
+      (= t2 (tuple 'foo 42 'bar 3 'baz 5))))
+

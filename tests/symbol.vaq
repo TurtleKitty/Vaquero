@@ -9,5 +9,5 @@
 
 (test symbol-etc
     (and
-        (= x.type 'symbol)
+        (= x.type '(symbol))
         (= x.to-bool true))) 

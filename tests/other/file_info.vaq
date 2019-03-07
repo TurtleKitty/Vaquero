@@ -1,4 +1,4 @@
 
-(sys.say sys.fs.pwd)
-(sys.say sys.proc.program-name)
+(say sys.fs.pwd)
+(say sys.proc.program-name)
 

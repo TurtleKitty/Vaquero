@@ -5,7 +5,7 @@
    (list 'lambda () (pair 'seq rest)))
 
 (proc isa? (thing type)
-   (= thing.type type))
+   (thing.type.has? type))
 
 (proc bool? (thing)
    (isa? thing 'bool))
@@ -14,12 +14,13 @@
    (isa? thing 'lambda))
 
 (proc proc? (thing)
-   (or
-      (isa? thing 'lambda)
-      (isa? thing 'proc)))
+   (isa? thing 'proc))
 
 (proc op? (thing)
    (isa? thing 'op))
+
+(proc apply? (thing)
+   (thing.answers? 'apply))
 
 (proc symbol? (thing)
    (isa? thing 'symbol))
@@ -32,9 +33,6 @@
 
 (proc null? (thing)
    (is? thing null))
-
-(proc table? (thing)
-   (isa? thing 'table))
 
 (proc eof? (x)
    (isa? x 'EOF))
@@ -87,13 +85,20 @@
 
 (proc identity (x) x)
 
-(proc append (xs ys)
-   (def rv (xs.append ys))
+(proc append (xs)
    (if rest
-      (append.apply (pair rv rest) null)
-      rv))
+      (let (rv (xs.append rest.head))
+         (append.apply (pair rv rest.tail) null))
+      xs))
 
-(proc apply (f args options)
+(proc union (xs)
+   (if rest
+      (let (rv (xs.union rest.head))
+         (union.apply (pair rv rest.tail) null))
+      xs))
+
+(proc apply (f args)
+   (def options (if opt.opt opt.opt (table)))
    (f.apply args options))
 
 (proc papply (f)
@@ -103,23 +108,23 @@
 
 (proc error (name form message)
    (fail
-      (object 'type 'error
+      (object 'type '(error)
               'name name
               'form form
-              'view (list 'error name form message)
+              'view (list 'ERROR name form message)
               'message message
               'to-text message)))
 
 (proc compose ()
-   ((proc (funz)
-      (def s funz.size)
-      (if (= s 0)
-         (error 'too-few-args %(compose @rest) "(compose ...) requires at least one argument.  It prefers more than one.")
-         (if (= s 1)
-            rest.head
-            (if (= s 2)
-               (proc () (funz.head (apply funz.tail.head rest opt)))
-               (compose funz.head (apply compose funz.tail null)))))) rest))
+   (def funz rest)
+   (def s funz.size)
+   (if (= s 0)
+      (error 'too-few-args %(compose @rest) "(compose ...) requires at least one argument.  It prefers more than one.")
+      (if (= s 1)
+         rest.head
+         (if (= s 2)
+            (proc () (funz.head (funz.tail.head.apply rest opt)))
+            (compose funz.head (apply compose funz.tail))))))
 
 (op loop (name vars)
    (proc sep (x y xs names vals)
@@ -155,8 +160,8 @@
 
 (op cond ()
    (def default
-      (if (opt.get 'default)
-         (opt.get 'default)
+      (if (opt.get 'else)
+         (opt.get 'else)
          (list 'error ''cond-no-matching-clause (list 'pair ''cond (list 'quote rest)) "(cond... ) form fell through!")))
    (if (< rest.size 2)
       (error 'syntax-error (pair 'cond rest) "(cond ...) should have at least one predicate and consequent.")
@@ -169,7 +174,7 @@
    (proc constant? (expr)
       (if (pair? expr)
          (= expr.head 'quote)
-         (send (= 'symbol expr.type) 'not)))
+         (send (= '(symbol) expr.type) 'not)))
    (proc combine-skeletons (left right expr)
       (cond
          (and (constant? left) (constant? right))
@@ -181,7 +186,7 @@
             (list 'list left)
          (and (pair? right) (= right.head 'list))
             (pair 'list (pair left right.tail))
-         default: (list 'pair left right)))
+         else: (list 'pair left right)))
    (proc expand-quasiquote (expr nesting)
       (cond
          (send (pair? expr) 'not)
@@ -208,7 +213,7 @@
                   (expand-quasiquote expr.head nesting.dec)
                   (expand-quasiquote expr.tail nesting)
                   expr))
-         default:
+         else:
             (combine-skeletons
                (expand-quasiquote expr.head nesting)
                (expand-quasiquote expr.tail nesting)
@@ -223,8 +228,8 @@
 
 (op case (val)
    (def default
-      (if (opt.get 'default)
-         (opt.get 'default)
+      (if (opt.get 'else)
+         (opt.get 'else)
          (list 'error ''case-no-matching-clause (list 'pair ''case (list 'quote rest)) "(case ...) form fell through!")))
    (if (< rest.size 2)
       (error 'syntax-error (pair 'case rest) "(case ...) should have at least one predicate and consequent.")
@@ -233,8 +238,8 @@
          (qq
             (let ((unq cval) (unq val))
                (unq
-                  (loop go (set rest.0 conseq rest.1 remaining rest.tail.tail)
-                     (def pred (qq ((send (quote (unq set)) 'has?) (unq cval))))
+                  (loop go (stuff rest.0 conseq rest.1 remaining rest.tail.tail)
+                     (def pred (qq ((send (quote (unq stuff)) 'has?) (unq cval))))
                      (if remaining
                         (list 'if pred conseq (go remaining.0 remaining.1 remaining.tail.tail))
                         (list 'if pred conseq default)))))))))
@@ -258,6 +263,50 @@
                      $rv))))
          ($jump null)))))
 
+(op everywhere ()
+   %(seq @rest (compile-eval @rest)))
+
+(everywhere
+   (proc list-fold (f acc xs)
+      (if xs.empty?
+         acc
+         (list-fold f (f xs.head acc) xs.tail)))
+
+   (proc list-foldr (f acc xs)
+      (if xs.empty?
+         acc
+         (f xs.head (list-foldr f acc xs.tail))))
+
+   (proc list-map (f xs)
+      (if xs
+         (pair (f xs.head) (list-map f xs.tail))
+         ()))
+
+   (proc list-filter (f xs)
+      (list-foldr (lambda (x y) (if (f x) (pair x y) y)) '() xs))
+
+   (def list-sort
+      (let ()
+         (def merge (lambda (f a b)
+            (if a.size.zero?
+               b
+               (if b.size.zero?
+                  a
+                  (if (f a.head b.head)
+                     (pair a.0 (merge f a.tail b))
+                     (pair b.0 (merge f a b.tail)))))))
+
+         (def sort (lambda (f yarr)
+            (def len yarr.size)
+            (if (< len 2)
+               yarr
+               (seq
+                  (def half (send (/ len 2) 'floor))
+                  (merge f (sort f (yarr.take half)) (sort f (yarr.drop half)))))))
+
+         (lambda (f xs)
+            (sort f xs)))))
+
 (op _ (body)
    (def uscore (gensym))
    (def bodies (pair body rest))
@@ -265,7 +314,7 @@
       (if (pair? form)
          (if (= form.head '_)
             form
-            (form.map rename))
+            (list-map rename form))
          (if (= form '_)
             uscore
             form)))
@@ -278,7 +327,7 @@
    %(guard
       (proc (e k)
          ($thnk)
-         (fail e)) 
+         (fail e))
       (gate
          (let ($v (seq @rest))
             ($thnk)
@@ -290,39 +339,37 @@
          (say (list (quote $name) 'ok))
          (log (list (quote $name) 'FAIL)))))
 
-(proc box (value)
-   (def the-box (vector value))
+(proc cell (value)
+   (def box (vector value))
    (object
-      'type 'box
-      'view (lambda () (list the-box.0))
+      'type '(cell)
+      'view (lambda () (list box.0))
+      'get  (lambda () box.0)
       'set! (lambda (v)
                (seq
-                  (the-box.set! 0 v)
+                  (box.set! 0 v)
                   v))
-      'val  (lambda () the-box.0)
-      auto: '(val view)))
+      'inc! (lambda ()
+               (def x (+ box.0 1))
+               (box.set! 0 x)
+               x)
+      'dec! (lambda ()
+               (def x (- box.0 1))
+               (box.set! 0 x)
+               x)
+      auto: '(get view inc! dec!)))
 
 (op qw ()
-   (pair 'list (rest.map (lambda (x) x.to-text))))
-
-(op everywhere ()
-   %(seq @rest (compile-eval @rest)))
+   (pair 'list (list-map (lambda (x) x.to-text) rest)))
 
 (op with-gensyms (gs)
-   (def pairs (gs.map (_ (list _ '(gensym)))))
+   (def pairs (list-map (_ (list _ '(gensym))) gs))
    (def lets
       (loop go (x pairs.head xs pairs.tail)
          (if xs
             (go (x.append xs.head) xs.tail)
             x)))
    %(let $lets @rest))
-
-(op chain (obj)
-   (loop go (init obj cmd rest.head cmds rest.tail)
-      (def form %((send $init (quote $(send cmd 'head))) @(send cmd 'tail)))
-      (if cmds
-         (go form cmds.head cmds.tail)
-         form)))
 
 (op for (init pred update body)
    (def bodies (pair body rest))
@@ -345,11 +392,10 @@
 (op each (name arg body)
    (def bodies (pair body rest))
    (with-gensyms (xs jump)
-      (qq
-         (let ((unq xs) (send (unq arg) 'to-list))
-            (proc (unq jump) ((unq name))
-               (unqs bodies))
-            ((send (unq xs) 'each) (unq jump))))))
+     %(let ($xs (send $arg 'to-list))
+         (proc $jump ($name)
+            @bodies)
+         (list-map $jump $xs))))
 
 (proc range (start end)
    (def step (if opt.step opt.step 1))
@@ -364,56 +410,108 @@
    (qq
       (vector
          (unqs
-            (rest.map
+            (list-map
                (_ (if (pair? _)
                     (qq (matrix (unqs _)))
-                   _)))))))
+                   _)
+               rest))))))
+
+(proc vaquero-internal-x-prod (xs ys)
+   (cond
+      xs.to-bool.not ys
+      ys.to-bool.not xs
+      else:
+         (apply append
+            (list-map
+               (lambda (x) 
+                  (list-map
+                     (lambda (y)
+                        (if (pair? x)
+                           (append x (list y))
+                           (list x y)))
+                     ys))
+               xs)
+            )))
+
+(proc vaquero-internal-x-prod-n (xs)
+   (if rest
+      (let (acc (vaquero-internal-x-prod xs rest.head))
+         (vaquero-internal-x-prod-n.apply (pair acc rest.tail) (:)))
+      xs))
+
+(op bind (names)
+   ; FIXME expand to destructure trees as well as lists
+   (def expr-val (gensym))
+   (proc define (name n)
+      %(def $name (send $expr-val $n)))
+   (def defz
+      (loop go (name names.head others names.tail n 0 acc ())
+         (def new-acc (pair (define name n) acc))
+         (if others
+            (go others.head others.tail n.inc new-acc)
+            new-acc.reverse)))
+   %(seq
+      (def $expr-val (seq @rest))
+      @defz))
 
 (op gen (name body)
-   (def opt-arity (if opt.arity opt.arity 5))
-   (qq
-      (def (unq name)
-         (let (default (box (proc () (unqs (pair body rest))))
-               clauses (vector.apply ((send (range 0 $opt-arity) 'map) (_ ())) (:)))
-            (proc add-clause! (pred body)
-               (def idx pred.arity)
-               (clauses.set!
-                  idx
-                  (pair (pair pred body) (clauses idx))))
-            (proc set-default! (body)
-               (default.set! body))
-            (proc gen-apply (args options)
-               (def arity args.size)
-               (loop go (n arity)
-                  (def cs (clauses n))
-                  (proc n-zero ()
-                     (if n.zero?
-                        (default.val.apply args options)
-                        (go n.dec)))
-                  (if (not (pair? cs))
-                     (n-zero)
-                     (loop jump (x cs.head xs cs.tail)
-                        (if (x.head.apply args options)
-                           (x.tail.apply args options)
-                           (if (pair? xs)
-                              (jump xs.head xs.tail)
-                              (n-zero)))))))
-            (proc view ()
-               (send
-                  (pair clauses (pair 'default default.val))
-                  'view))
-            (object
-               'add-clause! add-clause!
-               'set-default! set-default!
-               'apply gen-apply
-               'view view
-               'arity $opt-arity
-               (unq 'auto:) '(view)))))) ; not sure why (unq (quote keyword:)) works, but I'll take it
+   %(def $name
+      (let (default (proc () @(pair body rest))
+            max-arity (cell 0)
+            clauses (:)
+            cache (:))
+         (proc add-clause! (formal-types handler)
+            (def this-arity formal-types.size)
+            ; check for pre-existing - no overrides
+            (when (clauses.has? formal-types)
+               (error 'spec-already-defined
+                      %(spec $'$name $formal-types $handler)
+                      "Generic procedure specializations can not be redefined."))
+            (when (> this-arity max-arity.get)
+               (max-arity.set! this-arity))
+            (cache.del!.apply cache.keys null)
+            (clauses.set! formal-types handler))
+         (proc gen-apply (args options)
+            (def arity (math.min max-arity.get args.size))
+            (def signature (list-map (_ (append _.type '(object))) (args.take arity)))
+            (if (cache.has? signature)
+               ((send (cache.get signature) 'apply) args options)
+               (let (possible (vaquero-internal-x-prod-n.apply signature null))
+                  (loop go (this possible.head others possible.tail)
+                     (if (clauses.has? this)
+                        (let (f (clauses.get this))
+                           (cache.set! signature f) ; cache result
+                           (f.apply args options))
+                        (if others
+                           (go others.head others.tail)
+                           (default.apply args options)))))))
+         (proc view ()
+            (send
+               (list clauses 'default default)
+               'view))
+         (object
+            'type '(gen proc lambda)
+            'add-clause! add-clause!
+            'apply gen-apply
+            'view view
+            (unq 'auto:) '(view))))) ; not sure why (unq (quote keyword:)) works, but I'll take it
 
-(op spec (name args pred body)
-   (qq ((send (unq name) 'add-clause!)
-          (proc (unq args) (unq pred))
-          (proc (unq args) (unqs (pair body rest))))))
+(op spec (name formal-types body)
+   (def mod-2 (mod formal-types.size 2))
+   (def good-args (and formal-types mod-2.to-bool.not))
+   (when good-args.not
+      (error 'bad-arguments
+              %(spec $name $formal-types $body @rest)
+              "spec: requires an alternating list of names and types, at least one pair."))
+   (bind (types formals)
+      (loop do (arg-type formal-types.head arg-name formal-types.tail.head types () names () remains formal-types.tail.tail)
+         (let (nu-types (pair arg-type types) nu-names (pair arg-name names))
+            (if remains
+               (do remains.head remains.tail.head nu-types nu-names remains.tail.tail)
+               (list nu-types.reverse nu-names.reverse)))))
+   %((send $name 'add-clause!)
+      (quote $types)
+      (proc $formals @(pair body rest))))
 
 (op assert (predicate)
    (with-gensyms (testy result)
@@ -462,41 +560,41 @@
          (proc read-symbol (p)
             p.read.to-symbol)
          (proc read-array (p)
-            p.read-rune ; discard opening [
-            (loop go (next p.peek-rune items ())
+            p.read-char ; discard opening [
+            (loop go (next p.peek-char items ())
                (when (eof? next)
                   (error 'json-read-error items "Unexpected EOF in JSON array!"))
                (if next.whitespace?
-                   (seq p.read-rune (go p.peek-rune items))
+                   (seq p.read-char (go p.peek-char items))
                    (case next
-                      ("]")     (seq p.read-rune items.reverse)
-                      (",")     (seq p.read-rune (go p.peek-rune items))
-                      default:
+                      ("]")     (seq p.read-char items.reverse)
+                      (",")     (seq p.read-char (go p.peek-char items))
+                      else:
                          (let (item (reader p))
-                             (go p.peek-rune (items.cons item)))))))
+                             (go p.peek-char (items.cons item)))))))
          (proc read-object (p)
-            p.read-rune ; discard opening {
-            (loop go (next p.peek-rune items (table))
+            p.read-char ; discard opening {
+            (loop go (next p.peek-char items (table))
                (when (eof? next)
                   (error 'json-read-error items "Unexpected EOF in JSON object!"))
                (if next.whitespace?
-                  (seq p.read-rune (go p.peek-rune items))
+                  (seq p.read-char (go p.peek-char items))
                   (case next
-                     ("}")  (seq p.read-rune items)
-                     (",")  (seq p.read-rune (go p.peek-rune items))
-                     default:
+                     ("}")  (seq p.read-char items)
+                     (",")  (seq p.read-char (go p.peek-char items))
+                     else:
                         (let (key (send (reader p) 'to-symbol))
                            (p.skip-while " :\t\n")
                            (let (val (reader p))
                               (items.set! key val)
-                              (go p.peek-rune items)))))))
+                              (go p.peek-char items)))))))
          (proc reader (p)
-            (def next p.peek-rune)
+            (def next p.peek-char)
             (when (eof? next)
                (return next))
             (if next.whitespace?
                (seq
-                  p.read-rune
+                  p.read-char
                   (reader p))
                (case next
                   ("\"")    (read-text p)
@@ -506,7 +604,7 @@
                   ("}")     (error 'json-read-error txt "Unexpected } !")
                   ("-" "0" "1" "2" "3" "4" "5" "6" "7" "8" "9")
                       (read-num p)
-                  default:
+                  else:
                      (let (this-guy (read-symbol p))
                         (if (not (syms.has? this-guy))
                            (error 'json-read-error this-guy "Unquoted string!")
@@ -523,10 +621,10 @@
                (symbol? thing) (json-out thing.to-text)
                (text? thing)   (cat "\"" (thing.replace "\"" "\\\"" flags: "g") "\"")
                (vector? thing) (json-out thing.to-list)
-               (table? thing) (cat "{" (comma-fy (thing.to-list.map (lambda (kv) (cat (json-out kv.key.to-text) ":" (json-out kv.val))))) "}")
-               (list? thing)   (cat "[" (comma-fy (thing.map json-out)) "]")
+               (table? thing) (cat "{" (comma-fy (list-map (lambda (kv) (cat (json-out kv.key.to-text) ":" (json-out kv.val))) thing.to-list)) "}")
+               (list? thing)   (cat "[" (comma-fy (list-map json-out thing)) "]")
                (pair? thing)   (cat "[" (json-out thing.head) "," (json-out thing.tail) "]")
-               default: 
+               else:
                   (if (thing.responds? 'to-json)
                      thing.to-json
                      (error 'json-write-error thing "json.write - unknown-type"))))
@@ -539,23 +637,23 @@
 
 (op promise (expr) ; lazy evaluation
    (def result (gensym))
-   %(let ($result (box null))
+   %(let ($result (cell null))
       (object
          auto: '(value)
-         'type 'promise
+         'type '(promise)
          'view '(promise $expr)
          'value (lambda ()
-                   (if (is? (send $result (quote val)) null)
+                   (if (is? (send $result (quote get)) null)
                       (seq
                          ((send $result (quote set!)) $expr)
-                         (send $result (quote val)))
-                      (send $result (quote val)))))))
+                         (send $result (quote get)))
+                      (send $result (quote get)))))))
 
 (proc seal (obj)
    (def passed  (or opt.pass ()))
    (def hidden  (or opt.hide ()))
    (def secret  (or opt.secret null))
-   (def type    'sealed-object)
+   (def type    '(sealed-object))
 
    (proc none-shall-pass (m)
        (not (hidden.has? m)))
@@ -564,7 +662,7 @@
       (if passed
          passed
          (if hidden
-            (obj.messages.filter none-shall-pass)
+            (list-filter none-shall-pass obj.messages)
             ())))
 
    (proc unseal (xyzzy)
@@ -578,7 +676,7 @@
       (object
          'type type
          'unseal unseal
-         resend: %(($obj @forward))))
+         forward: %(($obj @forward))))
 
    sealed)
 
@@ -587,7 +685,7 @@
       %($'$name @rest)))
 
 (proc any? (f xs)
-   (when (not (proc? f))
+   (when (not (apply? f))
       (error 'bad-argument %(any? $f $xs @rest)
                            "any?: first argument must be a procedure."))
    (def ys xs.to-list)
@@ -599,7 +697,7 @@
             false))))
 
 (proc every? (f xs)
-   (when (not (proc? f))
+   (when (not (apply? f))
       (error 'bad-argument %(every? $f $xs @rest) "every?: first argument must be a procedure."))
    (def ys xs.to-list)
    (loop go (z ys.head zs ys.tail)
@@ -609,52 +707,165 @@
             true)
          false)))
 
-(proc map (f xs) ; general map
-   (when (not (proc? f))
-      (error 'bad-argument %(map $f $xs @rest) "map: first argument must be a procedure."))
-   (proc get-heads (xs)
-      (xs.map (resend 'head)))
-   (proc get-tails (xs)
-      (xs.map (resend 'tail)))
-   (let (objz (pair xs rest))
-      (def lists (objz.map (resend 'to-list)))
+(gen map
+   (error
+      'type-error
+      %(map @rest)
+      "map not defined for the supplied arguments."))
+
+(spec map (lambda f list xs)
+   (list-map f xs))
+
+(spec map (lambda f list xs list ys)
+   (proc get-heads (ls)
+      (list-map (resend 'head) ls))
+   (proc get-tails (ls)
+      (list-map (resend 'tail) ls))
+   (let (lists (append (list xs ys) rest))
       (loop go (heads (get-heads lists) tails (get-tails lists) results ())
-         (def noo (pair (apply f heads null) results))
+         (def noo (pair (apply f heads) results))
          (if (every? identity tails)
             (go (get-heads tails) (get-tails tails) noo)
             noo.reverse))))
 
-(proc fold (kons knil) ; general fold
-   (when (not (proc? kons))
-      (error 'bad-argument %(fold $kons $knil @rest) "fold: first argument must be a procedure."))
-   (def lists (rest.map (resend 'to-list)))
-   (proc fold-m (kons knil lists)
+(proc vaquero-internal-get-vector-iterator (index?)
+   (if index?
+      (lambda (v n) (pair n (v.get n)))
+      (lambda (v n) (v.get n))))
+
+(spec map (lambda p vector v)
+   (def sz v.size)
+   (def noob (vector size: sz))
+   (def iterator (vaquero-internal-get-vector-iterator opt.index))
+   (loop go (n 0)
+      (noob.set! n (p (iterator v n)))
+      (if (= n sz.dec)
+         noob
+         (go n.inc))))
+
+(spec map (lambda p vector u vector v)
+   (def all (pair u (pair v rest)))
+   (def sz (apply math.min (map (resend 'size) all)))
+   (def noob (vector size: sz))
+   (def iterator (vaquero-internal-get-vector-iterator opt.index))
+   (loop go (n 0)
+      (noob.set! n (apply p (map (lambda (v) (iterator v n)) all)))
+      (if (= n sz.dec)
+         noob
+         (go n.inc))))
+
+(spec map (lambda p table t)
+   ; FIXME do something better. External iterators?
+   (send (map p t.to-list) 'to-table))
+
+(spec map (lambda p set s)
+   ; FIXME do something better. External iterators?
+   (send (map p s.to-list) 'to-set))
+
+(gen fold
+   (error
+      'type-error
+      %(fold @rest)
+      "fold not defined for the supplied arguments."))
+
+(spec fold (lambda f object init list xs)
+   (list-fold f init xs))
+
+(spec fold (lambda f object init list xs list ys)
+   (when (not (apply? f))
+      (error 'bad-argument %(fold $f $init $xs $ys @rest) "fold: first argument must be a procedure."))
+   (def lists (pair xs (pair ys (list-map (resend 'to-list) rest))))
+   (proc fold-m (f init lists)
       (if (any? (resend 'empty?) lists)
-         knil
-         (fold-m kons
-            (apply kons (append (lists.map (resend 'head)) (list knil)) null)
-            (lists.map (resend 'tail)))))
-   (fold-m kons knil lists))
+         init
+         (fold-m f
+            (apply f (append (list-map (resend 'head) lists) (list init)))
+            (list-map (resend 'tail) lists))))
+   (fold-m f init lists))
+
+(spec fold (lambda f object init vector v)
+   (def sz v.size)
+   (def noob (vector size: sz))
+   (def iterator (vaquero-internal-get-vector-iterator opt.index))
+   (loop go (n 0 acc init)
+      (def new-acc (f (iterator v n) acc))
+      (if (= n sz.dec)
+         new-acc
+         (go n.inc new-acc))))
+
+(spec fold (lambda f object init vector u vector v)
+   (def all (pair u (pair v rest)))
+   (def sz (apply math.min (map (resend 'size) all)))
+   (def iterator (vaquero-internal-get-vector-iterator opt.index))
+   (loop go (n 0 acc init)
+      (def prep (lambda (v) (iterator v n)))
+      (def new-acc (apply f (append (map prep all) (list acc))))
+      (if (= n sz.dec)
+         new-acc
+         (go n.inc new-acc))))
+
+(spec fold (lambda f object init table t)
+   ; FIXME do something better. External iterators?
+   (fold f init t.to-list))
+
+(spec fold (lambda f object init set s)
+   ; FIXME do something better. External iterators?
+   (fold f init s.to-list))
+
+(gen filter
+   (error
+      'type-error
+      %(filter @rest)
+      "filter not defined for the supplied arguments."))
+
+(spec filter (lambda f list xs)
+   (list-filter f xs))
+
+(spec filter (lambda f vector v)
+   (def max v.size.dec)
+   (loop go (n 0 stack ())
+      (def val (v n))
+      (def noo (if (f val) (pair val stack) stack))
+      (if (= n max)
+         (apply vector noo.reverse)
+         (go n.inc noo))))
+
+(spec filter (lambda f table t)
+   (send (filter f t.to-list) 'to-table))
+
+(spec filter (lambda f set s)
+   (send (filter f s.to-list) 'to-set))
+
+(gen sort
+   (error
+      'type-error
+      %(sort @rest)
+      "sort not defined for the supplied arguments."))
+
+(spec sort (lambda f list xs)
+   (list-sort f xs))
+
+(spec sort (lambda f vector v)
+   ; FIXME this is lame.  implement quicksort or something
+   (send (list-sort f v.to-list) 'to-vector))
+
+
+; (gen foldr ?
+; (gen join
+; (spec join (list xs)
+; (spec join (vector v)
+; (spec join (table t)
+; (spec join (set s)
 
 (proc zip (xs)
-   (apply map %($list $xs @rest) null))
+   (apply map %($list $xs @rest)))
 
 (proc flatten (xs)
    (cond
       (= xs ()) ()
       (not (pair? xs)) (list xs)
-      default: (append (flatten xs.head)
+      else: (append (flatten xs.head)
                        (flatten xs.tail))))
-
-(op bind (names)
-   ; FIXME expand to destructure trees as well as lists
-   (def expr-val (gensym))
-   (proc define (name n)
-      %(def $name (send $expr-val $n)))
-   (def defz (map define names (range 0 names.size.dec))) 
-   %(seq
-      (def $expr-val (seq @rest))
-      @defz))
 
 (op github (name sym)
    (def txt sym.to-text)
@@ -665,7 +876,7 @@
       (cat (cat.apply (xs.drop 2) (: with "/")) ".vaq"))
    (def uri (cat "https://raw.githubusercontent.com" user repo "master" module-path with: "/"))
    %(use $name $uri))
- 
+
 ; reserving for future use
 
 (def ! null)

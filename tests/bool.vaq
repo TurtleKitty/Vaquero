@@ -2,12 +2,12 @@
 ; booleans
 
 (test true
-    (and (= true.type 'bool)
+    (and (= true.type '(bool))
           (= (null? true) false)
           (= true.to-bool true)))
 
 (test false
-    (and (= false.type 'bool)
+    (and (= false.type '(bool))
           (= (null? false) false)
           (= false.to-bool false)))
 

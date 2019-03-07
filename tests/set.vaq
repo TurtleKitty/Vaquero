@@ -1,0 +1,52 @@
+
+(def s0 (set))
+(def s1 (set 1 2 3 4 5))
+(def s2 (set 2 3 5 7 11))
+(def s3 (set 5 3 4 2 1))
+
+(test set-type     (set? s1))
+(test set-size     (and (= s0.size 0) (= s1.size 5)))
+(test set-has?     (and (s1.has? 2) (not (s1.has? 23))))
+(test set-equal?   (= s1 s3))
+(test set-to-bool  (and s0.to-bool.not s1.to-bool))
+(test set-to-list  (and (= () s0.to-list) (= '(2 3 5 7 11) (list-sort < s2.to-list))))
+
+(test set-union
+   (and (= (set 1 2 3 4 5 7 11) (s1.union s2))
+        (= s1 (s1.union s3))
+        (= s1 (s0.union s1))))
+
+(test set-intersect
+   (and (= s0 (s0.intersect s1))
+        (= (set 2 3 5) (s1.intersect s2))
+        (= s1 (s1.intersect s3))))
+
+(test set-diff
+   (and (= s0 (s0.diff s1))
+        (= s1 (s1.diff s0))
+        (= (set 1 4) (s1.diff s2))
+        (= (set 7 11) (s2.diff s1))
+        (= s0 (s1.diff s3))))
+
+(test set-xor
+   (and (= s1 (s1.xor s0))
+        (= (set 1 4 7 11) (s1.xor s2))
+        (= s0 (s1.xor s3))))
+
+(test set-add
+   (and (= (set 1) (s0.add 1))
+        (= (set 2 3 5 7 11 13 17) (s2.add 13 17))))
+
+(test set-del
+   (and (= s0 (s0.del 1))
+        (= (set 2 3 5) (s2.del 7 11))))
+
+(test set-add!
+   (let (s (set 1 2 3))
+      (s.add! 4 5)
+      (= s (set 1 2 3 4 5))))
+
+(test set-del!
+   (let (s (set 1 2 3))
+      (s.del! 2 3)
+      (= s (set 1))))

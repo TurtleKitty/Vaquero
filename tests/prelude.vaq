@@ -48,15 +48,30 @@
 (test table?
     (table? (: x 1 y 2)))
 
-(test box
-   (= '(0 7)
-      (let (x (box 0))
-         (def y x.val)
+(test cell
+   (= '(7 0 8)
+      (let (x (cell 0))
+         (def y x.get)
          (x.set! 7)
-         (list y x.val))))
+         x.inc!
+         (def z x.get)
+         x.dec!
+         (list x.get y z))))
 
-(test append
+(test append-list
     (= '(1 2 3 4 5) (append '(1 2) '(3) '(4 5))))
+
+(test append-vector
+    (= #(vector 1 2 3 4 5) (append #(vector 1 2) #(vector 3) #(vector 4 5))))
+
+(test union-set
+   (= (set 2 3 5 7 11) (union (set 5 2 3) (set 11 7))))
+
+(test union-table
+   (let (t1 (: foo 2 bar 3)
+         t2 (: bar 5 baz 7))
+      (and (= (: foo 2 bar 5 baz 7) (union t1 t2))
+           (= (: foo 2 bar 3 baz 7) (union t2 t1)))))
 
 (test papply
     (=
@@ -66,8 +81,8 @@
 
 (test compose
     (let ()
-        (proc f (xs) (xs.map (_ (* _ _))))
-        (proc g (xs) (xs.map (_ (+ _ 10))))
+        (proc f (xs) (list-map (_ (* _ _)) xs))
+        (proc g (xs) (list-map (_ (+ _ 10)) xs))
         (and
             (= '(121 144 169 196 225 256 289)
                 ((compose f g range) 1 7))
@@ -81,7 +96,7 @@
                 (= x 0) 'foo
                 (= x 1) 'bar
                 (= x 2) (+ x x x)
-                default: (* x x)))
+                else: (* x x)))
         (and
             (= 'foo (foo 0))
             (= 'bar (foo 1))
@@ -109,17 +124,6 @@
         (=  (list (foo 0) (foo 9) (foo 23) (foo 42) (foo 153))
            '(null null is-a-biggun is-a-biggun is-a-biggun))))
 
-(test chain
-    (let ()
-        (def xs (range 0 10))
-        (proc foo (x) (* x x))
-        (proc bar (x) (and (> x 10) (< x 100)))
-        (= '(81 64 49 36 25 16)
-            (chain xs
-                (map foo)
-                (filter bar)
-                (sort >)))))
-
 (test case
     (let ()
         (proc foo (x)
@@ -127,7 +131,7 @@
                 (0) 'foo
                 (1) 'bar
                 (2 3) (+ x x x)
-                default: (* x x)))
+                else: (* x x)))
         (and
             (= 'foo (foo 0))
             (= 'bar (foo 1))
@@ -136,84 +140,84 @@
             (= 16   (foo 4)))))
 
 (test while
-    (let (i (box 0) total (box 0))
+    (let (i (cell 0) total (cell 0))
         (def rv
-            (while (< i.val 20)
-                (total.set! (+ total.val i.val))
-                (i.set! i.val.inc)
-                (list i.val total.val)))
+            (while (< i.get 20)
+                (total.set! (+ total.get i.get))
+                i.inc!
+                (list i.get total.get)))
         (= rv '(20 190))))
 
 (test while-next
-    (let (i (box 0) total (box 0))
+    (let (i (cell 0) total (cell 0))
         (def rv
-            (while (< i.val 20)
-                (i.set! i.val.inc)
-                (when (mod i.val 3)
-                    (next (list 'next i.val total.val)))
-                (total.set! (+ total.val i.val))
-                (list i.val total.val)))
+            (while (< i.get 20)
+                i.inc!
+                (when (mod i.get 3)
+                    (next (list 'next i.get total.get)))
+                (total.set! (+ total.get i.get))
+                (list i.get total.get)))
         (= rv '(next 20 63))))
 
 (test while-last
-    (let (i (box 0) total (box 0))
+    (let (i (cell 0) total (cell 0))
         (def rv
-            (while (< i.val 20)
-                (i.set! i.val.inc)
-                (when (> total.val 30)
-                    (last (list 'last i.val total.val)))
-                (total.set! (+ total.val i.val))
-                (list i.val total.val)))
+            (while (< i.get 20)
+                i.inc!
+                (when (> total.get 30)
+                    (last (list 'last i.get total.get)))
+                (total.set! (+ total.get i.get))
+                (list i.get total.get)))
         (= rv '(last 9 36))))
 
 (test for
     (= 210
-        (for (i (box 0) total (box 0)) (<= i.val 20) (i.set! i.val.inc)
-            (total.set! (+ total.val i.val))
-            total.val)))
+        (for (i (cell 0) total (cell 0)) (<= i.get 20) i.inc!
+            (total.set! (+ total.get i.get))
+            total.get)))
 
 (test for-next
     (= 110
-        (for (i (box 0) total (box 0)) (<= i.val 20) (i.set! i.val.inc)
-            (when (mod i.val 2)
+        (for (i (cell 0) total (cell 0)) (<= i.get 20) i.inc!
+            (when (mod i.get 2)
                 (next total))
-            (total.set! (+ total.val i.val))
-            total.val)))
+            (total.set! (+ total.get i.get))
+            total.get)))
 
 (test for-redo
     (= 220
-        (for (i (box 0) total (box 0)) (<= i.val 20) (i.set! i.val.inc)
-            (when (mod total.val 2)
-                (total.set! total.val.inc)
+        (for (i (cell 0) total (cell 0)) (<= i.get 20) i.inc!
+            (when (mod total.get 2)
+                (total.set! total.get.inc)
                 (redo total))
-            (total.set! (+ total.val i.val))
-            total.val)))
+            (total.set! (+ total.get i.get))
+            total.get)))
 
 (test for-last
     (= 105
-        (for (i (box 0) total (box 0)) (<= i.val 20) (i.set! i.val.inc)
-            (when (> total.val 100)
-                (last total.val))
-            (total.set! (+ total.val i.val))
-            total.val)))
+        (for (i (cell 0) total (cell 0)) (<= i.get 20) i.inc!
+            (when (> total.get 100)
+                (last total.get))
+            (total.set! (+ total.get i.get))
+            total.get)))
 
 (test each
-    (let (items (range 1 5) total (box 0))
+    (let (items (range 1 5) total (cell 0))
         (each n items
-            (total.set! (+ total.val n)))
-        (= total.val 15)))
+            (total.set! (+ total.get n)))
+        (= total.get 15)))
 
 (test each-vector
-    (let (items (apply vector (range 1 5) (:)) total (box 0))
+    (let (items (apply vector (range 1 5)) total (cell 0))
         (each n items
-            (total.set! (+ total.val n)))
-        (= total.val 15)))
+            (total.set! (+ total.get n)))
+        (= total.get 15)))
 
 (test each-table
-    (let (items (: x 1 y 2 z 3 u 4 v 5) total (box 0))
+    (let (items (: x 1 y 2 z 3 u 4 v 5) total (cell 0))
         (each n items
-            (total.set! (+ total.val n.val)))
-        (= total.val 15)))
+            (total.set! (+ total.get n.val)))
+        (= total.get 15)))
 
 (test _
     (= '(2 4 9)
@@ -223,23 +227,23 @@
             ((_ (* _ _)) 3))))
 
 (test resend
-    (=
-        '(int text symbol number number)
-        (let (xs (list 1 "2" 'three 1/4 6.4))
-            (xs.map (resend 'type)))))
+   (= '(int text symbol real real)
+      (list-map (resend 'head)
+         (let (xs (list 1 "2" 'three 1/4 6.4))
+            (list-map (resend 'type) xs)))))
 
 (test promise
-    (let (count (box 0))
+    (let (count (cell 0))
         (def p
             (promise
                 (seq
-                    (count.set! count.val.inc)
+                    count.inc!
                     (* 3 4))))
         (and
-            (= 'promise p.type)
+            (= '(promise) p.type)
             (= 12 p.value)
             (= 12 p.value)
-            (= 1 count.val))))
+            (= 1 count.get))))
 
 (test seal
    (let ()
@@ -250,7 +254,7 @@
       (proc handler (e k) true)
 
       (and
-         (= sr.type 'sealed-object)
+         (= sr.type '(sealed-object))
          (and (= sr.x 1) (= sr.y 2))
          (guard
             handler
@@ -287,41 +291,6 @@
 
             (list bar baz))))
 
-(test generic-procedures
-    (= '(murakami 4 -4 1 5 16 6 ("1" "2" "3" "4" "5" "6" "7"))
-        (let ()
-            (gen nosuke 'murakami arity: 7) ; default case
-            (spec nosuke (x)
-                x.pos?
-                (* x x))
-            (spec nosuke (x)
-                x.neg?
-                (- (* x x)))
-            (spec nosuke (x y)
-                (> x y)
-                (+ x y))
-            (spec nosuke (x y)
-                (< x y)
-                (- y x))
-            (spec nosuke (x y)
-                (= x y)
-                (* x y))
-            (spec nosuke (x y z)
-                rest.size.zero?
-                (+ x y z))
-            (spec nosuke (x y z p d q r)
-                true
-                ((send (list x y z p d q r) 'map) (_ _.to-text)))
-            (list
-                (nosuke 0)
-                (nosuke 2)
-                (nosuke -2)
-                (nosuke 2 3)
-                (nosuke 3 2)
-                (nosuke 4 4)
-                (nosuke 1 2 3)
-                (nosuke 1 2 3 4 5 6 7)))))
-
 (test ndx
     ((thunk
         (def roll (ndx 10 6)) ; fireball!
@@ -329,9 +298,9 @@
 
 (test cat
     (and
-        (=  "truefalsenullfoobarbaz"
+        (=  "truefalsefoobarbaz"
             (cat true false null 'foo "bar" 'baz))
-        (=  "true/false/null/foo/bar/baz"
+        (=  "true/false//foo/bar/baz"
             (cat true false null 'foo "bar" 'baz with: "/"))))
 
 (test alias
@@ -357,33 +326,153 @@
             (not (every? is-1 ys))
             (not (every? is-1 zs)))))
 
-(test map
-    (let ()
-        (def xs '(1 2 3))
-        (def ys '(4 5 6))
-        (def zs #(vector 7 8 9))
-        (proc bam! (x y z)
-            (* (+ x y) z))
-        (= '(35 56 81)
-           (map bam! xs ys zs))))
+; the generic HOF tests below should suffice to test gen as well
+
+(test map-list-1
+   (let (xs '(2 3 5))
+      (proc sq (x) (* x x))
+      (= '(4 9 25)
+         (map sq xs))))
+
+(test map-list-n
+   (let ()
+      (def xs '(1 2 3))
+      (def ys '(4 5 6))
+      (def zs '(7 8 9))
+      (proc bam! (x y z)
+         (* (+ x y) z))
+      (= '(35 56 81)
+         (map bam! xs ys zs))))
+
+(test map-vector-1
+   (let (v (vector 2 3 5))
+      (proc foo (x) (+ x 10))
+      (= #(vector 12 13 15)
+         (map foo v))))
+
+(test map-vector-1-with-indexes
+   (let (v (vector 2 3 5))
+      (proc foo (p) (+ p.head p.tail 10))
+      (= #(vector 12 14 17)
+         (map foo v index: true))))
+
+(test map-vector-n
+   (let ()
+      (def v1 (vector 1 2 3))
+      (def v2 (vector 2 3 5 7 11))
+      (def v3 (vector 3 4 5 7 9 11))
+      (proc boom (x1 x2 x3)
+         (+ x1 x2 x3))
+      (= #(vector 6 9 13)
+         (map boom v1 v2 v3))))
+
+(test map-vector-n-with-indexes
+   (let ()
+      (def v1 (vector 1 2 3))
+      (def v2 (vector 2 3 5 7 11))
+      (def v3 (vector 3 4 5 7 9 11))
+      (proc boom (p1 p2 p3)
+         (pair p1.head (+ p1.tail p2.tail p3.tail)))
+      (= #(vector (0 . 6) (1 . 9) (2 . 13))
+         (map boom v1 v2 v3 index: true))))
+
+(test map-table
+   (let (t (: foo 2 bar 3 baz 5))
+      (def f
+         (lambda (kv)
+            %($kv.head . $(math.pow kv.tail 3))))
+      (= (map f t) (: foo 8 bar 27 baz 125))))
+
+(test map-set
+   (let (s (set 2 3 5))
+      (def f (lambda (v) (+ 10 v)))
+      (= (map f s) (set 12 13 15))))
 
 (test fold
-    (let ()
-        (def xs '(1 2 3))
-        (def ys '(4 5 6))
-        (def zs #(vector 7 8 9))
-        (proc zap! (x y z acc)
-            (+ x y z acc))
-        (= 45
-           (fold zap! 0 xs ys zs))))
+   (let ()
+      (def xs '(1 2 3))
+      (def ys '(4 5 6))
+      (def zs #(vector 7 8 9))
+      (proc zap! (x y z acc)
+         (+ x y z acc))
+      (= 45
+         (fold zap! 0 xs ys zs))))
+
+(test fold-list-1
+   (= 30 (fold (lambda (x acc) (* x acc)) 1 '(2 3 5)))) 
+
+(test fold-list-n
+   (let ()
+      (def multiplexer
+         (lambda (x y z acc) (pair (list x y z) acc))) 
+      (= '((3 c baz) (2 b bar) (1 a foo))
+         (fold multiplexer () '(1 2 3) '(a b c) '(foo bar baz)))))
+
+(test fold-vector-1
+   (= 30 (fold (lambda (x acc) (* x acc)) 1 #(vector 2 3 5))))
+
+(test fold-vector-1-with-indexes
+   (= 30 (fold (lambda (x acc) (* x.tail acc)) 1 #(vector 2 3 5) index: true)))
+
+(test fold-vector-n
+   (= 3628800
+      (fold (lambda (x y z acc) (* x y z acc)) 10 (vector 1 2 3) (vector 4 5 6) (vector 7 8 9))))
+
+(test fold-vector-n-with-indexes
+   (= 3628800
+      (fold (lambda (x y z acc) (* x.tail y.tail z.tail acc)) 10 (vector 1 2 3) (vector 4 5 6) (vector 7 8 9) index: true)))
+
+(test fold-table
+   (let ()
+      (def t (: foo 2 bar 3))
+      (proc combiner (x acc)
+         (acc.add x.head x.tail))
+      (= (set 'bar 'foo 2 3)
+         (fold combiner (set) t))))
+
+(test fold-set
+   (let ()
+      (def s (set 2 3 5))
+      (= 30
+         (fold * 1 s))))
+
+(test fitler-list
+   (let (xs '(foo 2 bar 3 baz 5))
+      (and
+         (= '(2 3 5) (filter num? xs))
+         (= '(foo bar baz) (filter symbol? xs)))))
+
+(test fitler-vector
+   (let (v #(vector foo 2 bar 3 baz 5))
+      (and
+         (=  (vector 2 3 5) (filter num? v))
+         (=  (vector 'foo 'bar 'baz) (filter symbol? v)))))
+
+(test fitler-set
+   (let (s (set 'foo 2 'bar 3 'baz 5))
+      (and
+         (= (set 2 3 5) (filter num? s))
+         (= (set 'foo 'bar 'baz) (filter symbol? s)))))
+
+(test fitler-table
+   (let (t (: foo 2 bar 3 baz 5))
+      (and
+         (= (: foo 2) (filter (lambda (p) (= p.head 'foo)) t))
+         (= (: baz 5) (filter (lambda (p) (= p.tail 5)) t)))))
+
+(test sort-list
+   (= '(2 3 5 7 11 13 17) (sort < (list 13 5 2 7 11 3 17))))
+
+(test sort-vector
+   (= (vector 2 3 5 7 11 13 17) (sort < (vector 13 5 2 7 11 3 17))))
 
 (test zip
-    (let ()
-        (def xs '(a b c))
-        (def ys '(1 2 3))
-        (def zs '(x y z))
-        (= '((a 1 x) (b 2 y) (c 3 z))
-           (zip xs ys zs))))
+   (let ()
+      (def xs '(a b c))
+      (def ys '(1 2 3))
+      (def zs '(x y z))
+      (= '((a 1 x) (b 2 y) (c 3 z))
+         (zip xs ys zs))))
 
 (test flatten
    (let ()
@@ -397,3 +486,38 @@
       (bind (a b c) '(2 3 5))
       (and (= a 2) (= b 3) (= c 5))))
 
+(test ensure-no-jump
+    ((proc ()
+        (def x (vector 1))
+        (def y
+            (ensure
+                (proc () (x.set! 0 3))
+                (seq (x.set! 0 2) (+ x.0 3))))
+        (and (= x.0 3) (= y 5)))))
+
+(test ensure-no-capture-across
+    ((proc ()
+        (def x (vector 1))
+        (def y
+            (gate
+                (* 10
+                    (ensure
+                        (proc () (x.set! 0 3))
+                        (seq
+                            (x.set! 0 5)
+                            (+ 2
+                                (capture k (k (k x.0)))))))))
+        (and (= x.0 3) (= y 90)))))
+
+(test ensure-error
+    ((proc ()
+        (def x (vector 1))
+        (def y
+            (guard
+                (proc (e k) (+ 7 e))
+                (ensure
+                    (proc () (x.set! 0 3))
+                    (seq
+                        (x.set! 0 5)
+                        (+ 2 (fail x.0))))))
+        (and (= x.0 3) (= y 12)))))

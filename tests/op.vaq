@@ -65,5 +65,5 @@
             (list
                 (foo 3)
                 (bar 3)
-                (env.eval (pair 'list (fs.map screw-with-proc)))))))
+                (env.eval (pair 'list (list-map screw-with-proc fs)))))))
 

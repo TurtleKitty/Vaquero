@@ -2,15 +2,15 @@
 (define vaquero-modules (mkht))
 
 (define (def-vaquero-module path)
-    (define has? (hte? vaquero-modules path))
-    (if has?
-        (htr vaquero-modules path)
-        (let ((expanded (read-expand-cache-prog path (local-env))))
-            (define mod-id (uuid-v4))
-            (define module (cons mod-id expanded))
-            (hts! vaquero-modules path module)
-            (find-modules expanded)
-            module)))
+   (define has? (hte? vaquero-modules path))
+   (if has?
+      (htr vaquero-modules path)
+      (let ((expanded (read-expand-cache-prog path (local-env))))
+         (define mod-id (uuid-v4))
+         (define module (cons mod-id expanded))
+         (hts! vaquero-modules path module)
+         (find-modules expanded)
+         module)))
 
 (define (vaquero-module-id path)
    (car (htr vaquero-modules path)))
@@ -44,16 +44,16 @@
          (let ((head (car code)))
             (case head
                ((use)
-                  (define module-name (cadr code))
-                  (define mod-id (vaquero-module-id (caddr code)))
-                  `(def ,module-name (,(uuid-ify "vaquero-internal-module-proc" mod-id))))
+                  (let ((module-name (cadr code))
+                        (mod-id (vaquero-module-id (caddr code))))
+                     `(def ,module-name (,(uuid-ify "vaquero-internal-module-proc" mod-id)))))
                ((import)
-                  (define module-name (cadr code))
-                  (define imports (cddr code))
-                  (define (def-ify name)
-                     `(def ,name (send ,module-name (quote ,name))))
-                  (define defs (map def-ify imports))
-                  `(seq ,@defs))
+                  (let* ((module-name (cadr code))
+                         (imports (cddr code))
+                         (def-ify (lambda (name)
+                           `(def ,name (send ,module-name (quote ,name)))))
+                         (defs (map def-ify imports)))
+                  `(seq ,@defs)))
                (else (map transform-uses code))))
          (cons (transform-uses (car code)) (transform-uses (cdr code))))
       code))
@@ -76,7 +76,7 @@
                ,@body
                ; end body
                (def ,object-name
-                  (apply object (pair 'type (pair 'module
+                  (apply object (pair 'type (pair '(module)
                      ((proc ,loop-name (,expo ,expos ,rval)
                         (def nu-rval (pair ,expo (pair ((send env 'lookup) ,expo) ,rval)))
                         (if ,expos

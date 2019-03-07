@@ -1,10 +1,8 @@
 
 (def p (pair 'x 3))
 
-(test pair-type     (= p.type 'pair))
+(test pair-type     (= '(pair) p.type))
 (test pair-to-bool  p.to-bool)
-(test pair-to-table (= p.to-table (: x 3)))
-(test pair-to-list  (= p.to-list '(x 3)))
 (test pair-head     (= p.head 'x))
 (test pair-tail     (= p.tail 3))
 (test pair-size     (= p.size 2))
