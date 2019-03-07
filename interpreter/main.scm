@@ -32,6 +32,8 @@ vaquero expand <filename>
 vaquero compile <filename>
 vaquero clean
 
+vaquero <filename> is shorthand for vaquero run <filename>
+
 END
 )
 

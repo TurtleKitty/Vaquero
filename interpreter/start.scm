@@ -7,6 +7,35 @@
 (define (vaquero-internal-locate-path path)
    (find-file (make-module-absolute-path path)))
 
+(define (vaquero-internal-start-check filename)
+   (define its-good (check-vaquero-syntax (cdr (read-expand-cache-prog filename (cli-env)))))
+   (display "Syntax check complete: ")
+   (say (if its-good 'ok 'FAIL)))
+
+(define (vaquero-internal-start-clean)
+   (define cached
+      (append
+         (glob (vaquero-cache-dir "expanded/*"))
+         (glob (vaquero-cache-dir "compiled/*"))
+         (glob (vaquero-cache-dir "modules/*"))
+         (list cached-global-prelude-path)))
+   (let loop ((f (car cached)) (fs (cdr cached)))
+      (delete-file* f)
+      (if (eq? fs '())
+         (display "Cache cleared.\n")
+         (loop (car fs) (cdr fs)))))
+
+(define (vaquero-internal-start-eval code-text)
+   (define code
+      (vaquero-read-file
+         (open-input-string code-text)))
+   (define expanded
+      (vaquero-expand code (cli-env)))
+   (if (check-vaquero-syntax expanded)
+      (let ((linked (vaquero-link expanded)))
+        (vaquero-run linked))
+      (exit)))
+
 (define (vaquero-internal-start-run filename)
    (define expanded (read-expand-cache-prog filename (cli-env)))
    (define fpath (vaquero-internal-locate-path filename))
@@ -24,6 +53,20 @@
                (vaquero-run linked))))
       (exit)))
 
+(define (vaquero-internal-start-compile filename)
+   (define expanded (read-expand-cache-prog filename (cli-env)))
+   (define linked (vaquero-link expanded))
+   (define cpath (get-vaquero-compiled-path (vaquero-internal-locate-path filename)))
+   (define save-file (open-output-file cpath))
+   (vaquero-write linked save-file)
+   (close-output-port save-file)
+   (debug "Wrote compiled file to " cpath))
+
+(define (vaquero-internal-start-expand filename)
+   (define expanded (read-expand-cache-prog filename (cli-env)))
+   (pp (vaquero-view expanded))
+   (newline))
+
 (define (start)
    (define args (command-line-arguments))
    (define (fname)
@@ -36,52 +79,19 @@
    (add-global-prelude (global-env))
    (if (not (pair? args))
       (usage)
-      (let ((cmd (string->symbol (car args))))
+      (let ((arg (car args)))
+         (define cmd (string->symbol arg))
          (case cmd
-            ((repl) (vaquero-repl))
-            ((eval)
-               (let ((code-str (fname)))
-                  (define code
-                     (vaquero-read-file
-                        (open-input-string code-str)))
-                  (define expanded
-                     (vaquero-expand code (cli-env)))
-                  (if (check-vaquero-syntax expanded)
-                     (let ((linked (vaquero-link expanded)))
-                       (vaquero-run linked))
-                     (exit))))
-            ((run) (vaquero-internal-start-run (fname)))
-            ((check)
-               (let ((its-good (check-vaquero-syntax (cdr (read-expand-cache-prog (fname) (cli-env))))))
-                  (display "Syntax check complete: ")
-                  (say (if its-good 'ok 'FAIL))))
-            ((clean)
-               (let ((cached (append
-                       (glob (vaquero-cache-dir "expanded/*"))
-                       (glob (vaquero-cache-dir "compiled/*"))
-                       (glob (vaquero-cache-dir "modules/*"))
-                       (list cached-global-prelude-path))))
-                  (let loop ((f (car cached)) (fs (cdr cached)))
-                     (delete-file* f)
-                     (if (eq? fs '())
-                        (display "Cache cleared.\n")
-                        (loop (car fs) (cdr fs))))))
-            ((compile)
-               (let ((expanded (read-expand-cache-prog (fname) (cli-env))))
-                  (define linked (vaquero-link expanded))
-                  (define cpath (get-vaquero-compiled-path (vaquero-internal-locate-path (fname))))
-                  (define save-file (open-output-file cpath))
-                  (vaquero-write linked save-file)
-                  (close-output-port save-file)
-                  (debug "Wrote compiled file to " cpath)))
-            ((expand)
-               (begin
-                  (pp
-                     (vaquero-view
-                        (read-expand-cache-prog (fname) (cli-env))))
-                  (newline)))
+            ((repl)    (vaquero-repl))
+            ((eval)    (vaquero-internal-start-eval    (fname)))
+            ((run)     (vaquero-internal-start-run     (fname)))
+            ((check)   (vaquero-internal-start-check   (fname)))
+            ((clean)   (vaquero-internal-start-clean))
+            ((clear)   (vaquero-internal-start-clean))
+            ((compile) (vaquero-internal-start-compile (fname)))
+            ((expand)  (vaquero-internal-start-expand  (fname)))
             (else
-               (if (pair? (cdr args))
-                  'do-something
+               (if (file-exists? arg)
+                  (vaquero-internal-start-run arg)
                   (else (printf "Unknown command: ~A~%" cmd))))))))
 
