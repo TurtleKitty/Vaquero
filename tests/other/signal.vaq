@@ -1,103 +1,101 @@
 
-
 (proc buddy ()
-    (proc greeter ()
-        (sys.say "Hi, buddy!")
-        (sys.proc.sleep 1)
-        (greeter))
-    (proc sulker ()
-        (sys.proc.sleep 5)
-        (sulker))
-    (sys.signal.handle
-        sys.signal.hup
-        (proc (s)
-            (sys.say "HUP? Ha! I laugh at you.")
-            (greeter)))
-    (sys.signal.handle
-        sys.signal.int
-        (proc (s)
-            (sys.say "Nyah nyah...")
-            (greeter)))
-    (sys.signal.handle
-        sys.signal.quit
-        (proc (s)
-            (sys.say "Still here, buddy!")
-            (greeter)))
-    (sys.signal.handle
-        sys.signal.abrt
-        (proc (s)
-            (sys.say "hehehe...")
-            (greeter)))
-    (sys.signal.handle
-        sys.signal.term
-        (proc (s)
-            (sys.say "Aw, man... TERM? That is cold, buddy. I ain't talkin to you no more.")
-            (sys.signal.mask sys.signal.hup)
-            (sys.signal.mask sys.signal.int)
-            (sys.signal.mask sys.signal.quit)
-            (sys.signal.mask sys.signal.abrt)
-            (sys.signal.mask sys.signal.term)
-            (sulker)))
-    (sys.signal.handle
-        sys.signal.cont
-        (proc (s)
-            (sys.say "YES! I knew you loved me.")
-            (sys.signal.unmask sys.signal.hup)
-            (sys.signal.unmask sys.signal.int)
-            (sys.signal.unmask sys.signal.quit)
-            (sys.signal.unmask sys.signal.abrt)
-            (sys.signal.unmask sys.signal.term)
-            (greeter)))
-    (sys.say "Buddy handlers online.")
-    (greeter))
+   (proc greeter ()
+      (say "Hi, buddy!")
+      (sys.proc.sleep 1)
+      (greeter))
+   (proc sulker ()
+      (sys.proc.sleep 5)
+      (sulker))
+   (sys.signal.handle
+      sys.signal.hup
+      (proc (s)
+         (say "HUP? Ha! I laugh at you.")
+         (greeter)))
+   (sys.signal.handle
+      sys.signal.int
+      (proc (s)
+         (say "Nyah nyah...")
+         (greeter)))
+   (sys.signal.handle
+      sys.signal.quit
+      (proc (s)
+         (say "Still here, buddy!")
+         (greeter)))
+   (sys.signal.handle
+      sys.signal.abrt
+      (proc (s)
+         (say "hehehe...")
+         (greeter)))
+   (sys.signal.handle
+      sys.signal.term
+      (proc (s)
+         (say "Aw, man... TERM? That is cold, buddy. I ain't talkin to you no more.")
+         (sys.signal.mask sys.signal.hup)
+         (sys.signal.mask sys.signal.int)
+         (sys.signal.mask sys.signal.quit)
+         (sys.signal.mask sys.signal.abrt)
+         (sys.signal.mask sys.signal.term)
+         (sulker)))
+   (sys.signal.handle
+      sys.signal.cont
+      (proc (s)
+         (say "YES! I knew you loved me.")
+         (sys.signal.unmask sys.signal.hup)
+         (sys.signal.unmask sys.signal.int)
+         (sys.signal.unmask sys.signal.quit)
+         (sys.signal.unmask sys.signal.abrt)
+         (sys.signal.unmask sys.signal.term)
+         (greeter)))
+   (say "Buddy handlers online.")
+   (greeter))
 
 
-(sys.say "Forking Buddy...")
+(say "Forking Buddy...")
 (def buddy-pid (sys.proc.fork buddy))
-(sys.say (cat "Buddy PID: " buddy-pid))
+(say (cat "Buddy PID: " buddy-pid))
 
 (sys.proc.sleep 3)
-(sys.say "HUP")
+(say "HUP")
 (sys.signal.send buddy-pid sys.signal.hup)
 
 (sys.proc.sleep 3)
-(sys.say "INT")
+(say "INT")
 (sys.signal.send buddy-pid sys.signal.int)
 
 (sys.proc.sleep 3)
-(sys.say "QUIT")
+(say "QUIT")
 (sys.signal.send buddy-pid sys.signal.quit)
 
 (sys.proc.sleep 3)
-(sys.say "ABRT")
+(say "ABRT")
 (sys.signal.send buddy-pid sys.signal.abrt)
 
 (sys.proc.sleep 3)
-(sys.say "TERM")
+(say "TERM")
 (sys.signal.send buddy-pid sys.signal.term)
 
 (sys.proc.sleep 3)
-(sys.say "QUIT")
+(say "QUIT")
 (sys.signal.send buddy-pid sys.signal.term)
 
 (sys.proc.sleep 3)
-(sys.say "TERM")
+(say "TERM")
 (sys.signal.send buddy-pid sys.signal.term)
 
 (sys.proc.sleep 3)
-(sys.say "CONT")
+(say "CONT")
 (sys.signal.send buddy-pid sys.signal.cont)
 
 (sys.proc.sleep 3)
-(sys.say "STOP")
+(say "STOP")
 (sys.signal.send buddy-pid sys.signal.stop)
 
 (sys.proc.sleep 3)
-(sys.say "CONT")
+(say "CONT")
 (sys.signal.send buddy-pid sys.signal.cont)
 
 (sys.proc.sleep 5)
-(sys.say "KILL")
+(say "KILL")
 (sys.signal.send buddy-pid sys.signal.kill)
-
 

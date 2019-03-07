@@ -1,3 +1,3 @@
 
-(repl env sys.stdin sys.stdout sys.stderr)
+(repl env stdin stdout stderr)
 

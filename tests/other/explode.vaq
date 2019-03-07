@@ -1,27 +1,27 @@
 #!/usr/local/bin/vaquero run
 
-(def count (if sys.rest.head sys.rest.head.to-number 120000))
+(def count (if sys.rest.head sys.rest.head.to-number 1000000))
 
-(sys.test 'start true)
+(test start true)
 
-(sys.test 'proc-tco
-    (let ()
-        (def upto
-            (proc (max)
-                (def helper
-                    (proc (acc)
-                        (if (= acc max)
-                            acc
-                            (helper (+ acc 1)))))
-                (helper 0)))
-        (= (upto count) count)))
+(test proc-tco
+   (let ()
+      (def upto
+         (proc (max)
+            (def helper
+               (proc (acc)
+                  (if (= acc max)
+                     acc
+                     (helper (+ acc 1)))))
+            (helper 0)))
+     (= (upto count) count)))
 
-(sys.test 'no-tco 
-    (let ()
-        (def upto
-            (proc (n)
-                (if (= n 0)
-                    0
-                    (+ 1 (upto (- n 1))))))
-        (= (upto count) count)))
+(test no-tco 
+   (let ()
+      (def upto
+         (proc (n)
+            (if (= n 0)
+               0
+               (+ 1 (upto (- n 1))))))
+      (= (upto count) count)))
 

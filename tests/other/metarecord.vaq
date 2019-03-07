@@ -1,29 +1,17 @@
 
 (proc meta (n rec)
-    (if (= n 0)
-        rec
-        (seq
-            (rec.set! (gensym) (table))
-            (meta (- n 1) rec))))
+   (if (= n 0)
+      rec
+      (seq
+         (rec.set! (gensym) (table))
+         (meta (- n 1) rec))))
 
 (proc meta-meta (x)
-    (meta 1000 x)
-    (meta 1000 x)
-    (meta 1000 x)
-    (meta 1000 x)
-    (meta 1000 x))
+   (meta 1000000 x))
 
 (def x (table))
 
 (meta-meta x)
-(meta-meta x)
-(meta-meta x)
-(meta-meta x)
-(meta-meta x)
-(meta-meta x)
-(meta-meta x)
-(meta-meta x)
-(meta-meta x)
-(meta-meta x)
 
-(sys.say (sys.read))
+(say (read))
+
