@@ -202,7 +202,7 @@
          'ts      norris-day
          'srand
             (lambda (v)
-               (randomize v)
+               (set-pseudo-random-seed! v)
                'null)
          'shell (lambda (cmd)
             (read-all (process cmd)))

@@ -1,4 +1,36 @@
 
+(import-for-syntax (chicken io))
+
+(import srfi-1)
+(import srfi-13)
+(import srfi-69)
+
+(import http-client)
+(import openssl)
+(import posix-groups)
+(import r7rs)
+(import symbol-utils)
+(import system-information)
+;(import unix-sockets)
+(import utf8)
+;(import utils)
+;(import uuid)
+(import vector-lib)
+
+(import (chicken file))
+(import (chicken file posix))
+(import (chicken io))
+(import (chicken irregex))
+(import (chicken keyword))
+(import (chicken pathname))
+(import (chicken process))
+(import (chicken process signal))
+(import (chicken process-context))
+(import (chicken process-context posix))
+(import (chicken random))
+
+;(define (uuid-v4) (pseudo-random-integer 340282366920938463463374607431768211456))
+
 (define top-cont identity)
 (define top-err
    (lambda (ex continue)

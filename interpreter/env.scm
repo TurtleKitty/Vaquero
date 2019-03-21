@@ -348,7 +348,7 @@
              (cons 'vector vaquero-make-vector)
              (cons 'vector? vector?)
              (cons 'text? string?)
-             (cons 'rand random)
+             (cons 'rand pseudo-random-integer)
              (cons 'tuple vaquero-make-tuple)
              (cons 'tuple? vaquero-tuple?)
              (cons 'set vaquero-make-set)
