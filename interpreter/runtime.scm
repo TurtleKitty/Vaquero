@@ -17,6 +17,7 @@
 ;(import uuid)
 (import vector-lib)
 
+(import (chicken condition))
 (import (chicken file))
 (import (chicken file posix))
 (import (chicken io))
