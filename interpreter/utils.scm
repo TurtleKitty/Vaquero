@@ -317,6 +317,19 @@
 
 (define (the-end v) (exit))
 
+; stolen from https://github.com/dsosby/chicken-uuid/blob/master/uuid.scm
+
+(define uuid-v4-hex-vals (string->list "0123456789abcdef"))
+(define uuid-v4-pattern "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx")
+
+(define (uuid-v4 #!optional [randfn pseudo-random-integer])
+  (letrec ([x-replace (lambda () (list-ref uuid-v4-hex-vals (randfn 16)))]
+      [y-replace (lambda () (list-ref uuid-v4-hex-vals (bitwise-ior (bitwise-and (randfn 16) #x08) #x03)))]
+      [map-proc (lambda (c) (cond ((eq? c #\x) (x-replace)) ((eq? c #\y) (y-replace)) (else c)))])
+    (string-map map-proc uuid-v4-pattern)))
+
+; /stolen
+
 (define (vaquero-gensym #!optional (name "gensym"))
    (string->symbol
       (string-append name "-" (uuid-v4))))
