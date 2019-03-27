@@ -14,7 +14,6 @@
 ;(import unix-sockets)
 (import utf8)
 ;(import utils)
-;(import uuid)
 (import vector-lib)
 
 (import (chicken bitwise))
@@ -30,8 +29,8 @@
 (import (chicken process-context))
 (import (chicken process-context posix))
 (import (chicken random))
-
-;(define (uuid-v4) (pseudo-random-integer 340282366920938463463374607431768211456))
+(import (chicken sort))
+(import (chicken string))
 
 (define top-cont identity)
 (define top-err
