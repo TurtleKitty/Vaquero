@@ -45,7 +45,7 @@
 
 (define (vaquero-error name form message)
    (display "ERROR: ") (display message) (newline)
-   (abort (list name form message)))
+   (exit))
 
 (define (vaquero-error-object name form to-text)
    (vaquero-object `(type (error) name ,name form ,form to-text ,to-text message ,to-text view (error ,name ,form ,to-text)) #f #f #f))
