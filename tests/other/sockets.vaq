@@ -1,0 +1,38 @@
+
+(def host "localhost")
+(def port 9999)
+
+(def L (sys.net.tcp.listen host port))
+
+(say "Server booted")
+
+(proc sender ()
+   (say "Client booted")
+   (loop go ()
+      (def n (ndx 2 6))
+      (def sock (sys.net.tcp.connect host port))
+      (sock.write (pair 'seconds n))
+      sock.nl
+      (def response sock.read)
+      (say (cat "Client got " response))
+      sock.close
+      (when (!= response 'DIE)
+         (go))))
+
+(sys.proc.fork sender)
+
+(loop listen ()
+   (if L.ready?
+      (seq
+         (say "Server ready")
+         (def sock L.accept)
+         (say "Server reading")
+         (def request sock.read)
+         (def n request.tail)
+         (say (cat "Server got " n))
+         (if (= n 2)
+            (seq (sock.write 'DIE) sock.nl sock.close)
+            (seq (sock.write 'GO) sock.nl sock.close (listen))))
+      (seq
+         (listen))))
+
