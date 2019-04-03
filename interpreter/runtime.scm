@@ -21,6 +21,7 @@
 (import (chicken condition))
 (import (chicken file))
 (import (chicken file posix))
+(import (chicken format))
 (import (chicken io))
 (import (chicken irregex))
 (import (chicken keyword))

@@ -21,14 +21,14 @@
          'set!
             (lambda (k v)
                (if (symbol? k)
-                  (setenv (symbol->string k) v)
-                  (setenv k v))
+                  (set-environment-variable! (symbol->string k) v)
+                  (set-environment-variable! k v))
                   v)
          'del!
             (lambda (k)
                (if (symbol? k)
-                  (unsetenv (symbol->string k))
-               (unsetenv k))
+                  (unset-environment-variable! (symbol->string k))
+                  (unset-environment-variable! k))
                'null)
       )
       #f #f #f))
@@ -39,8 +39,8 @@
          'read      open-input-file
          'write     open-output-file
          'rm        (lambda (f) (delete-file* f) 'null)
-         'cp        (lambda (old new) (file-copy old new))
-         'mv        (lambda (old new) (file-move old new))
+         'cp        (lambda (old new) (copy-file old new))
+         'mv        (lambda (old new) (move-file old new))
          'ln        (lambda (old new) (create-symbolic-link old new) 'null)
          'tmp       (lambda () (create-temporary-file))
          'pwd       (lambda () (current-directory))
@@ -204,7 +204,7 @@
                (set-pseudo-random-seed! v)
                'null)
          'shell (lambda (cmd)
-            (read-all (process cmd)))
+            (read-string (process cmd)))
          '64764 (lambda () (display "\n   **** COMMODORE 64 BASIC V2 ****\n\n 64K RAM SYSTEM  38911 BASIC BYTES FREE\n\n") 'READY.)
          'launch-the-missile fire-missile)
       '(ts 64764 launch-the-missile)
