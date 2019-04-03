@@ -260,6 +260,9 @@
 (define (keyword->symbol k)
    (string->symbol (keyword->string k)))
 
+(define (symbol->keyword s)
+   (string->keyword (symbol->string s)))
+
 (define (vaquero-compile-method code)
    ((vaquero-compile-lambda (vaquero-parse code)) (local-env) identity identity))
 
