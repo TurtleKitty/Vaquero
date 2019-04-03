@@ -44,19 +44,23 @@
    (exit))
 
 (define (vaquero-read-structure port)
-   (read-char port) ; ditch the #
-   (read-char port) ; ditch the (
-   (let ((type (read port))) ; read the symbol in head
-      (if (not (symbol? type))
-         (vaquero-error 'read-error type "read error: structures must begin with a type symbol!")
-         (if (holy? type)
-            (let ((funk (glookup type)) (args (vaquero-read-list port)))
-               (vaquero-apply funk args my-empty-table identity vaquero-read-error-handler))
-            (case type
-               ((text)    (vaquero-read-text port))
-               ((template) (vaquero-read-template port))
-               ((doc)     (vaquero-read-doc port) (vaquero-reader port))
-               (else      (vaquero-error 'unknown-structure type (string-join (list "read error: unknown structure type:" (symbol->string type) "is not defined in the global environment.") " "))))))))
+   (let ((nothing (read-char port)) ; ditch the #
+         (label (read-char port)))  ; either : for chicken keyword or ( for vaquero structure
+      (if (eq? label #\:)
+         (let ((sym (read port)))
+            (symbol->keyword sym))
+         (let ((type (read port))) ; read the symbol in head
+            (if (not (symbol? type))
+               (vaquero-error 'read-error type "read error: structures must begin with a type symbol!")
+               (if (holy? type)
+                  (let ((funk (glookup type)) (args (vaquero-read-list port)))
+                     (vaquero-apply funk args my-empty-table identity vaquero-read-error-handler))
+                  (case type
+                     ((text)     (vaquero-read-text port))
+                     ((template) (vaquero-read-template port))
+                     ((doc)      (vaquero-read-doc port) (vaquero-reader port))
+                     (else       (vaquero-error 'unknown-structure type
+                                    (string-join (list "read error: unknown structure type:" (symbol->string type) "is not defined in the global environment.") " "))))))))))
 
 (define (vaquero-read-list port)
    ; lparen already swallowed
