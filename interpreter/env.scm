@@ -233,6 +233,7 @@
       (define vaquero-math-object
          (vaquero-object
             (list
+               'type   math
                'e      2.718281828459045
                'phi    1.618033988749895
                'pi     3.141592653589793
@@ -254,6 +255,7 @@
       (define vaquero-physics-object
          (vaquero-object
             (list
+               'type physics
                'c   299792458
                'g   9.80665
                'G   6.67408e-11
