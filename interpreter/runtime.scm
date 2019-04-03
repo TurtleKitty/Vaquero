@@ -15,7 +15,6 @@
 (import tcp6)
 (import udp6)
 (import utf8)
-;(import utils)
 (import vector-lib)
 
 (import (chicken bitwise))
@@ -34,6 +33,7 @@
 (import (chicken random))
 (import (chicken sort))
 (import (chicken string))
+(import (chicken time))
 
 (define top-cont identity)
 (define top-err
