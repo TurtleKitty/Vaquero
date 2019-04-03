@@ -126,7 +126,7 @@
                    (lambda (args opts cont err)
                        (if (pair? (car args))
                            (vaquero-send-list obj (caar args) cont err)
-                           (err (vaquero-error-object 'bad-message! `(,obj ,args ,opts) "Message not understood.") cont))))))
+                           (err (vaquero-error-object 'message-not-understood `(,obj ,args ,opts) "Message not understood.") cont))))))
 
          (alist->hash-table
             `((answers?   . ,answers?)

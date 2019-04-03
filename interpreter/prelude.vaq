@@ -111,7 +111,7 @@
       (object 'type '(error)
               'name name
               'form form
-              'view (list 'ERROR name form message)
+              'view (lambda () (vector 'error name form message))
               'message message
               'to-text message)))
 
@@ -493,8 +493,7 @@
             'type '(gen proc lambda)
             'add-clause! add-clause!
             'apply gen-apply
-            'view view
-            (unq 'auto:) '(view))))) ; not sure why (unq (quote keyword:)) works, but I'll take it
+            'view view))))
 
 (op spec (name formal-types body)
    (def mod-2 (mod formal-types.size 2))

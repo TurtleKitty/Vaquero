@@ -12,6 +12,8 @@
 (import symbol-utils)
 (import system-information)
 ;(import unix-sockets)
+(import tcp6)
+(import udp6)
 (import utf8)
 ;(import utils)
 (import vector-lib)
@@ -31,6 +33,8 @@
 (import (chicken random))
 (import (chicken sort))
 (import (chicken string))
+;(import (chicken tcp6))
+;(import (chicken udp6))
 
 (define top-cont identity)
 (define top-err

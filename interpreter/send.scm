@@ -99,26 +99,12 @@
    (define forwards (vaquero-obj-forwards obj))
    (define autos   (vaquero-obj-autos obj))
    (define (get-msgs)
-      (append (hash-table-keys fields) (hash-table-keys forwards)))
-   (define (vaquero-object-view obj)
-      (define type
-         (if (hte? fields 'type)
-            (car (htr fields 'type))
-            'object))
-      (define the-view
-         (if (hte? fields 'view)
-            (let ((view-proc (htr fields 'view)))
-               (if (member 'apply (vaquero-send-atomic view-proc 'messages))
-                  (vaquero-apply view-proc '() 'null identity err)
-                  (err (vaquero-error-object 'view-must-answer-apply `(send ,obj 'view) "The object answered 'view with a non-applicative.") cont)))
-            (get-msgs)))
-      (apply vector (cons type the-view)))
+      (append (htks fields) (htks forwards)))
    (case msg
       ; unshadowable reflection messages
       ((answers?)  (cont (vaquero-answerer (get-msgs))))
       ((messages)  (cont (get-msgs)))
-      ((autos)     (cont (hash-table-keys autos)))
-      ((view)      (cont (vaquero-object-view obj)))
+      ((autos)     (cont (htks autos)))
       (else
          (if (hte? fields msg)
             (let ((v (htr fields msg)))
@@ -128,9 +114,8 @@
             (if (hte? forwards msg)
                (vaquero-send (htr forwards msg) msg cont err)
                (case msg
-                  ((type) (cont '(object)))
                   ((to-text) (cont "object"))
-                  ((to-bool) (cont (not (eq? 0 (length (hash-table-keys fields))))))
+                  ((to-bool) (cont (not (eq? 0 (length (htks fields))))))
                   (else (vaquero-apply (vaquero-obj-default obj) (list msg) 'null cont err))))))))
 
 (define vaquero-send-vtable

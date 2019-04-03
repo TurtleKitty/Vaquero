@@ -226,18 +226,10 @@
                (define autos (vaquero-send-atomic opts 'auto))
                (define fwd (vaquero-send-atomic opts 'forward))
                (define default ((vaquero-send-atomic opts 'get) 'default))
-               (define (pass-it-on)
-                  (cont (vaquero-object args autos fwd default)))
                (if (eq? autos 'null) (set! autos #f) #f)
                (if (eq? fwd 'null) (set! fwd #f) #f)
                (if (eq? default 'null) (set! default #f) #f)
-               (let ((the-type (member 'type args)))
-                  (if the-type
-                     (let ((ts (cadr the-type)))
-                        (if (and (list? ts) (every symbol? ts))
-                           (pass-it-on)
-                           (err (vaquero-error-object 'bad-type `(type ,ts) "An object type must be a list of symbols.") cont)))
-                     (pass-it-on))))))
+               (cont (vaquero-object args autos fwd default)))))
       (define vaquero-math-object
          (vaquero-object
             (list

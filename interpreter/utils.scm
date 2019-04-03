@@ -43,8 +43,11 @@
          (let ((name (cadr expr)) (body (cddr expr)))
             `(define (,name ,(inject 'obj) ,(inject 'msg) ,(inject 'cont) ,(inject 'err)) ,@body)))))
 
+(define (vaquero-warning name form message)
+   (display (list 'WARNING name form message)) (newline))
+
 (define (vaquero-error name form message)
-   (display "ERROR: ") (display message) (newline)
+   (display (list 'ERROR name form message)) (newline)
    (exit))
 
 (define (vaquero-error-object name form to-text)

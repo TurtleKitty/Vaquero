@@ -96,10 +96,10 @@
    (vaquero-object
       (list
          'connect (lambda (host port)
-            (define-values (in out) (tcp-connect host port))
-            (vaquero-tcp-socket in out))
-         'listen (lambda (host port)
-            (vaquero-tcp-listener host port))
+                     (define-values (in out) (tcp-connect host port))
+                     (vaquero-tcp-socket in out))
+         'listen  (lambda (host port)
+                     (vaquero-tcp-listener host port))
       )
       #f #f #f))
 
