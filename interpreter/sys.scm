@@ -5,9 +5,8 @@
 (define sys-env
    (vaquero-object
       (list
-         'view
-            (lambda () (vaquero-view (get-environment-variables)))
-         'uname   (system-information)
+         'view     (lambda () (vaquero-view (get-environment-variables)))
+         'uname    (system-information)
          'hostname (get-host-name)
          'get
             (lambda (x)
@@ -32,7 +31,7 @@
                (unsetenv k))
                'null)
       )
-      '(view) #f #f))
+      #f #f #f))
 
 (define sys-fs
    (vaquero-object

@@ -26,6 +26,7 @@
 (import (chicken irregex))
 (import (chicken keyword))
 (import (chicken pathname))
+(import (chicken pretty-print))
 (import (chicken process))
 (import (chicken process signal))
 (import (chicken process-context))
@@ -33,8 +34,6 @@
 (import (chicken random))
 (import (chicken sort))
 (import (chicken string))
-;(import (chicken tcp6))
-;(import (chicken udp6))
 
 (define top-cont identity)
 (define top-err

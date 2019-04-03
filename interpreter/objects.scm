@@ -24,21 +24,26 @@
 
 (define (default-udf-view this fields forwards)
    (define autos (vaquero-obj-autos this))
-   (define has-view (vaquero-object-get-message fields forwards 'view))
+   (define has-view (hte? fields 'view))
    (if has-view
-      (let ((view-obj has-view))
+      (let ((view-obj (htr fields 'view)))
          (define view-obj-messages (vaquero-send-atomic view-obj 'messages))
          (define has-apply  (member 'apply view-obj-messages))
          (define has-arity  (member 'arity view-obj-messages))
+         (define view-view  (vaquero-send-atomic view-obj 'view))
          (define (wrong)
+            (write (htr fields 'type)) (newline)
+            (write view-obj-messages) (newline)
             (vaquero-warning 'view-must-be-a-thunk `(object 'view ,(vaquero-view view-obj)) "The 'view message of a user-defined object must be a thunk."))
-         (if (and has-apply has-arity)
-            (let* ((arity (vaquero-send-atomic view-obj 'arity))
-                   (zero-arity (and (number? arity) (= 0 arity))))
-               (if zero-arity
-                  'cool
-                  (wrong)))
-            (wrong)))
+         (if (eq? view-view primitive-type)
+            'ignore-it
+            (if (and has-apply has-arity)
+               (let* ((arity (vaquero-send-atomic view-obj 'arity))
+                      (zero-arity (and (number? arity) (= 0 arity))))
+                  (if zero-arity
+                     'cool
+                     (wrong)))
+               (wrong))))
       (let ()
          (define type (car (htr fields 'type)))
          (define messages (append '(answers? autos default messages to-bool to-text view) (htks fields) (htks forwards)))

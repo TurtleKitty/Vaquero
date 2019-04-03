@@ -61,7 +61,7 @@
          (cont 'global))
 
       (method formals
-         (cont '(xyzzy)))
+         (cont (procedure-information obj)))
 
       (method primitive-apply
          (cont

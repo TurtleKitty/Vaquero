@@ -343,7 +343,6 @@
    (def box (vector value))
    (object
       'type '(cell)
-      'view (lambda () (list box.0))
       'get  (lambda () box.0)
       'set! (lambda (v)
                (seq
@@ -357,7 +356,8 @@
                (def x (- box.0 1))
                (box.set! 0 x)
                x)
-      auto: '(get view inc! dec!)))
+      'view (lambda () (vector 'cell box.0))
+      auto: '(get inc! dec!)))
 
 (op qw ()
    (pair 'list (list-map (lambda (x) x.to-text) rest)))
@@ -640,7 +640,7 @@
       (object
          auto: '(value)
          'type '(promise)
-         'view '(promise $expr)
+         'view  (lambda () (vector 'promise '$expr))
          'value (lambda ()
                    (if (is? (send $result (quote get)) null)
                       (seq
