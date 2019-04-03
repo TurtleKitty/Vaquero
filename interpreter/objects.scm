@@ -33,7 +33,8 @@
          (define (wrong)
             (vaquero-warning 'view-must-be-a-thunk `(object 'view ,(vaquero-view view-obj)) "The 'view message of a user-defined object must be a thunk."))
          (if (and has-apply has-arity)
-            (let ((zero-arity (= 0 (vaquero-send-atomic view-obj 'arity))))
+            (let* ((arity (vaquero-send-atomic view-obj 'arity))
+                   (zero-arity (and (number? arity) (= 0 arity))))
                (if zero-arity
                   'cool
                   (wrong)))
