@@ -236,7 +236,7 @@
                (set-pseudo-random-seed! v)
                'null)
          'shell (lambda (cmd)
-            (read-string (process cmd)))
+                   (string-chomp (read-string #f (process cmd))))
          '64764 (lambda () (display "\n   **** COMMODORE 64 BASIC V2 ****\n\n 64K RAM SYSTEM  38911 BASIC BYTES FREE\n\n") 'READY.)
          'launch-the-missile fire-missile)
       '(ts 64764 launch-the-missile)
