@@ -13,10 +13,10 @@
 ; procedures
 
 (def foo 
-    (proc (x y)
-        (if opt.z
-            (+ x y opt.z)
-            (+ x y))))
+   (proc (x y)
+      (if opt.z
+         (+ x y opt.z)
+         (+ x y))))
 
 (test proc-type (= foo.type '(proc lambda)))
 (test proc-view (= foo.view %(proc (x y) $(send "..." 'to-symbol))))
@@ -31,3 +31,4 @@
    (wall ()
       (def bar (lambda () null))
       (is? bar.env env)))
+
