@@ -116,14 +116,26 @@
    (let (uname sys.env.uname)
       false))
 
-
 ; sys.net
 
-; sys.opt
+(test net-http-get
+   (let (page (sys.net.http.get "http://anwu.org/"))
+      (page.match "A New World, Unordered")))
+
+(test net-tcp
+   (let (host "localhost" port 2357)
+      (def listener (sys.net.tcp.listen host port))
+      (proc sender ()
+         (def socket (sys.net.tcp.connect host port))
+         (socket.write 'ok)
+         socket.close)
+      (sys.proc.fork sender)
+      (def socket listener.accept)
+      (def response socket.read)
+      socket.close
+      (= response 'ok)))
 
 ; sys.proc
-
-; sys.rest
 
 ; sys.shell
 
@@ -137,5 +149,6 @@
 
 ; sys.type
 
-; sys.view
+(test sys-type
+   (= sys.type '(operating-system-interface)))
 
