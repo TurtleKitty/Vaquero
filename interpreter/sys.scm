@@ -3,39 +3,43 @@
    (vaquero-cli-args (command-line-arguments)))
 
 (define sys-env
-   (vaquero-object
-      (list
-         'view     (lambda () (vaquero-view (get-environment-variables)))
-         'uname    (system-information)
-         'hostname (get-host-name)
-         'get
-            (lambda (x)
-               (define envt (get-environment-variables))
-               (define (try z)
-                  (define p (assoc z envt))
-                  (if p (cdr p) 'null))
-               (if (symbol? x)
-                  (let ((y (symbol->string x)))
-                     (try y))
-                  (try x)))
-         'set!
-            (lambda (k v)
-               (if (symbol? k)
-                  (set-environment-variable! (symbol->string k) v)
-                  (set-environment-variable! k v))
-                  v)
-         'del!
-            (lambda (k)
-               (if (symbol? k)
-                  (unset-environment-variable! (symbol->string k))
-                  (unset-environment-variable! k))
-               'null)
-      )
-      #f #f #f))
+   (let ((get-env-ht (lambda () (alist->hash-table (get-environment-variables)))))
+      (vaquero-object
+         (list
+            'type     '(operating-system-interface)
+            'view      (lambda () (vaquero-view (get-env-ht)))
+            'uname     (system-information)
+            'hostname  (get-host-name)
+            'to-record (lambda () (get-env-ht))
+            'get
+               (lambda (x)
+                  (define envt (get-environment-variables))
+                  (define (try z)
+                     (define p (assoc z envt))
+                     (if p (cdr p) 'null))
+                  (if (symbol? x)
+                     (let ((y (symbol->string x)))
+                        (try y))
+                     (try x)))
+            'set!
+               (lambda (k v)
+                  (if (symbol? k)
+                     (set-environment-variable! (symbol->string k) v)
+                     (set-environment-variable! k v))
+                     v)
+            'del!
+               (lambda (k)
+                  (if (symbol? k)
+                     (unset-environment-variable! (symbol->string k))
+                     (unset-environment-variable! k))
+                  'null)
+         )
+         '(to-record) #f #f)))
 
 (define sys-fs
    (vaquero-object
       (list
+         'type    '(operating-system-interface)
          'read      open-input-file
          'write     open-output-file
          'rm        (lambda (f) (delete-file* f) 'null)
@@ -84,6 +88,7 @@
 (define sys-http
    (vaquero-object
       (list
+         'type '(operating-system-interface)
          'get (lambda (uri)
                 (define got (get-uri uri))
                 (if (eq? got not-found)
@@ -94,6 +99,7 @@
 (define sys-tcp
    (vaquero-object
       (list
+         'type    '(operating-system-interface)
          'connect (lambda (host port)
                      (define-values (in out) (tcp-connect host port))
                      (vaquero-tcp-socket in out))
@@ -105,6 +111,7 @@
 (define sys-signal
    (vaquero-object
       (list
+         'type '(operating-system-interface)
          'hup   1
          'int   2
          'quit  3
@@ -135,21 +142,44 @@
       )
       #f #f #f))
 
+(define vaquero-spawn-process
+   (vaquero-proc
+      primitive-type
+      'sys
+      (lambda (args opts cont err)
+         (let ((len (length args)))
+            (if (= len 0)
+               (err (vaquero-error-object 'bad-arguments `(sys.proc.spawn ,@args) "Shell command required.") cont)
+               (let ((cmd (car args)))
+                  (define env (if (hte? opts 'env) (hash-table->alist (htr opts 'env)) '()))
+                  (define-values (stdout stdin pid stderr) (process* cmd args env))
+                  (cont
+                     (vaquero-object
+                        (list
+                           'type   '(process)
+                           'pid    pid
+                           'stdin  stdin
+                           'stdout stdout
+                           'stderr stderr)
+                        #f #f #f))))))))
+
 (define sys-proc
    (vaquero-object
       (list
-         'pid (lambda () (current-process-id))
-         'uid (lambda () (current-user-id))
-         'gid (lambda () (current-group-id))
-         'parent-pid (lambda () (parent-process-id))
-         'process-gid (lambda (pid) (process-group-id pid))
+         'type '(operating-system-interface)
+         'pid   (lambda () (current-process-id))
+         'uid   (lambda () (current-user-id))
+         'gid   (lambda () (current-group-id))
+         'parent-pid   (lambda () (parent-process-id))
+         'process-gid  (lambda (pid) (process-group-id pid))
          'program-name (lambda () (program-name))
-         'run (lambda (cmd) (process-run cmd))
+         'run   (lambda (cmd) (process-run cmd))
          'sleep (lambda (s) (sleep s))
-         'fork (lambda (thunk)
-            (process-fork
-               (lambda ()
-                  (vaquero-apply thunk '() 'null top-cont top-err))))
+         'spawn vaquero-spawn-process
+         'fork  (lambda (thunk)
+                   (process-fork
+                      (lambda ()
+                         (vaquero-apply thunk '() 'null top-cont top-err))))
          'exit exit
       )
       '(pid uid gid parent-pid program-name) #f #f))
@@ -196,7 +226,7 @@
          'fs      sys-fs
          'signal   sys-signal
          'proc    sys-proc
-         'net     (vaquero-object (list 'http sys-http 'tcp sys-tcp) #f #f #f)
+         'net     (vaquero-object (list 'type '(operating-system-interface) 'http sys-http 'tcp sys-tcp) #f #f #f)
          'time    norris-day
          'ts      norris-day
          'srand
