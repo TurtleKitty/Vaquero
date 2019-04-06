@@ -334,10 +334,14 @@
             $v))))
 
 (op test (name expr)
-   %(let (ok $expr)
-      (if ok
-         (say (list (quote $name) 'ok))
-         (log (list (quote $name) 'FAIL)))))
+   %(let ()
+      (proc guard-proc (e k)
+         (log (list (quote $name) 'ERROR e))
+         false)
+      (let (ok (guard guard-proc $expr))
+         (if ok
+            (say (list (quote $name) 'ok))
+            (log (list (quote $name) 'FAIL))))))
 
 (proc cell (value)
    (def box (vector value))
