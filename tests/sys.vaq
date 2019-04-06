@@ -25,6 +25,7 @@
       (from-cli.match OS)))
 
 ; sys.fs
+; chroot connect listen socket-pair stat
 
 (test fs-exists?
    (sys.fs.exists? "/"))
@@ -116,7 +117,6 @@
 (sys.fs.rm file)
 (sys.fs.rmdir dir)
 
-; chroot connect listen socket-pair stat
 
 ; sys.net
 
@@ -138,19 +138,44 @@
       (= response 'ok)))
 
 ; sys.proc
+; exit fork program-name run sleep spawn
 
-; sys.shell
+(test proc-uid
+   (int? sys.proc.uid))
+
+(test proc-pid
+   (int? sys.proc.pid))
+
+(test proc-gid
+   (int? sys.proc.gid))
+
+(test proc-parent-pid
+   (int? sys.proc.parent-pid))
+
+(test proc-process-gid
+   (int? (sys.proc.process-gid sys.proc.pid)))
 
 ; sys.signal
+; abrt alrm chld cont fpe handle handler hup ill int kill mask masked? pipe quit segv send stop term unmask usr1 usr2
 
-; sys.srand
+; sys.xyzzy
 
-; sys.time
+(test srand
+   (def seed "16384")
+   (sys.srand seed)
+   (def rand1 (rand))
+   (sys.srand seed)
+   (def rand2 (rand))
+   (sys.srand seed)
+   (def rand3 (rand))
+   (and (= rand1 rand2) (= rand2 rand3)))
 
-; sys.ts
+(test time
+   (int? (sys.time)))
 
-; sys.type
+(test ts
+   (int? sys.ts))
 
-(test sys-type
+(test type
    (= sys.type '(operating-system-interface)))
 
