@@ -72,16 +72,18 @@
                primitive-type
                'sys
                (lambda (args opts cont err)
-                  (call-with-input-file (car args)
-                     (lambda (f)
-                        (vaquero-apply (cadr args) (list f) 'null cont err)))))
+                  (cont
+                     (call-with-input-file (car args)
+                        (lambda (f)
+                           (vaquero-apply (cadr args) (list f) 'null top-cont err))))))
          'to (vaquero-proc
                primitive-type
                'sys
                (lambda (args opts cont err)
-                  (call-with-output-file (car args)
-                     (lambda (f)
-                        (vaquero-apply (cadr args) (list f) 'null cont err)))))
+                  (cont
+                     (call-with-output-file (car args)
+                        (lambda (f)
+                           (vaquero-apply (cadr args) (list f) 'null top-cont err))))))
       )
       '(pwd socket-pair tmp tmp-dir) #f #f))
 
