@@ -39,9 +39,7 @@
 (define sys-fs
    (vaquero-object
       (list
-         'type    '(operating-system-interface)
-         'read      open-input-file
-         'write     open-output-file
+         'type     '(operating-system-interface)
          'rm        (lambda (f) (delete-file* f) 'null)
          'cp        (lambda (old new) (copy-file old new))
          'mv        (lambda (old new) (move-file old new))
@@ -67,23 +65,40 @@
             (lambda ()
                (define-values (in1 out1 in2 out2) (unix-pair))
                (cons (vaquero-fs-socket '? in1 out1) (vaquero-fs-socket '? in2 out2)))
-         'from
+         'read-from
             (vaquero-proc
                primitive-type
                'sys
                (lambda (args opts cont err)
-                  (cont
-                     (call-with-input-file (car args)
-                        (lambda (f)
-                           (vaquero-apply (cadr args) (list f) 'null top-cont err))))))
-         'to (vaquero-proc
+                  (define len (length args))
+                  (if (< len 1)
+                     (err (vaquero-error-object 'bad-arguments `(sys.fs.read-from ,@args) "sys.fs.read-from requires a filename."))
+                     (if (hte? opts 'with)
+                        (let ((with (htr opts 'with)))
+                           (if (not (= 1 (vaquero-send-atomic with 'arity)))
+                              (err (vaquero-error-object 'wrong-arity `(sys.fs.read-from ,@args with: ...) "sys.fs.read-from : with: procedures must accept a stream argument."))
+                              (cont
+                                 (call-with-input-file (car args)
+                                    (lambda (f)
+                                       (vaquero-apply with (list f) 'null top-cont err))))))
+                        (cont (open-input-file (car args)))))))
+         'write-to
+            (vaquero-proc
                primitive-type
                'sys
                (lambda (args opts cont err)
-                  (cont
-                     (call-with-output-file (car args)
-                        (lambda (f)
-                           (vaquero-apply (cadr args) (list f) 'null top-cont err))))))
+                  (define len (length args))
+                  (if (< len 1)
+                     (err (vaquero-error-object 'bad-arguments `(sys.fs.write-to ,@args) "sys.fs.write-to requires a filename."))
+                     (if (hte? opts 'with)
+                        (let ((with (htr opts 'with)))
+                           (if (not (= 1 (vaquero-send-atomic with 'arity)))
+                              (err (vaquero-error-object 'wrong-arity `(sys.fs.write-to ,@args with: ...) "sys.fs.write-to : with: procedures must accept a stream argument."))
+                              (cont
+                                 (call-with-output-file (car args)
+                                    (lambda (f)
+                                       (vaquero-apply with (list f) 'null top-cont err))))))
+                        (cont (open-output-file (car args)))))))
       )
       '(pwd socket-pair tmp tmp-dir) #f #f))
 
@@ -226,7 +241,7 @@
          'type    '(operating-system-interface)
          'env     sys-env
          'fs      sys-fs
-         'signal   sys-signal
+         'signal  sys-signal
          'proc    sys-proc
          'net     (vaquero-object (list 'type '(operating-system-interface) 'http sys-http 'tcp sys-tcp) #f #f #f)
          'time    norris-day

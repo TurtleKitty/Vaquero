@@ -89,34 +89,32 @@
       (sys.fs.rmdir "foo")
       (not (sys.fs.exists? "foo"))))
 
+(sys.fs.rm file)
+(sys.fs.rmdir dir)
+
 (test sys-read-write
    (let (tmp sys.fs.tmp)
       (def contents '(foo bar baz))
-      (def w-handle (sys.fs.write tmp))
+      (def w-handle (sys.fs.write-to tmp))
       (w-handle.write contents)
       w-handle.close
-      (def r-handle (sys.fs.read tmp))
+      (def r-handle (sys.fs.read-from tmp))
       (def results r-handle.read)
       r-handle.close
       (sys.fs.rm tmp)
       (= contents results)))
 
-(test sys-from-to
+(test sys-read-write-with
    (let (tmp sys.fs.tmp)
       (def contents '(foo bar baz))
       (proc to-proc (handle)
          (handle.write contents))
       (proc from-proc (handle)
          handle.read)
-      (sys.fs.to tmp to-proc)
-      (def results (sys.fs.from tmp from-proc))
+      (sys.fs.write-to tmp with: to-proc)
+      (def results (sys.fs.read-from tmp with: from-proc))
       (sys.fs.rm tmp)
       (= contents results)))
-
-; cleanup
-(sys.fs.rm file)
-(sys.fs.rmdir dir)
-
 
 ; sys.net
 
