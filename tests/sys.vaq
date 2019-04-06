@@ -1,0 +1,120 @@
+
+; sys.fs
+
+(test fs-exists?
+   (sys.fs.exists? "/"))
+
+(test fs-dir?
+   (sys.fs.dir? "/"))
+
+(def dir sys.fs.tmp-dir)
+
+(test fs-tmp-dir
+   (sys.fs.exists? dir))
+
+(test fs-cd-pwd
+   (seq
+      (sys.fs.cd dir)
+      (= dir sys.fs.pwd)))
+
+(test fs-mkdir
+   (seq
+      (sys.fs.mkdir "./foo")
+      (sys.fs.exists? "./foo")))
+
+(test fs-ls
+   (= '("foo") (sys.fs.ls dir)))
+
+(def file  sys.fs.tmp)
+(def fpath (file.split "/"))
+(def fname fpath.reverse.head)
+
+(test fs-tmp
+   (sys.fs.exists? file))
+
+(test fs-ln
+   (seq
+      (sys.fs.ln "foo" "bar")
+      (sys.fs.exists? "./bar")))
+
+(test fs-cp
+   (let (noob (cat "./" fname))
+      (sys.fs.cp file noob)
+      (sys.fs.exists? noob)))
+
+(test fs-mv
+   (seq
+      (sys.fs.mv fname "baz")
+      (sys.fs.exists? "baz")))
+
+(test fs-symlink?
+   (and
+      (sys.fs.symlink? "bar")
+      (not (sys.fs.symlink? "baz"))))
+
+(test sys-rm
+   (seq
+      (sys.fs.rm "bar")
+      (sys.fs.rm "baz")
+      (not (and (sys.fs.exists? "bar") (sys.fs.exists? "baz")))))
+
+(test sys-rmdir
+   (seq
+      (sys.fs.rmdir "foo")
+      (not (sys.fs.exists? "foo"))))
+
+(test sys-read-write
+   (let (tmp sys.fs.tmp)
+      (def contents '(foo bar baz))
+      (def w-handle (sys.fs.write tmp))
+      (w-handle.write contents)
+      w-handle.close
+      (def r-handle (sys.fs.read tmp))
+      (def results r-handle.read)
+      r-handle.close
+      (sys.fs.rm tmp)
+      (= contents results)))
+
+(test sys-from-to
+   (let (tmp sys.fs.tmp)
+      (def contents '(foo bar baz))
+      (proc to-proc (handle)
+         (handle.write contents))
+      (proc from-proc (handle)
+         handle.read)
+      (sys.fs.to tmp to-proc)
+      (def results (sys.fs.from tmp from-proc))
+      (sys.fs.rm tmp)
+      (= contents results)))
+
+; cleanup
+(sys.fs.rm file)
+(sys.fs.rmdir dir)
+
+; chroot connect listen socket-pair stat
+
+
+; sys.env
+
+; sys.net
+
+; sys.opt
+
+; sys.proc
+
+; sys.rest
+
+; sys.shell
+
+; sys.signal
+
+; sys.srand
+
+; sys.time
+
+; sys.ts
+
+; sys.type
+
+; sys.view
+
