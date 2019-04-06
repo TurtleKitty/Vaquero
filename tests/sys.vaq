@@ -96,6 +96,27 @@
 
 ; sys.env
 
+(def vetv 'VAQUERO_ENV_TEST_VAR)
+
+(test env-set!
+   (seq
+      (sys.env.set! vetv "2357")
+      (= "2357" (sys.env.get vetv))))
+
+(test env-del!
+   (seq
+      (sys.env.del! vetv)
+      (= null (sys.env.get vetv))))
+
+(test env-hostname
+   (let (hostname sys.env.hostname)
+      false))
+
+(test env-uname
+   (let (uname sys.env.uname)
+      false))
+
+
 ; sys.net
 
 ; sys.opt
