@@ -1,4 +1,29 @@
 
+; sys.env
+
+(def vetv 'VAQUERO_ENV_TEST_VAR)
+
+(test env-set!
+   (seq
+      (sys.env.set! vetv "2357")
+      (= "2357" (sys.env.get vetv))))
+
+(test env-del!
+   (seq
+      (sys.env.del! vetv)
+      (= null (sys.env.get vetv))))
+
+(test env-hostname
+   (let (hostname sys.env.hostname)
+      (def from-cli (sys.shell "hostname"))
+      (= hostname from-cli)))
+
+(test env-uname
+   (let (uname sys.env.uname)
+      (def from-cli (sys.shell "uname -a"))
+      (def OS uname.head)
+      (from-cli.match OS)))
+
 ; sys.fs
 
 (test fs-exists?
@@ -92,29 +117,6 @@
 (sys.fs.rmdir dir)
 
 ; chroot connect listen socket-pair stat
-
-
-; sys.env
-
-(def vetv 'VAQUERO_ENV_TEST_VAR)
-
-(test env-set!
-   (seq
-      (sys.env.set! vetv "2357")
-      (= "2357" (sys.env.get vetv))))
-
-(test env-del!
-   (seq
-      (sys.env.del! vetv)
-      (= null (sys.env.get vetv))))
-
-(test env-hostname
-   (let (hostname sys.env.hostname)
-      false))
-
-(test env-uname
-   (let (uname sys.env.uname)
-      false))
 
 ; sys.net
 
