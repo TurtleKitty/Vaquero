@@ -356,6 +356,7 @@
              (cons 'gensym vaquero-gensym)
              (cons 'uuid uuid-v4)
              (cons 'cat vaquero-cat-global)
+             (cons 'EOF (eof-object))
              (cons 'FILE_NOT_FOUND 'neither-true-nor-false)
              (cons 'T_PAAMAYIM_NEKUDOTAYIM (quote ::))))
       (fill-prelude primitives)
