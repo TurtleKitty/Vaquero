@@ -131,20 +131,8 @@
    (cond
       ((and (number? x) (number? y))
          (= x y))
-      ((and (list? x) (list? y))
-         (let ((len (length x)))
-            (if (= len (length y))
-               (if (= len 0)
-                  #t
-                  (let loop ((xh (car x)) (yh (car y)) (xs (cdr x)) (ys (cdr y)))
-                     (if (vaquero-equal? xh yh)
-                        (if (null? xs)
-                           #t
-                           (loop (car xs) (car ys) (cdr xs) (cdr ys)))
-                        #f)))
-               #f)))
-      ((and (pair? x) (pair? y))
-         (and (vaquero-equal? (car x) (car y)) (vaquero-equal? (cdr x) (cdr y))))
+      ((pair? x)
+         ((vaquero-send-atomic x 'eq?) y))
       ((and (vaquero-tuple? x) (vaquero-tuple? y))
          (let ((x-pairs (sort-symbol-alist (vaq-tuple-fields x)))
                (y-pairs (sort-symbol-alist (vaq-tuple-fields y))))
