@@ -1,0 +1,39 @@
+
+(proc entity (x y)
+   (def id (uuid))
+   (def x-cell (cell x))   ; bound symbols are immutable, so cells must be user for mutable values
+   (def y-cell (cell y))   ; Vaquero environments are append-only
+   (def get-x (lambda () x.get))
+   (def set-x (lambda (v) (x.set! v)))
+   (def get-y (lambda () y.get))
+   (def set-y (lambda (v) (y.set! v)))
+   (object 'type '(entity)
+           'id   (uuid)    ; message 'id returns a value directly
+           'x    get-x
+           'y    get-y
+           'x!   set-x     ; internal values are immutable unless the programmer provides mutators
+           'y!   set-y
+           auto: '(x y)))  ; messages x and y have their thunks auto-executed rather than returned
+
+(test entity
+   (def e (entity 2 3))
+   (and e.id
+        (= e.x 2)
+        (= e.y 3)
+        (seq (e.x! 5) (= e.x 5))
+        (seq (e.y! 7) (= e.y 7))))
+
+(proc monster (name strength speed hit-points)
+   (def my-entity (entity))
+   (def current-hp (cell hit-points))
+   (object
+      'type     '(monster entity)
+      'strength   strength
+      'speed      speed
+      'hit-points hit-points
+      'hp         (lambda () current-hp.get)
+      ; ... 23 other methods ...
+      auto: '(hp)
+      forward: %(($my-entity id x y x! y!)))) ; forward these five messages to the object my-entity
+
+
