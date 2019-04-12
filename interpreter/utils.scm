@@ -131,20 +131,8 @@
    (cond
       ((and (number? x) (number? y))
          (= x y))
-      ((or (pair? x) (vaquero-tuple? x) (vaquero-set? x))
+      ((or (pair? x) (vaquero-tuple? x) (vaquero-set? x) (vector? x))
          ((vaquero-send-atomic x 'eq?) y))
-      ((and (vector? x) (vector? y))
-         (let ((len (vector-length x)))
-            (if (= len (vector-length y))
-               (if (= len 0)
-                  #t
-                  (let loop ((i 0))
-                     (if (vaquero-equal? (vector-ref x i) (vector-ref y i))
-                        (if (= (+ i 1) len)
-                           #t
-                           (loop (+ i 1)))
-                        #f)))
-               #f)))
       ((and (hash-table? x) (hash-table? y))
          (let ((x-pairs (vaquero-sort-alist (hash-table->alist x)))
                (y-pairs (vaquero-sort-alist (hash-table->alist y))))

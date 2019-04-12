@@ -91,6 +91,21 @@
                         (vector-set! obj idx val)
                         obj))))))
 
+      (method v-eq?
+         (cont (lambda (other)
+            (if (vector? other)
+               (let ((len (vector-length obj)))
+                  (if (= len (vector-length other))
+                     (if (= len 0)
+                        #t
+                        (let loop ((i 0))
+                           (if (vaquero-equal? (vector-ref obj i) (vector-ref other i))
+                              (if (= (+ i 1) len)
+                                 #t
+                                 (loop (+ i 1)))
+                              #f)))
+                     #f))))))
+
       (method v-apply
          (cont
             (vaquero-proc
@@ -124,6 +139,7 @@
            (has?       . ,has?)
            (get        . ,v-get)
            (set!       . ,v-set!)
+           (eq?        . ,v-eq?)
            (apply      . ,v-apply)
            (append     . ,v-append)
            (default    . ,v-default)))))
