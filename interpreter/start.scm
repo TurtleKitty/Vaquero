@@ -40,6 +40,7 @@
    (define expanded (read-expand-cache-prog filename (cli-env)))
    (define fpath (vaquero-internal-locate-path filename))
    (define cpath (get-vaquero-compiled-path fpath))
+   (set! running-program-name filename)
    (if (check-vaquero-syntax expanded)
       (let ((is-cached (and (file-exists? cpath) (file-newer? cpath fpath))))
          (if is-cached
@@ -93,5 +94,5 @@
             (else
                (if (file-exists? arg)
                   (vaquero-internal-start-run arg)
-                  (else (printf "Unknown command: ~A~%" cmd))))))))
+                  (printf "Unknown command: ~A~%" cmd)))))))
 
