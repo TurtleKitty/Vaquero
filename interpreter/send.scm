@@ -95,9 +95,9 @@
    (err (vaquero-error-object 'wtf-was-that? `(send ,obj ,msg) "Unknown object!")))
 
 (define (vaquero-send-object obj msg cont err)
-   (define fields  (vaquero-obj-fields obj))
+   (define fields   (vaquero-obj-fields obj))
    (define forwards (vaquero-obj-forwards obj))
-   (define autos   (vaquero-obj-autos obj))
+   (define autos    (vaquero-obj-autos obj))
    (define (get-msgs)
       (append (htks fields) (htks forwards)))
    (case msg

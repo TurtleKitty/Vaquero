@@ -132,7 +132,7 @@
       ((and (number? x) (number? y))
          (= x y))
       ((or (pair? x) (vaquero-tuple? x) (vaquero-set? x) (vector? x) (hash-table? x) (vaquero-object? x))
-         ((vaquero-send-atomic x 'eq?) y))
+         (vaquero-apply (vaquero-send-atomic x 'eq?) (list y) 'null top-cont top-err))
       ((or (vaquero-proc? x) (vaquero-env? x))
          (eq? x y))
       (else
