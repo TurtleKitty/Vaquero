@@ -10,6 +10,16 @@
 (test obj-true (= true simp.to-bool))
 (test obj-eq? (and (= simp simp) (!= simp (object 'a 1 'b 2))))
 
+(test object-udo-eq?
+   (let ()
+      (proc factory (x y z)
+         (proc eq-check (other) (and (= x other.foo) (= y other.bar)))
+         (object 'foo x 'bar y 'baz z 'eq? eq-check))
+      (def x (factory 1 2 3))
+      (def y (factory 1 2 5))
+      (def z (factory 1 3 3))
+      (and (= x y) (!= x z))))
+
 ; autoexec
 
 (def otto
