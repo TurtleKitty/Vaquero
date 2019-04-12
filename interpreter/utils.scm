@@ -131,12 +131,8 @@
    (cond
       ((and (number? x) (number? y))
          (= x y))
-      ((or (pair? x) (vaquero-tuple? x) (vaquero-set? x) (vector? x))
+      ((or (pair? x) (vaquero-tuple? x) (vaquero-set? x) (vector? x) (hash-table? x))
          ((vaquero-send-atomic x 'eq?) y))
-      ((and (hash-table? x) (hash-table? y))
-         (let ((x-pairs (vaquero-sort-alist (hash-table->alist x)))
-               (y-pairs (vaquero-sort-alist (hash-table->alist y))))
-            (vaquero-equal? x-pairs y-pairs)))
       ((or (vaquero-proc? x) (vaquero-env? x) (vaquero-object? x))
          (eq? x y))
       (else

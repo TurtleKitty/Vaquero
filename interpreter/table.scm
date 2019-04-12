@@ -88,6 +88,14 @@
                (map (lambda (k) (htd! obj k)) args)
                'null)))
 
+      (method table-eq?
+         (cont (lambda (other)
+            (if (hash-table? other)
+               (let ((x-pairs (vaquero-sort-alist (hash-table->alist obj)))
+                     (y-pairs (vaquero-sort-alist (hash-table->alist other))))
+                  (vaquero-equal? x-pairs y-pairs))
+            #f))))
+
       (method has?
          (cont
             (lambda (x)
@@ -137,6 +145,7 @@
            (rm         . ,rm)
            (set!       . ,table-set!)
            (del!       . ,del!)
+           (eq?        . ,table-eq?)
            (has?       . ,has?)
            (keys       . ,table-keys)
            (values     . ,table-values)

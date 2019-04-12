@@ -12,7 +12,7 @@
 (test table-true (= true simp.to-bool))
 (test table-false (= false barerec.to-bool))
 
-(test table-equality (= deep-1 deep-2))
+(test table-equality (and (!= simp rec-one) (= deep-1 deep-2)))
 
 (test message-send (and (= simp.x 2) (= simp.y 3)))
 (test table-apply (= 2 (simp 'x)))
