@@ -10,7 +10,7 @@
    (define (apply-or-die)
       (vaquero-send obj 'apply
          (lambda (af)
-            (vaquero-apply af (list xs opts) 'null cont err))
+            (vaquero-apply af (list xs) opts cont err))
            err))
    (cond
       ((procedure? obj)

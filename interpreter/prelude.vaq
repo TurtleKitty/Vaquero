@@ -51,19 +51,19 @@
 
 (op and (x)
    (if rest
-      (list 'if x (and.apply rest null) 'false)
+      (list 'if x (and.apply rest) 'false)
       (list 'if x 'true 'false)))
 
 (op or (x)
    (def stub (gensym))
    (list 'seq
       (list 'def stub x)
-      (list 'if stub stub (if rest (or.apply rest null) 'false))))
+      (list 'if stub stub (if rest (or.apply rest) 'false))))
 
 (proc and? (x)
    (if x
       (if rest
-         (and?.apply rest null)
+         (and?.apply rest)
          true)
       false))
 
@@ -71,14 +71,14 @@
    (if x
       x
       (if rest
-         (or?.apply rest null)
+         (or?.apply rest)
          false)))
 
 (proc nand ()
-   (not (and?.apply rest null)))
+   (not (and?.apply rest)))
 
 (proc nor ()
-   (not (or?.apply rest null)))
+   (not (or?.apply rest)))
 
 (proc xor (x y)
    (nor (and? x y) (nor x y)))
@@ -88,23 +88,23 @@
 (proc append (xs)
    (if rest
       (let (rv (xs.append rest.head))
-         (append.apply (pair rv rest.tail) null))
+         (append.apply (pair rv rest.tail)))
       xs))
 
 (proc union (xs)
    (if rest
       (let (rv (xs.union rest.head))
-         (union.apply (pair rv rest.tail) null))
+         (union.apply (pair rv rest.tail)))
       xs))
 
 (proc apply (f args)
    (def options (if opt.opt opt.opt (table)))
-   (f.apply args options))
+   (f.apply args opt: options))
 
 (proc papply (f)
    ((lambda (cargs)
       (proc ()
-         (f.apply (append cargs rest) opt))) rest))
+         (f.apply (append cargs rest) opt: opt))) rest))
 
 (proc error (name form message)
    (fail
@@ -123,7 +123,7 @@
       (if (= s 1)
          rest.head
          (if (= s 2)
-            (proc () (funz.head (funz.tail.head.apply rest opt)))
+            (proc () (funz.head (funz.tail.head.apply rest opt: opt)))
             (compose funz.head (apply compose funz.tail))))))
 
 (op loop (name vars)
@@ -440,7 +440,7 @@
 (proc vaquero-internal-x-prod-n (xs)
    (if rest
       (let (acc (vaquero-internal-x-prod xs rest.head))
-         (vaquero-internal-x-prod-n.apply (pair acc rest.tail) (:)))
+         (vaquero-internal-x-prod-n.apply (pair acc rest.tail)))
       xs))
 
 (op bind (names)
@@ -473,22 +473,23 @@
                       "Generic procedure specializations can not be redefined."))
             (when (> this-arity max-arity.get)
                (max-arity.set! this-arity))
-            (cache.del!.apply cache.keys null)
+            (cache.del!.apply cache.keys)
             (clauses.set! formal-types handler))
-         (proc gen-apply (args options)
+         (proc gen-apply (args)
             (def arity (math.min max-arity.get args.size))
             (def signature (list-map (_ (append _.type '(object))) (args.take arity)))
+            (def options opt)
             (if (cache.has? signature)
-               ((send (cache.get signature) 'apply) args options)
-               (let (possible (vaquero-internal-x-prod-n.apply signature null))
+               ((send (cache.get signature) 'apply) args opt: options)
+               (let (possible (vaquero-internal-x-prod-n.apply signature))
                   (loop go (this possible.head others possible.tail)
                      (if (clauses.has? this)
                         (let (f (clauses.get this))
                            (cache.set! signature f) ; cache result
-                           (f.apply args options))
+                           (f.apply args opt: options))
                         (if others
                            (go others.head others.tail)
-                           (default.apply args options)))))))
+                           (default.apply args opt: options)))))))
          (proc view ()
             (send
                (list clauses 'default default)
@@ -616,7 +617,7 @@
 
          (proc json-out (thing)
             (proc comma-fy (xs)
-               (cat.apply xs (: with ",")))
+               (cat.apply xs opt: (: with ",")))
             (cond
                (null? thing)   thing.to-text
                (bool? thing)   thing.to-text
@@ -876,7 +877,7 @@
    (def user xs.0)
    (def repo xs.1)
    (def module-path
-      (cat (cat.apply (xs.drop 2) (: with "/")) ".vaq"))
+      (cat (cat.apply (xs.drop 2) opt: (: with "/")) ".vaq"))
    (def uri (cat "https://raw.githubusercontent.com" user repo "master" module-path with: "/"))
    %(use $name $uri))
 
