@@ -24,8 +24,8 @@
 (test proc-true (= foo.to-bool true))
 (test proc-arity (= foo.arity 2))
 (test proc-opt   (= 6 (foo 1 z: 3 2)))
-(test proc-apply (= 3 (foo.apply '(1 2) null)))
-(test proc-apply-opt (= 6 (foo.apply '(1 2) (: z 3))))
+(test proc-apply (= 3 (foo.apply '(1 2))))
+(test proc-apply-opt (= 6 (foo.apply '(1 2) opt: (: z 3))))
 
 (test proc-env 
    (wall ()

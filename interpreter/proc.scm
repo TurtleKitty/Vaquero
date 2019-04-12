@@ -65,7 +65,7 @@
 
       (method primitive-apply
          (cont
-            (lambda (args opts)
+            (lambda (args . whatever)
                (apply obj args))))
 
       (alist->hash-table
@@ -127,10 +127,14 @@
                primitive-type
                'proc
                (lambda (args opts cont err)
-                  (define min-args (if (eq? 'lambda (vaquero-proc-type obj)) 1 2))
+                  (define min-args 1)
+                  (define options
+                     (if (hte? opts 'opt)
+                        (htr opts 'opt)
+                        (vaquero-table)))
                   (if (< (length args) min-args)
                      (err (vaquero-error-object 'arity `((send ,obj apply) ,args) "proc.apply requires arguments!") cont)
-                     (vaquero-apply obj (car args) (cadr args) cont err))))))
+                     (vaquero-apply obj (car args) options cont err))))))
 
       (alist->hash-table
          `((answers?   . ,answers?)
