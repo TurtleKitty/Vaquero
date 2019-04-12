@@ -79,6 +79,16 @@
                (map del args)
                obj)))
 
+      (method set-eq?
+         (cont (lambda (other)
+            (if (vaquero-set? other)
+               (let ((x-list (htks (vaquero-set-items obj)))
+                     (y-list (htks (vaquero-set-items other))))
+                  (define mem-x? (make-list-tester x-list))
+                  (define mem-y? (make-list-tester y-list))
+                  (and (every mem-x? y-list) (every mem-y? x-list)))
+               #f))))
+
       (method has?
          (cont
             (lambda (x)
@@ -133,6 +143,7 @@
            (del        . ,set-del)
            (add!       . ,set-add!)
            (del!       . ,set-del!)
+           (eq?        . ,set-eq?)
            (has?       . ,has?)
            (union      . ,union)
            (intersect  . ,intersect)
