@@ -6,8 +6,9 @@
 (test obj-type (= simp.type '(object)))
 (test message-send (and (= simp.a 1) (= simp.b 2)))
 (test object-answers? (and (simp.answers? 'a) (not (simp.answers? 'c))))
-(test object-messages (= (list-sort < simp.messages) '(a b type view)))
+(test object-messages (= (list-sort < simp.messages) '(a b eq? type view)))
 (test obj-true (= true simp.to-bool))
+(test obj-eq? (and (= simp simp) (!= simp (object 'a 1 'b 2))))
 
 ; autoexec
 

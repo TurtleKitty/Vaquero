@@ -1,6 +1,6 @@
 
 (define-record-type vaq-obj
-   (vaquero-udf fields autos forwards default)
+   (vaquero-udo fields autos forwards default)
    vaquero-object?
    (fields vaquero-obj-fields)
    (autos vaquero-obj-autos)
@@ -14,7 +14,7 @@
          (htr forwards msg)
          #f)))
 
-(define (default-udf-type this fields forwards)
+(define (default-udo-type this fields forwards)
    (define type (vaquero-object-get-message fields forwards 'type))
    (if type
       (if (and (list? type) (every symbol? type))
@@ -22,7 +22,7 @@
          (vaquero-warning 'improper-type `(object 'type ,type) "An object type must be a list of symbols."))
       (hts! fields 'type '(object))))
 
-(define (default-udf-view this fields forwards)
+(define (default-udo-view this fields forwards)
    (define autos (vaquero-obj-autos this))
    (define has-view (hte? fields 'view))
    (if has-view
@@ -50,20 +50,27 @@
          (hts! fields 'view (lambda () (apply vector (cons type messages))))))
    (hts! autos 'view #t))
 
-(define (default-udf-idk this)
+(define (default-udo-eq? this fields forwards)
+   (define eq?-msg (vaquero-object-get-message fields forwards 'eq?))
+   (if eq?-msg
+      'cool
+      (hts! fields 'eq? (lambda (other) (eq? this other)))))
+
+(define (default-udo-idk this)
    (vaquero-proc
       primitive-type
       'object
       (lambda (args opts cont err)
          (idk this (car args) cont err))))
 
-(define (vaquero-set-udf-defaults this)
+(define (vaquero-set-udo-defaults this)
    (define fields   (vaquero-obj-fields this))
    (define forwards (vaquero-obj-forwards this))
    (define default  (vaquero-obj-default this))
-   (default-udf-type this fields forwards)
-   (default-udf-view this fields forwards)
-   (vaquero-obj-set-default! this (or default (default-udf-idk this))))
+   (default-udo-type this fields forwards)
+   (default-udo-view this fields forwards)
+   (default-udo-eq?  this fields forwards)
+   (vaquero-obj-set-default! this (or default (default-udo-idk this))))
 
 (define (vaquero-object args autos forwards initial)
    (define fields (mkht))
@@ -83,7 +90,7 @@
       (map set-forward! forwards))
    (if autos
       (map aset! autos))
-   (let ((this (vaquero-udf fields autoexec delegates initial)))
-      (vaquero-set-udf-defaults this)
+   (let ((this (vaquero-udo fields autoexec delegates initial)))
+      (vaquero-set-udo-defaults this)
       this))
 
