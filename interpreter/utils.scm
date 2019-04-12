@@ -131,12 +131,8 @@
    (cond
       ((and (number? x) (number? y))
          (= x y))
-      ((pair? x)
+      ((or (pair? x) (vaquero-tuple? x))
          ((vaquero-send-atomic x 'eq?) y))
-      ((and (vaquero-tuple? x) (vaquero-tuple? y))
-         (let ((x-pairs (sort-symbol-alist (vaq-tuple-fields x)))
-               (y-pairs (sort-symbol-alist (vaq-tuple-fields y))))
-            (vaquero-equal? x-pairs y-pairs)))
       ((and (vaquero-set? x) (vaquero-set? y))
          (let ((x-list (htks (vaquero-set-items x)))
                (y-list (htks (vaquero-set-items y))))

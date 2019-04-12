@@ -94,6 +94,14 @@
                                  (set-cdr! kv! v)))
                            (idk obj msg cont err))))))))
 
+      (method tuple-eq?
+         (cont (lambda (other)
+            (if (vaquero-tuple? other)
+               (let ((x-pairs (sort-symbol-alist (vaq-tuple-fields obj)))
+                     (y-pairs (sort-symbol-alist (vaq-tuple-fields other))))
+                  (vaquero-equal? x-pairs y-pairs))
+               #f))))
+
       (alist->hash-table
          `((answers?   . ,answers?)
            (autos      . ,autos)
@@ -106,6 +114,7 @@
            (add        . ,tuple-add)
            (del        . ,tuple-del)
            (size       . ,size)
+           (eq?        . ,tuple-eq?)
            (fields     . ,tuple-fields)
            (default    . ,tuple-default)))))
 
