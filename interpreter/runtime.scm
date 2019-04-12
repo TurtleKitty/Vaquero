@@ -60,6 +60,7 @@
 (define genv #f)
 (define g-has? (lambda (name) #f))
 (define g-get  (lambda (name) not-found))
+(define running-program-name 'null)
 
 (include "read_expand_cache")
 (include "utils")

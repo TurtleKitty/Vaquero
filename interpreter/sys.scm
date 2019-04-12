@@ -189,7 +189,7 @@
          'gid   (lambda () (current-group-id))
          'parent-pid   (lambda () (parent-process-id))
          'process-gid  (lambda (pid) (process-group-id pid))
-         'program-name (lambda () (program-name))
+         'program-name (lambda () running-program-name)
          'run   (lambda (cmd) (process-run cmd))
          'sleep (lambda (s) (sleep s))
          'spawn vaquero-spawn-process
