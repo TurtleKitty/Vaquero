@@ -232,6 +232,12 @@
          (let (xs (list 1 "2" 'three 1/4 6.4))
             (list-map (resend 'type) xs)))))
 
+(test forward-to
+   (def forwarder (forward-to 7))
+   (and (= 8 (forwarder 'inc))
+        (= 6 (forwarder 'dec))
+        (= 'int (forwarder 'type))))
+
 (test promise
     (let (count (cell 0))
         (def p

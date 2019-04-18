@@ -548,7 +548,12 @@
    s.to-stream.read-seq)
 
 (proc resend (msg)
-   (lambda (obj) (send obj msg)))
+   (lambda (obj)
+      (send obj msg)))
+
+(proc forward-to (obj)
+   (lambda (msg)
+      (send obj msg)))
 
 (def json
    (let ()
