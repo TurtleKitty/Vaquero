@@ -204,7 +204,7 @@
             'global
             (lambda (args opts cont err)
                (if (not (eq? (modulo (length args) 2) 0))
-                  (err (vaquero-error-object 'uneven-pairs (cons 'tuple args) "tuple requires an even number of arguments."))
+                  (err (vaquero-error-object 'uneven-pairs (cons 'tuple args) "tuple requires an even number of arguments.") cont)
                   (cont (apply make-vaquero-tuple args))))))
       (define vaquero-make-set
          (vaquero-proc
@@ -229,6 +229,18 @@
                (if (eq? autos 'null) (set! autos #f) #f)
                (if (eq? fwd 'null) (set! fwd #f) #f)
                (if (eq? default 'null) (set! default #f) #f)
+               (if (and autos (not (list? autos)))
+                  (err (vaquero-error-object 'bad-auto `(auto: ,autos) "auto: must be a list of symbols") cont)
+                  #f)
+               (if (and fwd (not (and (list? fwd) (every list? fwd))))
+                  (err (vaquero-error-object 'bad-forward `(forward: ,fwd) "forward: must be a list of lists") cont)
+                  #f)
+               (if default
+                  (let ((messages (vaquero-send-atomic default 'messages)))
+                     (define has-apply (member 'apply messages))
+                     (if (not has-apply)
+                        (err (vaquero-error-object 'bad-default `(default: ,fwd) "default: must be an applicative") cont)
+                        #f)))
                (cont (vaquero-object args autos fwd default)))))
       (define vaquero-math-object
          (vaquero-object
