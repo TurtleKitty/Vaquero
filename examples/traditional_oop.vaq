@@ -8,7 +8,7 @@
            'id (uuid)))
 
 (proc position (x y)
-   (def x-cell (cell x))   ; bound symbols are immutable, so cells must be user for mutable values
+   (def x-cell (cell x))   ; bound symbols are immutable, so cells must be used for mutable values
    (def y-cell (cell y))   ; Vaquero environments are append-only
    (def get-x (lambda () x-cell.get))
    (def get-y (lambda () y-cell.get))
