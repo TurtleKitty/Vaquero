@@ -6,3 +6,8 @@
        (= (null? null) true)
        (= null.to-bool false)))
 
+(test null-explode
+   (guard (lambda (e k) true)
+      null.foo
+      false))
+
