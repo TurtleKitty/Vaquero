@@ -16,7 +16,8 @@
 (test text-to-symbol (= str.to-symbol 'vaquero))
 (test text-to-int (= one.to-number 1))
 (test text-to-real (= pi.to-number 3.14))
-(test text-split (= '("foo" "bar" "baz") (fbb.split "[.]")))
+(test text-split (and (= '("foo" "bar" "baz") (fbb.split "[.]"))
+                      (= '("Y" "U" "C" "K") (yuck.split ""))))
 
 (test text-ref
    (= "q" (send str 2)))
