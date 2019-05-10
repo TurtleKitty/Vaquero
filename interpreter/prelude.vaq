@@ -415,10 +415,11 @@
       (vector
          (unqs
             (list-map
-               (_ (if (pair? _)
-                    (qq (matrix (unqs _)))
-                   _)
-               rest))))))
+               (_
+                  (if (pair? _)
+                     (qq (matrix (unqs _)))
+                     _))
+               rest)))))
 
 (proc vaquero-internal-x-prod (xs ys)
    (cond
