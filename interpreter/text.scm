@@ -45,10 +45,10 @@
          (cont (string->number obj)))
 
       (method to-list
-         (cont (string->list obj)))
+         (cont (map string (string->list obj))))
 
       (method to-vector
-         (cont (list->vector (string->list obj))))
+         (cont (list->vector (map string (string->list obj)))))
 
       (method to-text
          (cont obj))
