@@ -91,7 +91,8 @@
                         (if kv!
                            (cont 
                               (lambda (v)
-                                 (set-cdr! kv! v)))
+                                 (set-cdr! kv! v)
+                                 v))
                            (idk obj msg cont err))))))))
 
       (method tuple-eq?
