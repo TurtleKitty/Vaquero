@@ -694,6 +694,8 @@
    %(op $new-alias ()
       %($'$name @rest)))
 
+(alias lambda L)
+
 (proc any? (f xs)
    (when (not (apply? f))
       (error 'bad-argument %(any? $f $xs @rest)
