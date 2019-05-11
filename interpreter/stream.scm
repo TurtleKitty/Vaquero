@@ -35,7 +35,7 @@
             (cont '(source stream)))
 
          (method ready?
-            (char-ready? obj))
+            (cont (char-ready? obj)))
 
          (method stream-read
             (if-alive obj msg cont err
