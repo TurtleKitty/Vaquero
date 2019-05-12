@@ -786,7 +786,7 @@
 (spec fold (lambda f object init list xs list ys)
    (when (not (apply? f))
       (error 'bad-argument %(fold $f $init $xs $ys @rest) "fold: first argument must be a procedure."))
-   (def lists (pair xs (pair ys (list-map (resend 'to-list) rest))))
+   (def lists (pair xs (pair ys rest)))
    (proc fold-m (f init lists)
       (if (any? (resend 'empty?) lists)
          init
