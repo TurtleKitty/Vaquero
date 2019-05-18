@@ -43,6 +43,7 @@
       (if (list? code)
          (let ((head (car code)))
             (case head
+               ((quote) code)
                ((use)
                   (let ((module-name (cadr code))
                         (mod-id (vaquero-module-id (caddr code))))

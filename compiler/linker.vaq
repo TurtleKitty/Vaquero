@@ -82,6 +82,8 @@
    (if (pair? code)
       (if (list? code)
          (case code.head
+            (quote)
+               code
             (use)
                (seq
                   (def module-name code.1)
