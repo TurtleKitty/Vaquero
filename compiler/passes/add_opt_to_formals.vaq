@@ -1,5 +1,5 @@
 
-(use gen "generic.vaq")
+(use generic "generic.vaq")
 
 (export transform)
 
@@ -10,7 +10,7 @@
    (if (pair? form)
       (case form.head
          (def if quote wall gate guard fail)
-            ((gen.transform form.head) transform form)
+            ((generic.transform form.head) transform form)
          (lambda)
             (let (no-opt (gensym "_"))
                %(lambda $form.1 $(pair no-opt form.2) $(transform form.tail.tail.tail.head)))

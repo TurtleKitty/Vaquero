@@ -1,5 +1,5 @@
 
-(use gen "generic.vaq")
+(use generic "generic.vaq")
 
 (export transform)
 
@@ -19,11 +19,11 @@
    (if (pair? form)
       (case form.head
          (def if quote seq wall gate guard fail)
-            ((gen.transform form.head) transform form)
+            ((generic.transform form.head) transform form)
          (capture)
-            ((gen.transform 'seq) transform form) ; after capture-lambda
+            ((generic.transform 'seq) transform form) ; after capture-lambda
          (lambda proc)
             (id-proc form)
-         else: ((gen.transform 'application) transform form))
+         else: ((generic.transform 'application) transform form))
       form))
 

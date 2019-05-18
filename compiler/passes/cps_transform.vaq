@@ -1,5 +1,5 @@
 
-(use gen "generic.vaq")
+(use generic "generic.vaq")
 
 (export transform)
 

@@ -39,7 +39,6 @@
    (def expanded (read-expand "prelude.vaq"))
    (when (not (syntax-ok? expanded))
       (fail "Global prelude out of whack?"))
-   ; (say (template: {{ (read-file (compile-file "compiler/prelude.vaq")) }}))
    %(def global-prelude (quote $expanded)))
 
 (import-global-prelude)

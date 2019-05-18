@@ -1,6 +1,6 @@
 
 
-(use gen "generic.vaq")
+(use generic "generic.vaq")
 
 (export transform)
 
@@ -18,8 +18,8 @@
                      (vaquero-modules.set! form.1 mod-fn)
                      %($(vaquero-modules form.1) @form.tail.tail)))
             (def if quote wall gate capture guard fail proc lambda)
-               ((gen.transform form.head) transform form)
+               ((generic.transform form.head) transform form)
             else:
-               ((gen.transform 'application) transform form)))
+               ((generic.transform 'application) transform form)))
       form))
 

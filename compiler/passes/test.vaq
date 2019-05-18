@@ -1,5 +1,5 @@
 
-(use gen "generic.vaq")
+(use generic "generic.vaq")
 
 (proc transform (form)
    (if (symbol? form)
@@ -9,11 +9,11 @@
 (def file sys.rest.head)
 
 (def forms
-   (sys.fs.from file
-      (proc (f)
-         f.read-seq)))
+   (sys.fs.read-from file
+      with: (proc (f)
+               f.read-seq)))
 
 (log forms)
-(log %(gen.transform $forms.head))
-(log (gen.transform forms.head))
+(log %(generic.transform $forms.head))
+(log (generic.transform forms.head))
 
