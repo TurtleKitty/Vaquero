@@ -71,9 +71,13 @@ vaquero>
 The executable examples below show various facets of the language.
 
 [Hello, world!](/examples/hello_world.vaq)
+
 [Basic syntax](/examples/basics.vaq)
+
 [Traditional single-dispatch OOP](/examples/traditional_oop.vaq)
+
 [An entity system using generic procedures](/examples/entity_system.vaq)
+
 [A simple echo server](/examples/echo_server.vaq)
 
 
