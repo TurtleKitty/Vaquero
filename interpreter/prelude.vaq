@@ -524,7 +524,7 @@
          (let ((unq testy) (quote (unq predicate)) (unq result) (unq predicate))
             (if (unq result)
                true
-               (error 'assertion-failed (unq testy) "(assert ...) FAIL"))))))
+               (error 'assertion-failed (unq testy) "Assertion failed."))))))
 
 (proc ndx (n x)
    (when (or (< n 0) (< x 0))
