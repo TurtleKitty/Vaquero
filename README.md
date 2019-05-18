@@ -68,13 +68,16 @@ vaquero>
 
 ## More examples
 
-[Basics](/examples/basics.vaq)
+The executable examples below show various facets of the language.
 
-```
+[Hello, world!](/examples/hello_world.vaq)
+[Basic syntax](/examples/basics.vaq)
+[Traditional single-dispatch OOP](/examples/traditional_oop.vaq)
+[An entity system using generic procedures](/examples/entity_system.vaq)
+[A simple echo server](/examples/echo_server.vaq)
+
 
 ## Features
-
-Vaquero has a number of fun features.
 
 ### Lisp-1 syntax
 
@@ -83,12 +86,11 @@ Structures in parentheses are assumed to be lists unless they contain a period, 
 Other structures begin with #(<name> ...).
 
 ```scheme
-
-(1 . 2)     ; pair
-(1 2)       ; list of two elements
-#(cell 5)    ; cell containing the number 5
-#(object foo 2 bar 3) ; user-defined type
-
+(1 . 2)                 ; pair
+(1 2)                   ; list of two elements
+#(cell 5)               ; cell containing the number 5
+#(vector 2 3 5)         ; vector of three cells
+#(object foo 2 bar 3)   ; user-defined type
 ```
 
 Unquoted lists are evaluated as code.
@@ -103,7 +105,6 @@ The Vaquero global environment is sacred.  Its names cannot be reassigned or sha
 Vaquero is lexically-scoped by default.  However, the [wall](https://github.com/TurtleKitty/Vaquero/wiki/wall) operator allows one to delimit the extent to which subforms can capture the enclosing environment.
 
 ```scheme
-
 (let (x 1 y 2)
    (wall (z (+ x y))
       z))
@@ -114,7 +115,7 @@ Vaquero is lexically-scoped by default.  However, the [wall](https://github.com/
    (wall (z (+ x y))
       x))
 
-; ERROR x is not defined
+; (runtime-error (undefined-symbol x "Name not defined."))
 ```
 
 ### First-class environments
@@ -123,31 +124,29 @@ The [env](https://github.com/TurtleKitty/Vaquero/wiki/environment) operator gran
 
 ### First-class delimited continuations
 
-First class sub-continuation capture gives the programmer the ability to build coroutines, generators, backtracking, or any other fancy control structure without some of the [sorrows](http://okmij.org/ftp/continuations/against-callcc.html) of full continuation capture.
+First class sub-continuation capture gives the programmer the ability to build coroutines, generators, backtracking, or any other control structure without the [sorrows](http://okmij.org/ftp/continuations/against-callcc.html) of full continuation capture.
 
 [gate](https://github.com/TurtleKitty/Vaquero/wiki/gate) and [capture](https://github.com/TurtleKitty/Vaquero/wiki/capture) correspond to **reset** and **shift** in the academic literature on delimited continuations.
 
 ```scheme
-
 (gate
    (+ 1
       (capture kont
          (+ 7
             (kont (kont (kont 2)))))))
 
-   ; -> 12
-
+; 12
 ```
 
 ### Restartable exceptions
 
 The [guard](https://github.com/TurtleKitty/Vaquero/wiki/guard) operator adds a handler to the error continuation, which is separate from the user continuation.
-When an error is signaled (via [fail](https://github.com/TurtleKitty/Vaquero/wiki/fail) or [error](https://github.com/TurtleKitty/Vaquero/wiki/error)), a handler can do one of three things: return a default value to the enclosing scope,
+When an error is signaled (via [fail](https://github.com/TurtleKitty/Vaquero/wiki/fail) or [error](https://github.com/TurtleKitty/Vaquero/wiki/error)),
+a handler can do one of three things: return a default value to the enclosing scope,
 retry the computation from the sub-form where it errored by providing another value,
 or throw an error itself, at which point the next handler in the error continuation is called.
 
 ```scheme
-
 (proc handler (err kontinue)
    (if (= err 'resume)
       (kontinue 69)
@@ -156,24 +155,24 @@ or throw an error itself, at which point the next handler in the error continuat
          (fail 'aww-hell))))
 
 (guard handler
-   (+ 2 3))
+   (+ 3 2))
 
-   ; -> 6
+; 5
 
 (guard handler
    (+ 3 (fail 'default)))
 
-   ; -> 42
+; 42
 
 (guard handler
    (+ 3 (fail 'resume)))
 
-   ; -> 72
+; 72
 
 (guard handler
-   (+ 2 (fail 'crap)))
+   (+ 3 (fail 'crap)))
 
-   ; -> ERROR aww-hell
+; (runtime-error aww-hell)
 
 ; most system procs throw a more sophisticated error than a symbol
 
@@ -183,9 +182,7 @@ or throw an error itself, at which point the next handler in the error continuat
 (guard show-it
    (error 'wrong-way '(go left) "Left was a poor choice."))
 
-   ; -> (wrong-way (go left) "Left was a poor choice.")
-
-
+; (wrong-way (go left) "Left was a poor choice.")
 ```
 
 ### Lexically scoped module import via HTTP
@@ -213,9 +210,9 @@ The [import](https://github.com/TurtleKitty/Vaquero/wiki/import) operator allows
 The pentuple operator uses [quasiquotation](https://github.com/TurtleKitty/Vaquero/wiki/qq).
 
 ```scheme
-; prog.vaq
-
 #!/usr/local/bin/vaquero run
+
+; prog.vaq
 
 (use dk "dk.vaq")
 
@@ -239,26 +236,28 @@ home> ./prog.vaq 7
 ```
 
 Two modules may have mutually recursive procedures.
-If modules import one another, neither can rely on the other to finish evaluation.
+If modules import one another, neither can rely on the other to finish evaluation;
+procedures may be mutually recursive, but not operators.
 Such leads to an infinite loop.
 
 ### Object capability security on operating system interfaces
 
-The only global interfaces to the operating system are stdout, stdin, and stderr (and procedures which use them: read, write, print, say, and log).
+The only global interfaces to the operating system are stdout, stdin, stderr, and hte global procedures which use them: read, write, print, say, and log.
 All parts of a program, including modules, have access to these.
 All other operating system services are contained in the [sys](https://github.com/TurtleKitty/Vaquero/wiki/sys) object, which is available only to the top-level program.
 Libraries that wish to read command-line arguments, fork processes, or open files must be passed this capability from the top-level.
 
 ### Generic procedures with predicate dispatch
 
-[gen](https://github.com/TurtleKitty/Vaquero/wiki/generic) and [spec](https://github.com/TurtleKitty/Vaquero/wiki/generic) allow the programmer to create generic procedures that dispatch based on arbitrary predicate expressions.  It's one crazy answer to the [expression problem](https://en.wikipedia.org/wiki/Expression_problem).
+[gen](https://github.com/TurtleKitty/Vaquero/wiki/generic) and [spec](https://github.com/TurtleKitty/Vaquero/wiki/generic) allow the programmer to create generic procedures
+that dispatch based on the types of an arbitrary list of arguments.  It's one answer to the [expression problem](https://en.wikipedia.org/wiki/Expression_problem).
 
 ### Operators: compile-time procedures
 
 Vaquero [operators](https://github.com/TurtleKitty/Vaquero/wiki/operator) use ordinary Vaquero code to transform source code at compile time.
 This allows user-level creation of custom syntax.
 An example of this power: the only primitive form of looping is tail recursion; all others (loop, for, while) are defined in terms of recursion via operators.
-They can be found in interpreter/prelude.vaq.
+They can be found in [the prelude](interpreter/prelude.vaq).
 
 ### Reader literals for text construction and variable interpolation
 
@@ -270,7 +269,9 @@ The [wiki](https://github.com/TurtleKitty/Vaquero/wiki) contains a more detailed
 
 ### Bugs
 
-**use** and **import** don't work in the REPL.  As a work around, you can pass a stream to env.load.  
+Most of the interpreter was written by Felix Winkelmann and the Chicken Scheme team and they even don't know it.
+The bootstrap interpreter snarfs a lot of functionality from Chicken, so implementation details sometimes leak through.
 
-Syntax checking sometimes fails in the REPL.  I don't know why.  It can be a bit fragile, crashing on some syntax errors.  
+The REPL is a bit fragile.  It doesn't handle reader errors gracefully.
 
+Unix domain sockets are broken at the moment because the egg I used hasn't yet been updated to Chicken 5.
