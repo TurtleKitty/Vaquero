@@ -1,17 +1,16 @@
 #!/usr/local/bin/vaquero run
 
-(use L "linker.vaq")
-(use C "compiler.vaq")
+(use linker-mod "linker.vaq")
+(use compiler-mod "compiler.vaq")
 
-(import L linker)
-(import C compile)
+(import linker-mod linker)
+(import compiler-mod compile)
 
 (everywhere
    (proc slurp-file (f)
-      (sys.fs.from
+      (sys.fs.read-from
          f
-         (lambda (p)
-            p.read-text)))
+         with: (lambda (p) p.read-text)))
 
    (proc read-file (fname)
       (parse (slurp-file fname)))
@@ -40,8 +39,8 @@
    (def expanded (read-expand "prelude.vaq"))
    (when (not (syntax-ok? expanded))
       (fail "Global prelude out of whack?"))
-   ;(def compiled (template: {{ (read-file (compile-file "compiler/prelude.vaq")) }}))
-   %(def global-prelude $expanded))
+   ; (say (template: {{ (read-file (compile-file "compiler/prelude.vaq")) }}))
+   %(def global-prelude (quote $expanded)))
 
 (import-global-prelude)
 
@@ -63,14 +62,14 @@
    (prep-dir vaquero-expanded-dir)
    (prep-dir vaquero-compiled-dir)
    (def control (:
-      check   vaquero-check
-      clean   vaquero-clean
-      compile vaquero-compile
-      eval    vaquero-eval
-      exec    vaquero-eval-string
-      expand  vaquero-expand
-      repl    vaquero-repl
-      run     vaquero-run
+      check       vaquero-check
+      clean       vaquero-clean
+      compile     vaquero-compile
+      eval        vaquero-eval-string
+      expand      vaquero-expand
+      interpret   vaquero-eval
+      repl        vaquero-repl
+      run         vaquero-run
    ))
    (def handler (control cmd))
    (if handler
@@ -84,12 +83,12 @@
 Usage:
 
 vaquero repl
-vaquero exec "<code string>"
+vaquero eval "<code string>"
 vaquero run <filename>
-vaquero eval <filename>
 vaquero check <filename>
 vaquero expand <filename>
 vaquero compile <filename>
+vaquero interpret <filename>
 vaquero clean))
    (sys.proc.exit))
 
@@ -98,8 +97,7 @@ vaquero clean))
 
 (proc vaquero-eval-string (str)
    (def expanded (expand (parse str)))
-   (say
-      (cli-env.eval expanded)))
+   (cli-env.eval expanded))
 
 (proc vaquero-run (filename)
    ; compile then exec
@@ -138,5 +136,5 @@ vaquero clean))
          (go fs.head fs.tail)
          'ok)))
 
-(start.apply sys.rest sys.opt)
+(start.apply sys.rest opt: sys.opt)
 

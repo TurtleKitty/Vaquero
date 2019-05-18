@@ -1,4 +1,6 @@
 
+(export compile)
+
 (use normalize-procs "passes/normalize_procs.vaq")
 (use identify-procs "passes/identify_procs.vaq")
 (use quote-all-literals "passes/quote_literals.vaq")
@@ -14,15 +16,13 @@
 (use cps-transform "passes/cps_transform.vaq")
 (use to-scheme "passes/to_scheme.vaq")
 
-(export compile)
-
-(def i (box 0))
+(def i (cell 0))
 (def debugging true)
 (def proc-db (:))
 
 (proc meow (label)
-   (i.set! i.inc)
-   (def idx i.val)
+   i.inc!
+   (def idx i.get)
    (debug %($idx $label @rest)))
 
 (def order %(

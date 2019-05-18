@@ -11,21 +11,19 @@
 (proc get-vaquero-expanded-path (f)
    (cat with: "/" vaquero-expanded-dir (get-vaquero-path f)))
 
-
 ; (use <name> "path") -> (vaquero-module-UUID x y z)
 ; (import <name> names...) -> (seq (def ...))
 ; assume the macro expander fetched, cached, and expanded the modules
 
-(def slurp (box null))
+(def slurp (cell null))
 
 (proc linker (prog fs)
    (log %(linker $prog))
    (slurp.set!
       (lambda (f)
-         (fs.from
+         (fs.read-from
             (get-vaquero-expanded-path f)
-            (lambda (s)
-               s.read-seq))))
+            with: (lambda (s) s.read-seq))))
    (link prog))
 
 (proc link (prog)
@@ -37,7 +35,7 @@
    (def mk-mod
       (lambda (m)
          (package-module m.head module-env-UUID (transform-uses m.tail))))
-   (def modules (module-list.map mk-mod))
+   (def modules (map mk-mod module-list))
    (def main-program (transform-uses prog))
    %(lambda ($sys-UUID)
       ((send env 'merge!)
@@ -60,14 +58,14 @@
          (case prog.head
             (quote) true
             (use) (seq (def-vaquero-module prog.2) true)
-            default: (prog.map find-modules))
+            else: (map find-modules prog))
          (pair (find-modules prog.head) (find-modules prog.tail)))
       true))
 
 (proc def-vaquero-module (path)
    (if (modules.has? path)
       (modules.get path)
-      (let (expanded (slurp.val path))
+      (let (expanded (slurp.get path))
          (def mod-id (uuid))
          (def module (pair mod-id expanded))
          (modules.set! path module)
@@ -95,9 +93,9 @@
                   (def imports code.tail.tail)
                   (proc def-ify (name)
                      %(def $name (send $module-name (quote $name))))
-                  (def defs (imports.map def-ify))
+                  (def defs (map def-ify imports))
                   %(seq @defs))
-            default: (code.map transform-uses))
+            else: (map transform-uses code))
          (pair (transform-uses code.head) (transform-uses code.tail)))
       code))
 
@@ -124,7 +122,7 @@
                         (def nu-rval (pair $expo (pair ((send env 'lookup) $expo) $rval)))
                         (if $expos
                            ($loop-name (send $expos 'head) (send $expos 'tail) nu-rval)
-                           nu-rval)) (send vaquero-internal-exports 'head) (send vaquero-internal-exports 'tail) ()))) (table)))
+                           nu-rval)) (send vaquero-internal-exports 'head) (send vaquero-internal-exports 'tail) ())))))
 
                ((send $mod-env (quote def!)) (quote $object-name) $object-name)
 
