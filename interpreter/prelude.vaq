@@ -360,7 +360,7 @@
                (def x (- box.0 1))
                (box.set! 0 x)
                x)
-      'view (lambda () (vector 'cell box.0))
+      'view (lambda () (vector 'cell (send box.0 'view)))
       auto: '(get inc! dec!)))
 
 (op qw ()
