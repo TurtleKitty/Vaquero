@@ -191,7 +191,7 @@
          'process-gid  (lambda (pid) (process-group-id pid))
          'program-name (lambda () running-program-name)
          'run   (lambda (cmd) (process-run cmd))
-         'sleep (lambda (s) (sleep s))
+         'sleep (lambda (s) (sleep s) s)
          'spawn vaquero-spawn-process
          'fork  (lambda (thunk)
                    (process-fork
