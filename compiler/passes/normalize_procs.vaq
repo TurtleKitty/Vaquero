@@ -20,6 +20,6 @@
                %(proc $form.1 @(transform form.tail.tail)))
          (op)
             %(def $form.1 (proc $form.2 @(transform form.tail.tail.tail)))
-         default: ((gen.transform 'application) transform form))
+         else: ((gen.transform 'application) transform form))
       form))
 

@@ -13,14 +13,14 @@
                %(seq $(transform form.1) $(transform (pair 'seq form.tail.tail)))
             (= form.size 2)
                (transform form.1)
-            default:
+            else:
                %(seq $(transform form.1) $(transform form.2)))
          (case form.head
             (def if quote wall gate capture guard fail)
                ((gen.transform form.head) transform form)
             (proc lambda)
                ((gen.transform 'proc-id) transform form)
-            default:
+            else:
                ((gen.transform 'application) transform form)))
       form))
 

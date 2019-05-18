@@ -9,7 +9,7 @@
          (quote) form
          (lambda)
             %(lambda $form.1 @(transform form.tail.tail))
-         default:
+         else:
             (map transform form))
       form))
 

@@ -19,7 +19,7 @@
                      %($(vaquero-modules form.1) @form.tail.tail)))
             (def if quote wall gate capture guard fail proc lambda)
                ((gen.transform form.head) transform form)
-            default:
+            else:
                ((gen.transform 'application) transform form)))
       form))
 

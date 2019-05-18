@@ -3,7 +3,7 @@
 
 (export transform)
 
-(def proc-db (box null))
+(def proc-db (cell null))
 
 (proc transform (form db)
    (proc-db.set! db)
@@ -37,7 +37,7 @@
          (capture)  (cps-capture form)
          (guard)    (cps-guard form)
          (fail)     (cps-fail form)
-         default:   (cps-application form))
+         else:   (cps-application form))
       (cps-atom form)))
 
 (proc cps-quote (form)
@@ -97,7 +97,7 @@
    (cps-frag
       cont
       hand
-      %($cont (vaquero-internal-primitive-proc $cont $hand null (quote $(proc-db.val.get form.1)) env (lambda $new-args $(cps form.tail.tail.tail))))))
+      %($cont (vaquero-internal-primitive-proc $cont $hand null (quote $(proc-db.get.get form.1)) env (lambda $new-args $(cps form.tail.tail.tail))))))
 
 (proc cps-proc (form)
    (def cont (gencont))
@@ -107,10 +107,10 @@
    (cps-frag
       cont
       hand
-      %(vaquero-internal-primitive-proc $cont $hand null (quote $(proc-db.val.get form.1)) env (lambda $new-args $(cps form.tail.tail.tail)))))
+      %(vaquero-internal-primitive-proc $cont $hand null (quote $(proc-db.get.get form.1)) env (lambda $new-args $(cps form.tail.tail.tail)))))
 
 (proc cps-let (form) ; FIXME
-   null) 
+   null)
 
 (proc cps-wall (form)
    (def cont (gencont))
@@ -231,7 +231,7 @@
       hand
       %($cps-proc
          env
-         (lambda ($f) 
+         (lambda ($f)
             ($cps-args
                env
                (lambda ($yargs)
@@ -270,7 +270,7 @@
                 (def k 'return)    ; user continuation
                 (def e (genhand))  ; error continuation
                 %($form.head $form.2 $(append form.3 (list k e)) @form.tail.tail.tail.tail)) ; remember the added IDs from transform 2
-            default: (fail 'wtf))))
+            else: (fail 'wtf))))
 
 (proc T-c (form c)
     (debug (list 'T-c form c))
@@ -294,7 +294,7 @@
             (capture) form
             (guard) form
             (fail) form
-            default: ; procedure application
+            else: ; procedure application
                 (T-k form.head
                     (proc (f)
                         (T*-k form.tail
@@ -315,7 +315,7 @@
                 (def cont %(lambda ($rv) $(k rv)))
                 (T-k form.1
                     (proc (aexp)
-                        %(if $aexp 
+                        %(if $aexp
                             $(T-c form.2 cont)
                             $(T-c form.3 cont)))))
             (seq) (T-k form.1
@@ -326,7 +326,7 @@
             (capture) form
             (guard) form
             (fail) form
-            default: ; procedure application
+            else: ; procedure application
                 (def rv (gensym "value"))
                 (def cont %(lambda ($rv) $(k rv)))
                 (T-c form cont))))

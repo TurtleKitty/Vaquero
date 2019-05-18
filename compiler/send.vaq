@@ -15,7 +15,7 @@
       (error
          'message-not-understood
          %(send $obj (quote $msg))
-         "Message not understood."))) 
+         "Message not understood.")))
 
 (def null-messages '(to-symbol apply))
 
@@ -174,7 +174,7 @@
    autos     (prob text-messages) ; FIXME
    resends   (prob ())
    default   (prob
-              (prom 
+              (prom
                  (if (number? msg)
                     (if (> (vaquero-internal-text-size obj) msg)
                        (vaquero-internal-text-ref obj msg)
@@ -252,7 +252,7 @@
    partition    (prob (vaquero-internal-env-partition obj))
    seal! null ; FIXME
    wild! null ; FIXME
-   expand    (prob 
+   expand    (prob
       ; FIXME : opexpand expr
    )
    eval      (prob
@@ -361,7 +361,7 @@
 (def control-vector (:
    type      (prob 'vector)
    view      (prob (vaquero-internal-vector-view obj))
-   to-text   (prob (vaquero-internal-vector-to-text obj)) 
+   to-text   (prob (vaquero-internal-vector-to-text obj))
    to-bool   (prob (if (= 0 (vaquero-internal-vector-size obj)) false true))
    messages  (prob vector-messages)
    answers?  (prob (prom (or (default-messages.has? msg) (vector-messages.has? msg))))
@@ -624,7 +624,7 @@
    write     (prob
       (lambda (thing)
          (vaquero-internal-sink-print obj thing.view)))
-   print     (prob 
+   print     (prob
       (lambda (thing)
          (vaquero-internal-sink-print obj thing.to-text)))
    say       (prob
@@ -707,7 +707,7 @@
          (type view to-text to-bool)
             (autofire obj msg (lambda () ((object-defaults msg) obj)))
          ; regular messages
-         default: 
+         else:
             (autofire obj msg (lambda () ((vaquero-internal-object-default obj) msg))))))
 
 

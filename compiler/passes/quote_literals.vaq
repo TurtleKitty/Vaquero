@@ -17,7 +17,7 @@
                 ((gen.transform 'seq) transform form)
              (proc lambda)
                 ((gen.transform 'proc-id) transform form)
-             default:
+             else:
                 ((gen.transform 'application) transform form)))
       (if (or (symbol? form) (= form ()))
          form

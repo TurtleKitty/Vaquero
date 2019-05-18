@@ -19,7 +19,7 @@
             %(gate (seq @(transform form.tail)))
          (def if quote seq fail)
             ((gen.transform form.head) transform form)
-         default:
+         else:
             ((gen.transform 'application) transform form))
       form))
 

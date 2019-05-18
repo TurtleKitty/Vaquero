@@ -14,19 +14,20 @@
       (case form.head
          (seq)
             (let (defs (form.tail.filter is-def))
-               (def nulls (defs.map (_ %(def $_.1 null))))
+               (def nulls (map (_ %(def $_.1 null)) defs))
                (def transformed
-                  (form.tail.map
+                  (map
                      (_
                         (if (is-def _)
                            %((send env 'set!) (quote $_.1) $(transform _.2))
-                           _))))
+                           _))
+                     form.tail))
                %(seq @nulls @transformed))
          (def if quote wall gate capture guard fail)
             ((gen.transform form.head) transform form)
          (proc lambda)
             ((gen.transform 'proc-id) transform form)
-         default:
+         else:
             ((gen.transform 'application) transform form))
       form))
 

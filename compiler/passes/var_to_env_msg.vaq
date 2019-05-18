@@ -12,7 +12,7 @@
             ((gen.transform form.head) transform form)
          (proc lambda)
             ((gen.transform 'proc-id) transform form)
-         default:
+         else:
             ((gen.transform 'application) transform form))
       (if (and (symbol? form) (not (global? form) (not (option? form))))
          %((send env 'lookup) (quote $form))

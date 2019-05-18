@@ -4,21 +4,21 @@
 (proc transform-q (transform form) form)
 
 (proc transform-1 (transform form)
-   %($form.head @(form.tail.map transform)))
+   %($form.head @(map transform form.tail)))
 
 (proc transform-2 (transform form)
-   %($form.head $form.1 @(form.tail.tail.map transform)))
+   %($form.head $form.1 @(map transform form.tail.tail)))
 
 (proc transform-3 (transform form)
-   %($form.head $form.1 $form.2 @(form.tail.tail.tail.map transform)))
+   %($form.head $form.1 $form.2 @(map transform form.tail.tail.tail)))
 
 (proc transform-if (transform form)
    %(if $(transform form.1) $(transform form.2) $(transform form.3)))
 
 (proc transform-n (transform form)
-   (pair (transform form.head) (form.tail.map transform)))
+   (pair (transform form.head) (map transform form.tail)))
 
-(def transform 
+(def transform
    (:
       def          transform-2
       if           transform-if

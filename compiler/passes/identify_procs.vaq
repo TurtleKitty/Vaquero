@@ -6,11 +6,11 @@
 ; (lambda (args) bodies...) -> (lambda $id (args) bodies...)
 ; (proc (args) bodies...)   -> (proc $id (args) bodies...)
 
-(def db (box null))
+(def db (cell null))
 
 (proc id-proc (form)
    (def id (uuid))
-   (db.val.set! id form)
+   (db.get.set! id form)
    %($form.head $id $form.1 @(transform form.tail.tail)))
 
 (proc transform (form)
@@ -24,6 +24,6 @@
             ((gen.transform 'seq) transform form) ; after capture-lambda
          (lambda proc)
             (id-proc form)
-         default: ((gen.transform 'application) transform form))
+         else: ((gen.transform 'application) transform form))
       form))
 

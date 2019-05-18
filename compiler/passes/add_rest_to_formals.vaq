@@ -13,8 +13,8 @@
          (lambda)
             ((gen.transform 'proc-id) transform form)
          (proc)
-            %(proc $form.1 (@form.2 . rest) @(form.tail.tail.tail.map transform))
-         default:
+            %(proc $form.1 (@form.2 . rest) @(map transform form.tail.tail.tail))
+         else:
             ((gen.transform 'application) transform form))
       form))
 
