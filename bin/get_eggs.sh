@@ -9,7 +9,6 @@ chicken-install http-client
 chicken-install openssl
 chicken-install symbol-utils
 chicken-install utf8
-chicken-install utils
 chicken-install vector-lib
 chicken-install r7rs
 chicken-install system-information
