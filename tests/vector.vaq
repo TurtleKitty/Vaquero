@@ -2,6 +2,7 @@
 (def empty (vector))
 (def vick (vector 8 6 7 5 3 0 9))
 (def veck (vector 3 2 1))
+(def veck-like (vector 3 2 1))
 
 (test vector-access      (and (= vick.0 8) (= vick.3 5) (= vick.6 9)))
 (test vector-apply       (= (vick 5) 0)) 
@@ -14,8 +15,10 @@
 (test vector-to-vector   (= vick.to-vector (vector 8 6 7 5 3 0 9)))
 (test vector-pairs       (= veck.pairs (list '(0 . 3) '(1 . 2) '(2 . 1))))
 (test vector-size        (= vick.size 7))
+(test vector-eq?         (and (= veck veck-like) (!= vick veck)))
 (test vector-has?        (= (vick.has? 7) true))
 (test vector-has?-not    (= (vick.has? 4) false))
+(test vector-empty?      (and empty.empty? (not vick.empty?)))
 (test vector-set!        (seq (veck.set! 1 9) (= 9 veck.1)))
 (test vector-append      (= #(vector 2 3 5 7) ((send (vector 2 3) 'append) (vector 5 7))))
 

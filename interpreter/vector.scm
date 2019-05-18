@@ -50,6 +50,9 @@
       (method size
          (cont (vector-length obj)))
 
+      (method empty?
+         (cont (= 0 (vector-length obj))))
+
       (method has?
          (cont
             (lambda (item)
@@ -91,13 +94,32 @@
                         (vector-set! obj idx val)
                         obj))))))
 
+      (method v-eq?
+         (cont (lambda (other)
+            (if (vector? other)
+               (let ((len (vector-length obj)))
+                  (if (= len (vector-length other))
+                     (if (= len 0)
+                        #t
+                        (let loop ((i 0))
+                           (if (vaquero-equal? (vector-ref obj i) (vector-ref other i))
+                              (if (= (+ i 1) len)
+                                 #t
+                                 (loop (+ i 1)))
+                              #f)))
+                     #f))))))
+
       (method v-apply
          (cont
             (vaquero-proc
                primitive-type
                'vector
                (lambda (args opts cont err)
-                  (vaquero-send-vector obj (caar args) cont err)))))
+                  (if (pair? (car args))
+                     (let ((msg (caar args)))
+                        (if (number? msg)      
+                           (vaquero-send-vector obj msg cont err)
+                           (err (vaquero-error-object 'message-not-understood `(,obj ,msg) "Message not understood.") cont))))))))
 
       (method v-default
          (if (number? msg)
@@ -121,9 +143,11 @@
            (clone      . ,clone)
            (pairs      . ,pairs)
            (size       . ,size)
+           (empty?     . ,empty?)
            (has?       . ,has?)
            (get        . ,v-get)
            (set!       . ,v-set!)
+           (eq?        . ,v-eq?)
            (apply      . ,v-apply)
            (append     . ,v-append)
            (default    . ,v-default)))))

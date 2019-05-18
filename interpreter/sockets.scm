@@ -4,14 +4,14 @@
    (vaquero-object
       (list
          'type   '(fs listener)
-         'view   (list 'fs-listener path)
+         'view    (lambda () (list 'fs-listener path))
          'to-bool #t
-         'path   path
-         'ready? (lambda () (unix-accept-ready? l))
-         'accept (lambda ()
+         'path    path
+         'ready?  (lambda () (unix-accept-ready? l))
+         'accept  (lambda ()
                   (let-values (((in out) (unix-accept l)))
                      (vaquero-fs-socket path in out)))
-         'close  (lambda () (unix-close l) 'null)
+         'close   (lambda () (unix-close l) 'null)
       )
       '(ready? accept close)
       #f
@@ -21,13 +21,13 @@
    (vaquero-object
       (list
          'type   '(fs socket source sink stream)
-         'view   (list 'socket path)
+         'view    (lambda () (list 'socket path))
          'to-bool #t
-         'path path
-         'close (lambda ()
-                  (close-input-port in)
-                  (close-output-port out)
-                  'null)
+         'path    path
+         'close   (lambda ()
+                     (close-input-port in)
+                     (close-output-port out)
+                     'null)
       )
       '(read read-char read-line read-lines read-text ready? nl close)
       (list
@@ -41,13 +41,13 @@
    (vaquero-object
       (list
          'type   '(tcp listener)
-         'view   (list 'tcp-listener host port)
+         'view   (lambda () (list 'tcp-listener host port))
          'to-bool #t
          'port   (tcp-listener-port l)
          'ready? (lambda () (tcp-accept-ready? l))
          'accept (lambda ()
-                  (let-values (((in out) (tcp-accept l)))
-                     (vaquero-tcp-socket in out)))
+                    (define-values (in out) (tcp-accept l))
+                    (vaquero-tcp-socket in out))
          'close  (lambda () (tcp-close l) 'null)
       )
       '(ready? accept close)
@@ -60,7 +60,7 @@
    (vaquero-object
       (list
          'type   '(tcp socket source sink stream)
-         'view   (list 'socket l-addr l-port '-> r-addr r-port)
+         'view   (lambda () (list 'socket l-addr l-port '-> r-addr r-port))
          'to-bool #t
          'local-addr l-addr
          'local-port l-port

@@ -1,13 +1,16 @@
 
 (define vaquero-send-text-vtable
    (let ()
+      (define (text-tokenize obj)
+         (map string (string->list obj)))
+
       (define (build-regex re flags)
          (define opts
             (append
                (list re 'fast 'utf8)
                (filter
                   (lambda (x) (not (eq? x 'g)))
-                  (map string->symbol (string-split flags "")))))
+                  (map string->symbol (text-tokenize flags)))))
          (apply irregex opts))
 
       (method answers?
@@ -42,10 +45,10 @@
          (cont (string->number obj)))
 
       (method to-list
-         (cont (string->list obj)))
+         (cont (map string (string->list obj))))
 
       (method to-vector
-         (cont (list->vector (string->list obj))))
+         (cont (list->vector (map string (string->list obj)))))
 
       (method to-text
          (cont obj))
@@ -108,11 +111,15 @@
          (cont
             (vaquero-proc
                primitive-type
-              'text
-              (lambda (args opts cont err)
-                 (define flags (vaquero-send-atomic opts 'flags))
-                 (define re (build-regex (car args) (if (eq? 'null flags) "" flags)))
-                 (cont (irregex-split re obj))))))
+               'text
+               (lambda (args opts cont err)
+                  (define flags (vaquero-send-atomic opts 'flags))
+                  (define pattern (car args))
+                  (cont
+                     (if (equal? pattern "")
+                        (text-tokenize obj)
+                        (let ((re (build-regex (car args) (if (eq? 'null flags) "" flags))))
+                           (irregex-split re obj))))))))
 
       (method match
          (cont

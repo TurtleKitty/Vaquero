@@ -19,22 +19,23 @@
 (test list-size       (= ys.size 7))
 (test list-has?       (= (ys.has? 7) true))
 (test list-has?-not   (= (ys.has? 4) false))
+(test list-empty?     (and empty.empty? (not ys.empty?)))
 
 (test list-head!
    (= '(b 1)
-      (let (L (list 'a 1))
-         (L.head! 'b)
-         L)))
+      (let (xs (list 'a 1))
+         (xs.head! 'b)
+         xs)))
 
 (test list-tail!
    (= '(a . 2)
-      (let (L (list 'a 1))
-         (L.tail! '2)
-         L)))
+      (let (ys (list 'a 1))
+         (ys.tail! '2)
+         ys)))
 
 (test list-set!
    (= '(1 2 72)
-      (let (L (list 1 2 3))
-         (L.set! 2 72)
-         L)))
+      (let (zs (list 1 2 3))
+         (zs.set! 2 72)
+         zs)))
 

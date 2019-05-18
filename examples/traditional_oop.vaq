@@ -1,0 +1,106 @@
+
+; traditional OOP style
+; objects are all individuals - there is no concept of class.
+; for many objects of similar construction, a factory procedure is handy
+
+(proc entity ()
+   (object 'type '(entity)
+           'id (uuid)))
+
+(proc position (x y)
+   (def x-cell (cell x))   ; bound symbols are immutable, so cells must be used for mutable values
+   (def y-cell (cell y))   ; Vaquero environments are append-only
+   (def get-x (lambda () x-cell.get))
+   (def get-y (lambda () y-cell.get))
+   (def set-x (lambda (v) (x-cell.set! v)))
+   (def set-y (lambda (v) (y-cell.set! v)))
+   (object 'type '(position)
+           'x    get-x
+           'y    get-y
+           'x!   set-x     ; internal values are immutable unless the programmer provides mutators
+           'y!   set-y
+           auto: '(x y)))  ; messages x and y have their thunks auto-executed rather than returned
+
+(proc monster (name strength speed hit-points x y)
+   (def my-entity (entity))
+   (def my-pos (position x y))
+   (def current-hp (cell hit-points))
+   (object
+      'type     '(monster entity)
+      'name       name
+      'strength   strength
+      'speed      speed
+      'hit-points hit-points
+      'hp         (lambda () current-hp.get)
+      'harm       (lambda (v) (current-hp.set! (- current-hp.get v)))
+      ; ... 23 other methods ...
+      auto: '(hp)
+      forward: %(($my-entity id)        ; forward the 'id message to my-entity
+                 ($my-pos x y x! y!)))) ; forward these four messages my-position
+                                        ; quasiquotation helps shorten it - otherwise it would be
+                                        ; forward: (list (list my-entity 'id) (list my-position 'x 'y 'x! 'y!))
+
+(proc mook (x y)
+   (def my-monster (monster "Mook" 1 1 1 x y))  ; my-monster will contain an entity for us
+   (object
+      'type '(mook monster entity)
+      'club 'a-mook-swings-his-primitive-club
+      default: (forward-to my-monster)))  ; so we don't have to enumerate all of monster's 29 messages in a forward: form
+                                          ; forward-to is a prelude procedure that returns (proc (msg) (send my-monster msg))))
+
+(proc ghost (x y)
+   (def my-monster (monster "Ghost" 0 7 10 x y))
+   (object
+      'type '(ghost monster entity)
+      'manifest 'a-horrific-ghost-materializes  ; not implemented yet... ^_^
+      'wail     'a-mournful-wail-paralyzes-onlookers
+      default: (forward-to my-monster)))
+
+(proc robot (x y)
+   (def my-monster (monster "Robot" 10 2 30 x y))
+   (object
+      'type '(robot monster entity)
+      'fire-laser      'robot-shoots-a-powerful-beam-of-light
+      'launch-missiles 'robot-launches-a-volley-of-heat-seeking-missiles
+      default: (forward-to my-monster)))
+
+(test entity
+   (def e (entity))
+   e.id)
+
+(test position
+   (def p (position 2 3))
+   (and (= p.x 2)
+        (= p.y 3)
+        (seq (p.x! 5) (= p.x 5))
+        (seq (p.y! 7) (= p.y 7))))
+
+(test monster
+   (def x (ndx 10 6))
+   (def y (ndx 10 6))
+   (def m (monster "Foo" 2 3 17 x y))
+   (and m.id ; forwarded to entity
+        (= m.strength 2)
+        (= m.speed 3)
+        (= m.hit-points 17)
+        (= m.hp 17)
+        (= m.x x) ; forwarded to position
+        (= m.y y) ; forwarded to position
+        (= (seq (m.harm 7) (and (= m.hit-points 17) (= m.hp 10))))))
+
+(def m (mook 0 0))
+(def g (ghost 1 2))
+(def r (robot 2 3))
+
+(say m.club)
+(say g.wail)
+(say r.fire-laser)
+
+; OUTPUT:
+; (entity ok)
+; (position ok)
+; (monster ok)
+; a-mook-swings-his-primitive-club
+; a-mournful-wail-paralyzes-onlookers
+; robot-shoots-a-powerful-beam-of-light
+

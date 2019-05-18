@@ -1,10 +1,12 @@
 
 ; not sure if I should worry about this or not...
 
-(test proc-forward-reference
-   (=  33
-      (let (x (xyzzy 3))
-         x)))
+(proc foo (z) (xyzzy z))
 
 (proc xyzzy (x) (* x 11))
+
+(test proc-forward-reference
+   (=  33
+      (let (x (foo 3))
+         x)))
 

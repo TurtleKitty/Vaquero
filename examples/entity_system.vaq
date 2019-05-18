@@ -1,0 +1,151 @@
+
+(def component-database
+   (let (db (table))
+      (proc create-entity ()
+         (def id (uuid))
+         (def components (table))
+         (db.set! id components)
+         (proc add-component (component-type data)
+            (components.set! component-type data)
+            data)
+         (proc has-component? (component-type)
+            (components.has? component-type))
+         (proc get-component (component-type)
+            (components.get component-type))
+         (proc del-component! (component-type)
+            (components.del! component-type))
+         (object 'id id
+                 'add-component  add-component
+                 'has-component? has-component?
+                 'get-component  get-component
+                 'del-component! del-component!))
+      (proc get-components (entity)
+         (db.get id))
+      (object 'create-entity  create-entity
+              'get-components get-components
+              auto: '(create-entity))))
+
+(proc add-position-component (entity x y)
+   (def x-cell (cell x)) ; bound symbols are immutable, so cells must be used for mutable values
+   (def y-cell (cell y)) ; Vaquero environments are append-only
+   (def get-x (lambda () x-cell.get))
+   (def get-y (lambda () y-cell.get))
+   (def set-x (lambda (v) (x-cell.set! v)))
+   (def set-y (lambda (v) (y-cell.set! v)))
+   (entity.add-component
+      'position
+      (object 'type '(position component)
+              'x    get-x
+              'y    get-y
+              'x!   set-x     ; internal values are immutable unless the programmer provides mutators
+              'y!   set-y
+              auto: '(x y)))) ; messages x and y have their thunks auto-executed rather than returned
+
+(proc add-monster-component (entity name strength speed hit-points)
+   (def current-hp (cell hit-points))
+   (entity.add-component
+      'monster
+      (object
+         'type     '(monster component)
+         'name       name
+         'strength   strength
+         'speed      speed
+         'hit-points hit-points
+         'hp         (lambda () current-hp.get)
+         'harm       (lambda (v) (current-hp.set! (- current-hp.get v)))
+         ; ... 23 other methods ...
+         auto: '(hp))))
+
+(proc monster-generator (type name str spd hp)
+   (proc (x y)
+      (def me component-database.create-entity)
+      (def pos (add-position-component me x y))
+      (def me-monster (add-monster-component me name str spd hp))
+      (object
+         'type %($type monster entity)
+         'id   me.id
+         forward: %(($pos x y x! y!))
+         default: (forward-to me-monster))))
+
+(def ghost  (monster-generator 'ghost  "Ghost"   0  7 10))
+(def robot  (monster-generator 'robot  "Robot"  10  2 30))
+(def dragon (monster-generator 'dragon "Dragon"  7  7 20))
+
+(gen attack
+   (error 'type-error
+          %(attack @rest)
+          "attack: no spec defined for the supplied arguments"))
+
+(spec attack (ghost g monster m)
+   (say (cat "Ghost assails" m.name "with a mournful banshee wail" with: " ")))
+
+(spec attack (ghost g robot r)
+   (say "Ghost corrupts robot's electronics with negative energy"))
+
+(spec attack (robot r monster m)
+   (say (cat "Robot fires its laser at " m.name)))
+
+(spec attack (robot r ghost g)
+   (say "Robot fires proton cannon at ghost"))
+
+(spec attack (robot r dragon d)
+   (say "Robot fires volley of heat-seeking missiles at the dragon"))
+
+(spec attack (dragon d monster m)
+   (say #(template Dragon scorches enemy {{m.name}} with magical flame)))
+
+(def casper (ghost 2 3))
+(def robbie (robot 3 5))
+(def smaug  (dragon 5 7))
+
+(attack casper robbie)
+(attack casper smaug)
+(attack robbie casper)
+(attack robbie smaug)
+(attack smaug casper)
+(attack smaug robbie)
+
+; OUTPUT:
+; Ghost corrupts robot's electronics with negative energy
+; Ghost assails Dragon with a mournful banshee wail
+; Robot fires proton cannon at ghost
+; Robot fires volley of heat-seeking missiles at the dragon
+; Dragon scorches enemy Ghost with magical flame
+; Dragon scorches enemy Robot with magical flame
+
+; now let's say you want a ghost-robot and a robot-ghost...
+
+(proc ghost-robot (x y)
+   (def me component-database.create-entity)
+   (def pos (add-position-component me x y))
+   (def me-monster (add-monster-component me "Ghost Robot" 8 5 20))
+   (object
+      'type '(ghost robot monster entity)
+      'id   me.id
+      forward: %(($pos x y x! y!))
+      default: (forward-to me-monster)))
+
+(proc robot-ghost (x y)
+   (def me component-database.create-entity)
+   (def pos (add-position-component me x y))
+   (def me-monster (add-monster-component me "Robot Ghost" 5 8 20))
+   (object
+      'type '(robot ghost monster entity)
+      'id   me.id
+      forward: %(($pos x y x! y!))
+      default: (forward-to me-monster)))
+
+(def casper-tron (ghost-robot 3 3))
+(def kraus (robot-ghost 3 4))
+
+(attack casper-tron smaug)
+(attack casper-tron robbie)
+(attack kraus smaug)
+(attack kraus robbie)
+
+; OUTPUT:
+; Ghost assails Dragon with a mournful banshee wail
+; Ghost corrupts robot's electronics with negative energy
+; Robot fires volley of heat-seeking missiles at the dragon
+; Robot fires its laser at Robot
+

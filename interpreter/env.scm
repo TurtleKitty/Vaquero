@@ -204,7 +204,7 @@
             'global
             (lambda (args opts cont err)
                (if (not (eq? (modulo (length args) 2) 0))
-                  (err (vaquero-error-object 'uneven-pairs (cons 'tuple args) "tuple requires an even number of arguments."))
+                  (err (vaquero-error-object 'uneven-pairs (cons 'tuple args) "tuple requires an even number of arguments.") cont)
                   (cont (apply make-vaquero-tuple args))))))
       (define vaquero-make-set
          (vaquero-proc
@@ -226,21 +226,26 @@
                (define autos (vaquero-send-atomic opts 'auto))
                (define fwd (vaquero-send-atomic opts 'forward))
                (define default ((vaquero-send-atomic opts 'get) 'default))
-               (define (pass-it-on)
-                  (cont (vaquero-object args autos fwd default)))
                (if (eq? autos 'null) (set! autos #f) #f)
                (if (eq? fwd 'null) (set! fwd #f) #f)
                (if (eq? default 'null) (set! default #f) #f)
-               (let ((the-type (member 'type args)))
-                  (if the-type
-                     (let ((ts (cadr the-type)))
-                        (if (and (list? ts) (every symbol? ts))
-                           (pass-it-on)
-                           (err (vaquero-error-object 'bad-type `(type ,ts) "An object type must be a list of symbols.") cont)))
-                     (pass-it-on))))))
+               (if (and autos (not (list? autos)))
+                  (err (vaquero-error-object 'bad-auto `(auto: ,autos) "auto: must be a list of symbols") cont)
+                  #f)
+               (if (and fwd (not (and (list? fwd) (every list? fwd))))
+                  (err (vaquero-error-object 'bad-forward `(forward: ,fwd) "forward: must be a list of lists") cont)
+                  #f)
+               (if default
+                  (let ((messages (vaquero-send-atomic default 'messages)))
+                     (define has-apply (member 'apply messages))
+                     (if (not has-apply)
+                        (err (vaquero-error-object 'bad-default `(default: ,fwd) "default: must be an applicative") cont)
+                        #f)))
+               (cont (vaquero-object args autos fwd default)))))
       (define vaquero-math-object
          (vaquero-object
             (list
+               'type   '(math)
                'e      2.718281828459045
                'phi    1.618033988749895
                'pi     3.141592653589793
@@ -262,6 +267,7 @@
       (define vaquero-physics-object
          (vaquero-object
             (list
+               'type '(physics)
                'c   299792458
                'g   9.80665
                'G   6.67408e-11
@@ -348,7 +354,7 @@
              (cons 'vector vaquero-make-vector)
              (cons 'vector? vector?)
              (cons 'text? string?)
-             (cons 'rand random)
+             (cons 'rand pseudo-random-integer)
              (cons 'tuple vaquero-make-tuple)
              (cons 'tuple? vaquero-tuple?)
              (cons 'set vaquero-make-set)
@@ -362,6 +368,7 @@
              (cons 'gensym vaquero-gensym)
              (cons 'uuid uuid-v4)
              (cons 'cat vaquero-cat-global)
+             (cons 'EOF (eof-object))
              (cons 'FILE_NOT_FOUND 'neither-true-nor-false)
              (cons 'T_PAAMAYIM_NEKUDOTAYIM (quote ::))))
       (fill-prelude primitives)

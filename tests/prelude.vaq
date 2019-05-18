@@ -232,6 +232,12 @@
          (let (xs (list 1 "2" 'three 1/4 6.4))
             (list-map (resend 'type) xs)))))
 
+(test forward-to
+   (def forwarder (forward-to 7))
+   (and (= 8 (forwarder 'inc))
+        (= 6 (forwarder 'dec))
+        (= 'int (forwarder 'type))))
+
 (test promise
     (let (count (cell 0))
         (def p
@@ -387,16 +393,6 @@
    (let (s (set 2 3 5))
       (def f (lambda (v) (+ 10 v)))
       (= (map f s) (set 12 13 15))))
-
-(test fold
-   (let ()
-      (def xs '(1 2 3))
-      (def ys '(4 5 6))
-      (def zs #(vector 7 8 9))
-      (proc zap! (x y z acc)
-         (+ x y z acc))
-      (= 45
-         (fold zap! 0 xs ys zs))))
 
 (test fold-list-1
    (= 30 (fold (lambda (x acc) (* x acc)) 1 '(2 3 5)))) 

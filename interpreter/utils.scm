@@ -43,12 +43,15 @@
          (let ((name (cadr expr)) (body (cddr expr)))
             `(define (,name ,(inject 'obj) ,(inject 'msg) ,(inject 'cont) ,(inject 'err)) ,@body)))))
 
+(define (vaquero-warning name form message)
+   (display (list 'WARNING name form message)) (newline))
+
 (define (vaquero-error name form message)
-   (display "ERROR: ") (display message) (newline)
-   (abort (list name form message)))
+   (display (list 'ERROR name form message)) (newline)
+   (exit))
 
 (define (vaquero-error-object name form to-text)
-   (vaquero-object `(type (error) name ,name form ,form to-text ,to-text message ,to-text view (error ,name ,form ,to-text)) #f #f #f))
+   (vaquero-object `(type (error) name ,name form ,form to-text ,to-text message ,to-text view ,(lambda () (vector 'error name form to-text))) #f #f #f))
 
 (define (vaquero-error? obj)
    (and (vaquero-object? obj) (equal? (vaquero-send-atomic obj 'type) '(error))))
@@ -128,47 +131,9 @@
    (cond
       ((and (number? x) (number? y))
          (= x y))
-      ((and (list? x) (list? y))
-         (let ((len (length x)))
-            (if (= len (length y))
-               (if (= len 0)
-                  #t
-                  (let loop ((xh (car x)) (yh (car y)) (xs (cdr x)) (ys (cdr y)))
-                     (if (vaquero-equal? xh yh)
-                        (if (null? xs)
-                           #t
-                           (loop (car xs) (car ys) (cdr xs) (cdr ys)))
-                        #f)))
-               #f)))
-      ((and (pair? x) (pair? y))
-         (and (vaquero-equal? (car x) (car y)) (vaquero-equal? (cdr x) (cdr y))))
-      ((and (vaquero-tuple? x) (vaquero-tuple? y))
-         (let ((x-pairs (sort-symbol-alist (vaq-tuple-fields x)))
-               (y-pairs (sort-symbol-alist (vaq-tuple-fields y))))
-            (vaquero-equal? x-pairs y-pairs)))
-      ((and (vaquero-set? x) (vaquero-set? y))
-         (let ((x-list (htks (vaquero-set-items x)))
-               (y-list (htks (vaquero-set-items y))))
-            (define mem-x? (make-list-tester x-list))
-            (define mem-y? (make-list-tester y-list))
-            (and (every mem-x? y-list) (every mem-y? x-list))))
-      ((and (vector? x) (vector? y))
-         (let ((len (vector-length x)))
-            (if (= len (vector-length y))
-               (if (= len 0)
-                  #t
-                  (let loop ((i 0))
-                     (if (vaquero-equal? (vector-ref x i) (vector-ref y i))
-                        (if (= (+ i 1) len)
-                           #t
-                           (loop (+ i 1)))
-                        #f)))
-               #f)))
-      ((and (hash-table? x) (hash-table? y))
-         (let ((x-pairs (vaquero-sort-alist (hash-table->alist x)))
-               (y-pairs (vaquero-sort-alist (hash-table->alist y))))
-            (vaquero-equal? x-pairs y-pairs)))
-      ((or (vaquero-proc? x) (vaquero-env? x) (vaquero-object? x))
+      ((or (pair? x) (vaquero-tuple? x) (vaquero-set? x) (vector? x) (hash-table? x) (vaquero-object? x))
+         (vaquero-apply (vaquero-send-atomic x 'eq?) (list y) 'null top-cont top-err))
+      ((or (vaquero-proc? x) (vaquero-env? x))
          (eq? x y))
       (else
          (equal? x y))))
@@ -257,6 +222,9 @@
 (define (keyword->symbol k)
    (string->symbol (keyword->string k)))
 
+(define (symbol->keyword s)
+   (string->keyword (symbol->string s)))
+
 (define (vaquero-compile-method code)
    ((vaquero-compile-lambda (vaquero-parse code)) (local-env) identity identity))
 
@@ -316,6 +284,19 @@
       (rval '() (vaquero-table))))
 
 (define (the-end v) (exit))
+
+; stolen from https://github.com/dsosby/chicken-uuid/blob/master/uuid.scm
+
+(define uuid-v4-hex-vals (string->list "0123456789abcdef"))
+(define uuid-v4-pattern "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx")
+
+(define (uuid-v4 #!optional [randfn pseudo-random-integer])
+  (letrec ([x-replace (lambda () (list-ref uuid-v4-hex-vals (randfn 16)))]
+      [y-replace (lambda () (list-ref uuid-v4-hex-vals (bitwise-ior (bitwise-and (randfn 16) #x08) #x03)))]
+      [map-proc (lambda (c) (cond ((eq? c #\x) (x-replace)) ((eq? c #\y) (y-replace)) (else c)))])
+    (string-map map-proc uuid-v4-pattern)))
+
+; /stolen
 
 (define (vaquero-gensym #!optional (name "gensym"))
    (string->symbol

@@ -3,9 +3,6 @@
 (define vaquero-send-sink-vtable #f)
 
 (let ()
-   (method to-bool
-      (cont #t))
-
    (method view
       (cont obj))
 
@@ -38,7 +35,7 @@
             (cont '(source stream)))
 
          (method ready?
-            (char-ready? obj))
+            (cont (char-ready? obj)))
 
          (method stream-read
             (if-alive obj msg cont err
@@ -141,7 +138,7 @@
             `((answers?     . ,answers?)
               (autos        . ,autos)
               (messages     . ,messages)
-              (to-bool      . ,to-bool)
+              (to-bool      . ,open?)
               (to-text      . ,stream-read-text)
               (to-list      . ,stream-read-lines)
               (to-stream    . ,view)
@@ -224,7 +221,7 @@
             `((answers?   . ,answers?)
               (autos      . ,autos)
               (messages   . ,messages)
-              (to-bool    . ,to-bool)
+              (to-bool    . ,open?)
               (to-stream  . ,view)
               (type       . ,type)
               (view       . ,view)

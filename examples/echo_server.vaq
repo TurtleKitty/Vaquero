@@ -1,0 +1,44 @@
+
+; a simple reverse echo server
+
+(def host "127.0.0.1")
+(def port 49152)
+
+(proc reverse-string (s)
+   (def letters (s.split ""))
+   (cat.apply letters.reverse))
+
+(def listener (sys.net.tcp.listen host port))
+
+(say (cat "Reverse echo server listening on " host ":" port))
+
+(loop listen ()
+   (if listener.ready?
+      (seq
+         (def sock listener.accept)
+         (say "Socket connection accepted")
+         (def line sock.read-line)
+         (say #(template Server got: "{{line}}"))
+         (if (= line "JUST DIE ALREADY")
+            (say "Reverse echo server terminated")
+            (seq
+               (sock.say (reverse-string line))
+               sock.close
+               (listen))))
+      (listen)))
+
+; $ ./vaquero run examples/echo_server.vaq &
+; [5] 19832
+; Reverse echo server listening on 127.0.0.1:49152
+; $ nc localhost 49152
+; Socket connection accepted
+; Hey, Cowboy...
+; Server got: "Hey, Cowboy..."
+; ...yobwoC ,yeH
+; $ nc localhost 49152
+; Socket connection accepted
+; JUST DIE ALREADY
+; Server got: "JUST DIE ALREADY"
+; Reverse echo server terminated
+; [5]   Done                    ./vaquero run examples/echo_server.vaq
+

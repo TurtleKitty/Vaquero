@@ -121,12 +121,30 @@
          (method list-apply
             (cont
                (vaquero-proc
-                   primitive-type
-                   'list
-                   (lambda (args opts cont err)
-                       (if (pair? (car args))
-                           (vaquero-send-list obj (caar args) cont err)
-                           (err (vaquero-error-object 'bad-message! `(,obj ,args ,opts) "Message not understood.") cont))))))
+                  primitive-type
+                  'list
+                  (lambda (args opts cont err)
+                     (if (pair? (car args))
+                        (let ((msg (caar args)))
+                           (if (number? msg)      
+                              (vaquero-send-list obj msg cont err)
+                              (err (vaquero-error-object 'message-not-understood `(,obj ,msg) "Message not understood.") cont))))))))
+
+         (method list-eq?
+            (cont (lambda (other)
+               (if (list? other)
+                  (let ((len (length obj)))
+                     (if (= len (length other))
+                        (if (= len 0)
+                           #t
+                           (let loop ((xh (car obj)) (yh (car other)) (xs (cdr obj)) (ys (cdr other)))
+                              (if (vaquero-equal? xh yh)
+                                 (if (null? xs)
+                                    #t
+                                    (loop (car xs) (car ys) (cdr xs) (cdr ys)))
+                                 #f)))
+                        #f))
+                  #f))))
 
          (alist->hash-table
             `((answers?   . ,answers?)
@@ -159,6 +177,7 @@
               (take       . ,list-take)
               (drop       . ,list-drop)
               (apply      . ,list-apply)
+              (eq?        . ,list-eq?)
               (default    . ,list-default)))))
 
    (set! vaquero-send-pair-vtable
@@ -196,6 +215,12 @@
          (method clone
             (cont (cons (car obj) (cdr obj))))
 
+         (method pair-eq?
+            (cont (lambda (other)
+               (if (pair? other)
+                  (and (vaquero-equal? (car obj) (car other)) (vaquero-equal? (cdr obj) (cdr other)))
+                  #f))))
+
          ;(method to-list (cont (list (car obj) (cdr obj))))
          ;(method to-table (cont (vaquero-table (car obj) (cdr obj))))
 
@@ -215,5 +240,6 @@
               (tail!      . ,tail!)
               (size       . ,size)
               (clone      . ,clone)
+              (eq?        . ,pair-eq?)
               (default    . ,idk))))))
 

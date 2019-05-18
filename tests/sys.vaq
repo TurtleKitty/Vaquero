@@ -1,0 +1,179 @@
+
+; sys.env
+
+(def vetv 'VAQUERO_ENV_TEST_VAR)
+
+(test env-set!
+   (seq
+      (sys.env.set! vetv "2357")
+      (= "2357" (sys.env.get vetv))))
+
+(test env-del!
+   (seq
+      (sys.env.del! vetv)
+      (= null (sys.env.get vetv))))
+
+(test env-hostname
+   (let (hostname sys.env.hostname)
+      (def from-cli (sys.shell "hostname"))
+      (= hostname from-cli)))
+
+(test env-uname
+   (let (uname sys.env.uname)
+      (def from-cli (sys.shell "uname -a"))
+      (def OS uname.head)
+      (from-cli.match OS)))
+
+; sys.fs
+; chroot connect listen socket-pair stat
+
+(test fs-exists?
+   (sys.fs.exists? "/"))
+
+(test fs-dir?
+   (sys.fs.dir? "/"))
+
+(def dir sys.fs.tmp-dir)
+
+(test fs-tmp-dir
+   (sys.fs.exists? dir))
+
+(test fs-cd-pwd
+   (seq
+      (sys.fs.cd dir)
+      (= dir sys.fs.pwd)))
+
+(test fs-mkdir
+   (seq
+      (sys.fs.mkdir "./foo")
+      (sys.fs.exists? "./foo")))
+
+(test fs-ls
+   (= '("foo") (sys.fs.ls dir)))
+
+(def file  sys.fs.tmp)
+(def fpath (file.split "/"))
+(def fname fpath.reverse.head)
+
+(test fs-tmp
+   (sys.fs.exists? file))
+
+(test fs-ln
+   (seq
+      (sys.fs.ln "foo" "bar")
+      (sys.fs.exists? "./bar")))
+
+(test fs-cp
+   (let (noob (cat "./" fname))
+      (sys.fs.cp file noob)
+      (sys.fs.exists? noob)))
+
+(test fs-mv
+   (seq
+      (sys.fs.mv fname "baz")
+      (sys.fs.exists? "baz")))
+
+(test fs-symlink?
+   (and
+      (sys.fs.symlink? "bar")
+      (not (sys.fs.symlink? "baz"))))
+
+(test sys-rm
+   (seq
+      (sys.fs.rm "bar")
+      (sys.fs.rm "baz")
+      (not (and (sys.fs.exists? "bar") (sys.fs.exists? "baz")))))
+
+(test sys-rmdir
+   (seq
+      (sys.fs.rmdir "foo")
+      (not (sys.fs.exists? "foo"))))
+
+(sys.fs.rm file)
+(sys.fs.rmdir dir)
+
+(test sys-read-write
+   (let (tmp sys.fs.tmp)
+      (def contents '(foo bar baz))
+      (def w-handle (sys.fs.write-to tmp))
+      (w-handle.write contents)
+      w-handle.close
+      (def r-handle (sys.fs.read-from tmp))
+      (def results r-handle.read)
+      r-handle.close
+      (sys.fs.rm tmp)
+      (= contents results)))
+
+(test sys-read-write-with
+   (let (tmp sys.fs.tmp)
+      (def contents '(foo bar baz))
+      (proc to-proc (handle)
+         (handle.write contents))
+      (proc from-proc (handle)
+         handle.read)
+      (sys.fs.write-to tmp with: to-proc)
+      (def results (sys.fs.read-from tmp with: from-proc))
+      (sys.fs.rm tmp)
+      (= contents results)))
+
+; sys.net
+
+(test net-http-get
+   (let (page (sys.net.http.get "http://anwu.org/"))
+      (page.match "A New World, Unordered")))
+
+(test net-tcp
+   (let (host "localhost" port 2357)
+      (def listener (sys.net.tcp.listen host port))
+      (proc sender ()
+         (def socket (sys.net.tcp.connect host port))
+         (socket.write 'ok)
+         socket.close)
+      (sys.proc.fork sender)
+      (def socket listener.accept)
+      (def response socket.read)
+      socket.close
+      (= response 'ok)))
+
+; sys.proc
+; exit fork program-name run sleep spawn
+
+(test proc-uid
+   (int? sys.proc.uid))
+
+(test proc-pid
+   (int? sys.proc.pid))
+
+(test proc-gid
+   (int? sys.proc.gid))
+
+(test proc-parent-pid
+   (int? sys.proc.parent-pid))
+
+(test proc-process-gid
+   (int? (sys.proc.process-gid sys.proc.pid)))
+
+; sys.signal
+; abrt alrm chld cont fpe handle handler hup ill int kill mask masked? pipe quit segv send stop term unmask usr1 usr2
+
+; sys.xyzzy
+
+(test srand
+   (def seed "16384")
+   (sys.srand seed)
+   (def rand1 (rand))
+   (sys.srand seed)
+   (def rand2 (rand))
+   (sys.srand seed)
+   (def rand3 (rand))
+   (and (= rand1 rand2) (= rand2 rand3)))
+
+(test time
+   (int? (sys.time)))
+
+(test ts
+   (int? sys.ts))
+
+(test type
+   (= sys.type '(operating-system-interface)))
+
