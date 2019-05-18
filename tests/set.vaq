@@ -7,6 +7,7 @@
 (test set-type     (set? s1))
 (test set-size     (and (= s0.size 0) (= s1.size 5)))
 (test set-has?     (and (s1.has? 2) (not (s1.has? 23))))
+(test set-empty?   (and s0.empty? (not s1.empty?)))
 (test set-equal?   (and (!= s1 s2) (= s1 s3)))
 (test set-to-bool  (and s0.to-bool.not s1.to-bool))
 (test set-to-list  (and (= () s0.to-list) (= '(2 3 5 7 11) (list-sort < s2.to-list))))

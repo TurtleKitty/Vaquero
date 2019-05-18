@@ -45,6 +45,9 @@
       (method size
          (cont (hash-table-size obj)))
 
+      (method empty?
+         (cont (= 0 (hash-table-size obj))))
+
       (method get
          (cont
             (lambda (k)
@@ -140,6 +143,7 @@
            (type       . ,type)
            (clone      . ,clone)
            (size       . ,size)
+           (empty?     . ,empty?)
            (get        . ,get)
            (put        . ,put)
            (rm         . ,rm)

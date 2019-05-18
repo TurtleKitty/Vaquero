@@ -18,6 +18,7 @@
 (test vector-eq?         (and (= veck veck-like) (!= vick veck)))
 (test vector-has?        (= (vick.has? 7) true))
 (test vector-has?-not    (= (vick.has? 4) false))
+(test vector-empty?      (and empty.empty? (not vick.empty?)))
 (test vector-set!        (seq (veck.set! 1 9) (= 9 veck.1)))
 (test vector-append      (= #(vector 2 3 5 7) ((send (vector 2 3) 'append) (vector 5 7))))
 

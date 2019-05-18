@@ -50,6 +50,9 @@
       (method size
          (cont (vector-length obj)))
 
+      (method empty?
+         (cont (= 0 (vector-length obj))))
+
       (method has?
          (cont
             (lambda (item)
@@ -136,6 +139,7 @@
            (clone      . ,clone)
            (pairs      . ,pairs)
            (size       . ,size)
+           (empty?     . ,empty?)
            (has?       . ,has?)
            (get        . ,v-get)
            (set!       . ,v-set!)

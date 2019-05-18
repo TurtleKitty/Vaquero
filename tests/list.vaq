@@ -19,6 +19,7 @@
 (test list-size       (= ys.size 7))
 (test list-has?       (= (ys.has? 7) true))
 (test list-has?-not   (= (ys.has? 4) false))
+(test list-empty?     (and empty.empty? (not ys.empty?)))
 
 (test list-head!
    (= '(b 1)

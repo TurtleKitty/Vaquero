@@ -42,6 +42,8 @@
 
 (test table-size (= simp.size 2))
 
+(test table-empty? (and barerec.empty? (not simp.empty?)))
+
 (test table-keys (= '(x y) (list-sort < simp.keys))) 
 
 (test table-values

@@ -47,6 +47,9 @@
       (method size
          (cont (hash-table-size (vaquero-set-items obj))))
 
+      (method empty?
+         (cont (= 0 (hash-table-size (vaquero-set-items obj)))))
+
       (method set-add
          (cont
             (lambda args
@@ -139,6 +142,7 @@
            (type       . ,type)
            (clone      . ,clone)
            (size       . ,size)
+           (empty?     . ,empty?)
            (add        . ,set-add)
            (del        . ,set-del)
            (add!       . ,set-add!)
