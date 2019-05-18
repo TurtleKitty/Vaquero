@@ -46,7 +46,7 @@
                (wrong))))
       (let ()
          (define type (car (htr fields 'type)))
-         (define messages (append '(answers? autos default messages to-bool to-text view) (htks fields) (htks forwards)))
+         (define messages (append (htks fields) (htks forwards)))
          (hts! fields 'view (lambda () (apply vector (cons type messages))))))
    (hts! autos 'view #t))
 
