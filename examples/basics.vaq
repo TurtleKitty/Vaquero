@@ -1,0 +1,224 @@
+
+; Binding
+
+; Environments are append-only.
+; Once a name is defined, it will always point to the same value.
+; Those who want mutable state will have to use mutable structures.
+
+; def binds a new name to a value in the current environment.
+; let creates a new sub-environment with defined vars.
+; bind binds multiple names to the result of an expression that generates a list.
+
+(def greeting "Yo.")
+(say greeting)
+
+; Yo.
+
+(let (x 2 y 3)
+   (say (+ x y)))
+
+; 5
+
+(bind (a b c) (list 3 4 5))
+(say (* a b c))
+
+; 60
+
+
+; Sequencing
+
+; seq Executes the given expressions in sequence, returning the value of the last one.
+; lets and lambdas have an implied seq, so this form is mostly useful in conditionals.
+
+(seq
+   (say "Here it comes!")
+   (say 42)
+   true)
+
+; Here it comes!
+; 42
+; true
+
+
+; Conditionals
+
+(if true 1 2)  ; 1
+
+(if false 1 2) ; 2
+
+(when true
+   (say "True!"))
+
+; True!
+; null
+
+(when false
+   (say "False!"))
+
+; null
+
+; cond is a multiway switch
+
+(proc zero-one-inf (x)
+   (cond
+      (= x 0) 'zero
+      (= x 1) 'one
+      else: (seq
+               (say "Fell through!")
+               'infinity)))
+
+(say (zero-one-inf 0))
+
+; zero
+
+(say (zero-one-inf 1))
+
+; one
+
+(say (zero-one-inf 2357))
+
+; Fell through!
+; infinity
+
+; case is a pattern matching conditional
+
+(proc prime-or-else (x)
+   (case x
+      (0) 'zero
+      (1 2 3 5 7) 'small-prime-number
+      (4 6 8 9) 'small-composite-number
+      else: 'way-too-big))
+
+(say (prime-or-else 0))
+
+; zero
+
+(say (prime-or-else 2))
+
+; small-prime-number
+
+(say (prime-or-else 8))
+
+; small-composite-number
+
+(say (prime-or-else 11))
+
+; way-too-big
+
+
+; Procedures
+
+(def square
+   (lambda (x)
+       (* x x)))
+
+(proc square-2 (x)  ; syntactic sugar for (def square-2 (proc (x) ...))
+   (* x x))
+
+(def square-3    ; the _ operator is useful to create quick procedures of one argument
+   (_ (* _ _)))
+
+(say (square 2))
+
+; 4
+
+(say (square-2 3))
+
+; 9
+
+(say (square-3 4))
+
+; 16
+
+
+; Recursion and loops
+
+; Vaquero has tail-call optimization, so a program written in tail-recursive form can recurse forever without blowing the stack or devouring all the RAM.
+; loop is useful for anonymous recursion.
+; while has **next** and **last** operators.
+; for has **next**, **last**, and **redo**.
+
+(say
+   (let (items (list 2 3 5))
+      (loop recur (x items.head xs items.tail acc 1)
+         (let (new (* x acc))
+            (if xs
+               (recur xs.head xs.tail new)
+               new)))))
+
+; 30
+
+(say
+   (let (i (cell 0) total (cell 0))
+      (while (< i.get 20)
+         (total.set! (+ total.get i.get))
+         i.inc!
+         (list i.get total.get))))
+
+; (20 190)
+
+(say
+   (for (i (cell 0) total (cell 0)) (<= i.get 20) i.inc!
+      (total.set! (+ total.get i.get))
+      total.get))
+
+; 210
+
+
+; TCOFTW
+
+(say
+   (loop go (counter 1000000)
+      (if (= counter 0)
+         'done
+         (go counter.dec))))
+
+; time passes...
+; done
+
+
+; Quoting
+
+(def foo 17)
+(def bar (list 1 2 3))
+
+(say foo)
+; 17
+
+(say (quote foo))
+; foo
+
+(say 'foo)
+; foo
+
+(say bar)
+; (1 2 3)
+
+(say 'bar)
+; bar
+
+(say (quote (foo bar baz)))
+; (foo bar baz)
+
+(say '(foo bar baz))
+; (foo bar baz)
+
+; quasiquotation
+
+(say (qq (foo bar)))
+; (foo bar)
+
+(say (qq ((unq foo) (unq bar))))
+; (17 (1 2 3))
+
+(say (qq ((unq foo) (unqs bar))))
+; (17 1 2 3)
+
+; qq syntactic sugar
+
+(say %($foo $bar))
+; (17 (1 2 3))
+
+(say %($foo @bar))
+; (17 1 2 3)
+
