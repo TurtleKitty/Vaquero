@@ -27,10 +27,11 @@
       lambda       transform-2
       proc         transform-2
       proc-id      transform-3
-      wall         transform-2
+      let          transform-2 ; this is wrong
+      wall         transform-2 ; let and wall will need their var values transformed
       gate         transform-1
       capture      transform-2
-      guard        transform-2
+      guard        transform-2 ; guard may need its handler transformed
       fail         transform-1
       application  transform-n))
 
