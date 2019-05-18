@@ -115,7 +115,11 @@
                primitive-type
                'vector
                (lambda (args opts cont err)
-                  (vaquero-send-vector obj (caar args) cont err)))))
+                  (if (pair? (car args))
+                     (let ((msg (caar args)))
+                        (if (number? msg)      
+                           (vaquero-send-vector obj msg cont err)
+                           (err (vaquero-error-object 'message-not-understood `(,obj ,msg) "Message not understood.") cont))))))))
 
       (method v-default
          (if (number? msg)

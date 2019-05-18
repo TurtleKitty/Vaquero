@@ -121,12 +121,14 @@
          (method list-apply
             (cont
                (vaquero-proc
-                   primitive-type
-                   'list
-                   (lambda (args opts cont err)
-                       (if (pair? (car args))
-                           (vaquero-send-list obj (caar args) cont err)
-                           (err (vaquero-error-object 'message-not-understood `(,obj ,args ,opts) "Message not understood.") cont))))))
+                  primitive-type
+                  'list
+                  (lambda (args opts cont err)
+                     (if (pair? (car args))
+                        (let ((msg (caar args)))
+                           (if (number? msg)      
+                              (vaquero-send-list obj msg cont err)
+                              (err (vaquero-error-object 'message-not-understood `(,obj ,msg) "Message not understood.") cont))))))))
 
          (method list-eq?
             (cont (lambda (other)
