@@ -246,7 +246,7 @@ Such leads to an infinite loop.
 
 ### Object capability security on operating system interfaces
 
-The only global interfaces to the operating system are stdout, stdin, stderr, and hte global procedures which use them: read, write, print, say, and log.
+The only global interfaces to the operating system are stdout, stdin, stderr, and the global procedures which use them: read, write, print, say, and log.
 All parts of a program, including modules, have access to these.
 All other operating system services are contained in the [sys](https://github.com/TurtleKitty/Vaquero/wiki/sys) object, which is available only to the top-level program.
 Libraries that wish to read command-line arguments, fork processes, or open files must be passed this capability from the top-level.
