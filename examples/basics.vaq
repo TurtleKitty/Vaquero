@@ -135,8 +135,8 @@
 
 ; Vaquero has tail-call optimization, so a program written in tail-recursive form can recurse forever without blowing the stack or devouring all the RAM.
 ; loop is useful for anonymous recursion.
-; while has **next** and **last** operators.
-; for has **next**, **last**, and **redo**.
+; while has next and last operators.
+; for has next, last, and redo.
 
 (say
    (let (items (list 2 3 5))
