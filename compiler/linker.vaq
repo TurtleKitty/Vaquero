@@ -44,11 +44,12 @@
             @packages
             $module-env-UUID))
 
-      (proc $main-UUID (sys)
+      (def $main-UUID
+         (proc (sys)
          ; begin main program
          $main-program
          ; end main program
-      )
+      ))
 
       ($main-UUID $sys-UUID)))
 
