@@ -1,5 +1,4 @@
 
-
 (use generic "generic.vaq")
 
 (export transform)
@@ -13,7 +12,7 @@
    (if (pair? form)
       (case form.head
          (seq)
-            (let (defs (form.tail.filter is-def))
+            (let (defs (filter is-def form.tail))
                (def nulls (map (_ %(def $_.1 null)) defs))
                (def transformed
                   (map
