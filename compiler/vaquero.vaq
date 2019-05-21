@@ -28,11 +28,29 @@
    (def expanded (read-expand fname))
    (def ok (syntax-ok? expanded))
    (if ok
-      (let (linked (linker @expanded sys.fs))
+      (let (linked (linker expanded sys.fs))
          (let (compiled (compile linked))
-             #(doc append runtime and compile from here?)
-             #(doc return... what? the name?)
-             'the-compiled-file-name))
+            (def pwd sys.fs.pwd)
+            (def executable-name (fname.replace "\\.vaq$" "")) ; trim .vaq off the end
+            ; link runtime and self-executing lambda
+            (def schemed
+               %(begin
+                  (include "runtime.scm")
+                  (add-global-prelude (global-env))
+                  ($compiled (global-env) the-end top-err)))
+            (def tmp-dir sys.fs.tmp-dir)
+            (def tmp-file (cat tmp-dir "/compile_me.scm"))
+            (sys.fs.write-to tmp-file with: (L (s) s.write schemed))
+            (def chicken-cmd #(template
+               cd {{ tmp-dir }}
+               cp -a ~/dev/vaquero/interpreter/* .
+               csc -X r7rs -R r7rs -w -O2 -d0 {{ tmp-file }} -o a.out
+               cd {{ pwd }}
+               mv {{tmp-dir}}/a.out {{ executable-name }}
+               rm -rf {{ tmp-dir }}
+            ))
+            (sys.shell chicken-cmd)
+            executable-name.to-text))
       (fail 'syntax-error)))
 
 (op import-global-prelude ()
@@ -43,7 +61,7 @@
 
 (import-global-prelude)
 
-(def home-dir "~/.vaquero")
+(def home-dir              (cat sys.fs.home "/.vaquero"))
 (def vaquero-module-dir    (cat home-dir "/modules"))
 (def vaquero-expanded-dir  (cat home-dir "/expanded"))
 (def vaquero-compiled-dir  (cat home-dir "/compiled"))
