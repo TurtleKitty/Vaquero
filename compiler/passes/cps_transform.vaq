@@ -37,7 +37,7 @@
          (capture)  (cps-capture form)
          (guard)    (cps-guard form)
          (fail)     (cps-fail form)
-         else:   (cps-application form))
+         else:      (cps-application form))
       (cps-atom form)))
 
 (proc cps-quote (form)
@@ -107,7 +107,7 @@
    (cps-frag
       cont
       hand
-      %(vaquero-internal-primitive-proc $cont $hand null (quote $(proc-db.get.get form.1)) env (lambda $new-args $(cps form.tail.tail.tail)))))
+      %($cont (vaquero-internal-primitive-proc $cont $hand null (quote $(proc-db.get.get form.1)) env (lambda $new-args $(cps form.tail.tail.tail))))))
 
 (proc cps-let (form) ; FIXME
    null)
