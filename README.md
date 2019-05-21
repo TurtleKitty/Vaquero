@@ -273,7 +273,7 @@ The [wiki](https://github.com/TurtleKitty/Vaquero/wiki) contains a more detailed
 
 ### Bugs
 
-Most of the interpreter was written by Felix Winkelmann and the Chicken Scheme team and they even don't know it.
+Most of the interpreter was written by Felix Winkelmann and the Chicken Scheme team, only they don't know it.
 The bootstrap interpreter snarfs a lot of functionality from Chicken, so implementation details sometimes leak through.
 
 The REPL is a bit fragile.  It doesn't handle reader errors gracefully.
