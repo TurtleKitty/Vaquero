@@ -3,13 +3,13 @@
 
 (def modules (:))
 
-(def vaquero-expanded-dir "~/.vaquero/expanded")
+(def vaquero-expanded-dir (cell ""))
 
 (proc get-vaquero-path (f)
    (f.replace flags: "g" "[^a-zA-Z0-9_.]" "_"))
 
 (proc get-vaquero-expanded-path (f)
-   (cat with: "/" vaquero-expanded-dir (get-vaquero-path f)))
+   (cat with: "/" vaquero-expanded-dir.get (get-vaquero-path f)))
 
 ; (use <name> "path") -> (vaquero-module-UUID x y z)
 ; (import <name> names...) -> (seq (def ...))
@@ -18,7 +18,7 @@
 (def slurp (cell null))
 
 (proc linker (prog fs)
-   (log %(linker $prog))
+   (vaquero-expanded-dir.set! (cat fs.home "/.vaquero/expanded"))
    (slurp.set!
       (lambda (f)
          (fs.read-from
@@ -35,13 +35,13 @@
    (def mk-mod
       (lambda (m)
          (package-module m.head module-env-UUID (transform-uses m.tail))))
-   (def modules (map mk-mod module-list))
+   (def packages (map mk-mod module-list))
    (def main-program (transform-uses prog))
    %(lambda ($sys-UUID)
       ((send env 'merge!)
          (wall ()
             (def $module-env-UUID env)
-            @modules
+            @packages
             $module-env-UUID))
 
       (proc $main-UUID (sys)
