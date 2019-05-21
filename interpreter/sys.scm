@@ -2,6 +2,10 @@
 (define global-arg-pair
    (vaquero-cli-args (command-line-arguments)))
 
+(define shell-exec
+   (lambda (cmd)
+      (string-chomp (read-string #f (process cmd)))))
+
 (define sys-env
    (let ((get-env-ht (lambda () (alist->hash-table (get-environment-variables)))))
       (vaquero-object
@@ -52,6 +56,7 @@
          'mkdir     (lambda (dir) (create-directory dir #t) 'null)
          'rmdir     (lambda (dir) (delete-directory dir #t) 'null)
          'tmp-dir   (lambda () (create-temporary-directory))
+         'home      (shell-exec "ls -d ~")
          'stat      file-stat
          'exists?   file-exists?
          'dir?      directory?
@@ -250,8 +255,7 @@
             (lambda (v)
                (set-pseudo-random-seed! v)
                'null)
-         'shell (lambda (cmd)
-                   (string-chomp (read-string #f (process cmd))))
+         'shell   shell-exec
          '64764 (lambda () (display "\n   **** COMMODORE 64 BASIC V2 ****\n\n 64K RAM SYSTEM  38911 BASIC BYTES FREE\n\n") 'READY.)
          'launch-the-missile fire-missile)
       '(ts 64764 launch-the-missile)
