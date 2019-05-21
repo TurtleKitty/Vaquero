@@ -23,7 +23,7 @@
 (proc meow (label)
    i.inc!
    (def idx i.get)
-   (debug %($idx $label @rest)))
+   (log %($idx $label @rest)))
 
 (def order %(
    (normalize-procs . $normalize-procs)
