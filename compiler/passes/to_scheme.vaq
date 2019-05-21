@@ -11,5 +11,7 @@
             %(lambda $form.1 @(transform form.tail.tail))
          else:
             (map transform form))
-      form))
+      (if (and (list? form) form.empty?)
+         %(quote ())
+         form)))
 
