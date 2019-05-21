@@ -4,7 +4,7 @@
 (export transform)
 
 ; (proc (x y z ...) ...) -> (proc (opt x y z ...) ...)
-; (<proc> x y foo: 1 z bar: 2 ...) -> (<proc> (record 'foo 1 'bar 2) x y z ...)
+; (<proc> x y foo: 1 z bar: 2 ...) -> (<proc> (table 'foo 1 'bar 2) x y z ...)
 
 (proc transform (form)
    (if (pair? form)
@@ -27,11 +27,11 @@
                            (let (opts (pair xs.head (pair %(quote $x.to-symbol) options)))
                               (if (pair? xs.tail)
                                  (go xs.1 xs.tail.tail args opts)
-                                 %($the-head $(pair 'record opts.reverse) @args.reverse)))
+                                 %($the-head $(pair 'table opts.reverse) @args.reverse)))
                            (let (yarrrgs (pair x args))
                               (if (pair? xs)
                                  (go xs.head xs.tail yarrrgs options)
-                                 %($the-head $(if options (pair 'record @options.reverse) 'null) @yarrrgs.reverse))))))
+                                 %($the-head $(if options (pair 'table @options.reverse) 'null) @yarrrgs.reverse))))))
                   %($the-head null))))
       form))
 
