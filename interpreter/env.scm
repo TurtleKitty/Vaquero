@@ -370,7 +370,7 @@
              (cons 'cat vaquero-cat-global)
              (cons 'EOF (eof-object))
              (cons 'FILE_NOT_FOUND 'neither-true-nor-false)
-             (cons 'T_PAAMAYIM_NEKUDOTAYIM (quote ::))))
+             (cons 'T_PAAMAYIM_NEKUDOTAYIM "::")))
       (fill-prelude primitives)
       prelude)
    (if genv

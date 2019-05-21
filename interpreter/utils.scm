@@ -7,9 +7,10 @@
 (define hts! hash-table-set!)
 (define htd! hash-table-delete!)
 
-(define primitive-type 'primitive-procedure)
-(define not-found 'vaquero-internal-this-name-was-not-found)
-(define will-exist 'vaquero-internal-this-name-is-about-to-be-defined)
+(define null            'null)
+(define primitive-type  'primitive-procedure)
+(define not-found       'vaquero-internal-this-name-was-not-found)
+(define will-exist      'vaquero-internal-this-name-is-about-to-be-defined)
 
 (define (idk obj msg cont err)
    (err (vaquero-error-object 'message-not-understood `(send ,obj ,msg) "Message not understood.") cont))
@@ -310,4 +311,10 @@
 
 (define (vaquero-run program)
    (compile-and-apply-prog program the-end top-err))
+
+(define (vaquero-internal-primitive-proc cont hand opts formals env compiled)
+   (vaquero-procedure '(lambda) 'code-missing env compiled formals (length formals)))
+
+(define (vaquero-internal-primitive-apply cont hand opts fn args)
+   (vaquero-apply fn args opts cont hand))
 
