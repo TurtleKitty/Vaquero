@@ -279,3 +279,7 @@ The bootstrap interpreter snarfs a lot of functionality from Chicken, so impleme
 The REPL is a bit fragile.  It doesn't handle reader errors gracefully.
 
 Unix domain sockets are broken at the moment because the egg I used hasn't yet been updated to Chicken 5.
+
+The interpreter works well. The metacircular compiler is a work-in-progress; it ain't ready for prime-time.
+
+
