@@ -251,7 +251,7 @@ All parts of a program, including modules, have access to these.
 All other operating system services are contained in the [sys](https://github.com/TurtleKitty/Vaquero/wiki/sys) object, which is available only to the top-level program.
 Libraries that wish to read command-line arguments, fork processes, or open files must be passed this capability from the top-level.
 
-### Generic procedures with predicate dispatch
+### Generic procedures with multiple dispatch
 
 [gen](https://github.com/TurtleKitty/Vaquero/wiki/generic) and [spec](https://github.com/TurtleKitty/Vaquero/wiki/generic) allow the programmer to create generic procedures
 that dispatch based on the types of an arbitrary list of arguments.  It's one answer to the [expression problem](https://en.wikipedia.org/wiki/Expression_problem).
