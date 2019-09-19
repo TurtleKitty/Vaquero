@@ -13,6 +13,8 @@ chicken-install vector-lib
 chicken-install r7rs
 chicken-install system-information
 chicken-install posix-groups
+chicken-install udp6
+chicken-install tcp6
 
 # chicken-install unix-sockets # not yet updated to 5.0.0
 
