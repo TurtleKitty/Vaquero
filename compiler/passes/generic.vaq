@@ -19,11 +19,13 @@
    (def let-or-wall form.head)
    (def vars form.1)
    (def transformed-vars
-      (loop go (var vars.head val vars.1 others vars.tail.tail trans '())
-         (def noob (pair (transform val) (pair var trans)))
-         (if others
-            (go others.head others.tail others.tail.tail noob)
-            noob.reverse))) 
+      (if vars
+         (loop go (var vars.head val vars.1 others vars.tail.tail trans '())
+            (def noob (pair (transform val) (pair var trans)))
+            (if others
+               (go others.head others.tail others.tail.tail noob)
+               noob.reverse))
+         ()))
    %($let-or-wall $transformed-vars @(map transform form.tail.tail)))
 
 (proc transform-n (transform form)

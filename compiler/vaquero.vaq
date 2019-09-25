@@ -40,14 +40,14 @@
                   ($compiled (global-env) the-end top-err)))
             (def tmp-dir sys.fs.tmp-dir)
             (def tmp-file (cat tmp-dir "/compile_me.scm"))
-            (sys.fs.write-to tmp-file with: (L (s) s.write schemed))
+            (sys.fs.write-to tmp-file with: (L (s) (s.write schemed)))
             (def chicken-cmd #(template
                cd {{ tmp-dir }}
                cp -a ~/dev/vaquero/interpreter/* .
                csc -X r7rs -R r7rs -w -O2 -d0 {{ tmp-file }} -o a.out
                cd {{ pwd }}
                mv {{tmp-dir}}/a.out {{ executable-name }}
-               rm -rf {{ tmp-dir }}
+               # rm -rf {{ tmp-dir }}
             ))
             (sys.shell chicken-cmd)
             executable-name.to-text))
