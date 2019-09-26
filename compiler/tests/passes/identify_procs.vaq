@@ -1,0 +1,43 @@
+
+(use ip "../../passes/identify_procs.vaq")
+
+(def code
+   (quote
+      (seq
+         (def x 2357)
+         (if true 1 2)
+         (quote foo)
+         (let (y (* x 2)) y)
+         (wall (z (+ x 10)) z)
+         (gate (+ 1 (capture k 7)))
+         (guard (lambda (x) x) (quote code))
+         (fail (quote code))
+         (proc (u) (* u u))
+         (def xyzzy (proc (v) (+ v v v)))
+         (def groovy (proc (g gs) (qq (groovy (unq g) (unqs gs)))))
+         (+ 2 3 5)
+         (quote plain-symbol))))
+
+; (lambda (args) bodies...) -> (lambda $id (args) bodies...)
+; (proc (args) bodies...)   -> (proc $id (args) bodies...)
+
+(def db (:))
+
+(test identify-procs
+   (def trans (ip.transform code db))
+   (and
+      (= trans.head 'seq)
+      (= trans.1  '(def x 2357))
+      (= trans.2  '(if true 1 2))
+      (= trans.3  '(quote foo))
+      (= trans.4  '(let (y (* x 2)) y))
+      (= trans.5  '(wall (z (+ x 10)) z))
+      (= trans.6  '(gate (+ 1 (capture k 7))))
+      (= trans.7  %(guard (lambda $trans.7.tail.1 (x) x) 'code))
+      (= trans.8  '(fail 'code))
+      (= trans.9  %(proc $trans.9.1 (u) (* u u)))
+      (= trans.10 %(def xyzzy (proc $trans.10.2.1 (v) (+ v v v))))
+      (= trans.11 %(def groovy (proc $trans.11.2.1 (g gs) %(groovy $g @gs))))
+      (= trans.12 '(+ 2 3 5))
+      (= trans.13 'plain-symbol)))
+

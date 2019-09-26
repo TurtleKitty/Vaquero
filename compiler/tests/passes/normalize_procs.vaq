@@ -1,0 +1,42 @@
+
+(use np "../../passes/normalize_procs.vaq")
+
+(def code
+   (quote
+      (seq
+         (def x 2357)
+         (if true 1 2)
+         (quote foo)
+         (let (y (* x 2)) y)
+         (wall (z (+ x 10)) z)
+         (gate (+ 1 (capture k 7)))
+         (guard (lambda (x) x) 'code)
+         (fail 'code)
+         (proc (u) (* u u))
+         (proc xyzzy (v) (+ v v v))
+         (op groovy (g gs) %(groovy $g @gs))
+         (+ 2 3 5)
+         'plain-symbol)))
+
+; (proc name (args) bodies ...) -> (def name (proc (args) bodies ...))
+; (op name (args) bodies ...) -> (def name (proc (args) bodies ...))
+; (ops might as well become procs after compile time)
+
+(say (np.transform code))
+
+(test normalize-procs
+   (= (np.transform code)
+      '(seq
+         (def x 2357)
+         (if true 1 2)
+         (quote foo)
+         (let (y (* x 2)) y)
+         (wall (z (+ x 10)) z)
+         (gate (+ 1 (capture k 7)))
+         (guard (lambda (x) x) 'code)
+         (fail 'code)
+         (proc (u) (* u u))
+         (def xyzzy (proc (v) (+ v v v)))
+         (def groovy (proc (g gs) %(groovy $g @gs)))
+         (+ 2 3 5)
+         'plain-symbol)))
