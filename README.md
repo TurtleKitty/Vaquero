@@ -1,7 +1,7 @@
 Vaquero
 =======
 
-Vaquero is a Lisp variant with a single-dispatch message passing,
+Vaquero is a Lisp variant with single-dispatch message passing,
 multiple dispatch via generic procedures,
 first-class delimited lexical environments,
 first-class delimited continuations,
