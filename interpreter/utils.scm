@@ -114,7 +114,7 @@
 (define (vaquero-sort-alist ps)
    (sort ps
       (lambda (a b)
-         (vaquero-< (car a) (car b)))))
+         (vaquero-apply vaquero-lt (list (car a) (car b)) 'null top-cont top-err))))
 
 (define (vaquero-bool? x)
    (or (eq? x 'true) (eq? x 'false)))
@@ -174,48 +174,6 @@
       ((symbol? x)   4)
       ((string? x)   5)
       (else #f)))
-
-(define (vaquero-< x y)
-   (define (no-way)
-      (vaquero-error 'bad-< (list '< x y) (list "< cannot compare objects " x " and " y "!"))
-      #f)
-   (cond
-      ((and (number? x) (number? y)) (< x y))
-      ((vaquero-null? x) #t)
-      ((vaquero-null? y) #f)
-      ((and (vaquero-bool? x) (vaquero-bool? y)) (and (eq? x 'false) (eq? y 'true)))
-      ((and (vaquero-bool? x) (boolean? y)) (and (eq? x 'false) y))
-      ((and (char? x) (char? y) (char<? x y)))
-      ((and (symbol? x) (symbol? y)) (string<? (symbol->string x) (symbol->string y)))
-      ((and (string? x) (string? y)) (string<? x y))
-      ((and (boolean? x) (boolean? y)) (and (not x) y))
-      ((and (boolean? x) (vaquero-bool? y)) (and (not x) (eq? y 'true)))
-      (else
-         (let ((x-ord (vaquero-type-ord x)) (y-ord (vaquero-type-ord y)))
-            (if (not (and x-ord y-ord))
-               (no-way)
-               (< x-ord y-ord))))))
-
-(define (vaquero-> x y)
-   (define (no-way)
-      (vaquero-error 'bad-> (list '> x y) (list "> cannot compare objects " x " and " y "!"))
-      #f)
-   (cond
-      ((and (number? x) (number? y)) (> x y))
-      ((vaquero-null? x) #f)
-      ((vaquero-null? y) #t)
-      ((and (vaquero-bool? x) (vaquero-bool? y)) (and (eq? x 'true) (eq? y 'false)))
-      ((and (vaquero-bool? x) (boolean? y)) (and (eq? x 'true) (not y)))
-      ((and (char? x) (char? y) (char>? x y)))
-      ((and (symbol? x) (symbol? y)) (string>? (symbol->string x) (symbol->string y)))
-      ((and (string? x) (string? y)) (string>? x y))
-      ((and (boolean? x) (boolean? y)) (and x (not y)))
-      ((and (boolean? x) (vaquero-bool? y)) (and x (eq? y 'false)))
-      (else
-         (let ((x-ord (vaquero-type-ord x)) (y-ord (vaquero-type-ord y)))
-            (if (not (and x-ord y-ord))
-               (no-way)
-               (> x-ord y-ord))))))
 
 (define (keyword->symbol k)
    (string->symbol (keyword->string k)))

@@ -10,7 +10,7 @@
 (test set-empty?   (and s0.empty? (not s1.empty?)))
 (test set-equal?   (and (!= s1 s2) (= s1 s3)))
 (test set-to-bool  (and s0.to-bool.not s1.to-bool))
-(test set-to-list  (and (= () s0.to-list) (= '(2 3 5 7 11) (list-sort < s2.to-list))))
+(test set-to-list  (and (= () s0.to-list) (= '(2 3 5 7 11) (list-sort lt s2.to-list))))
 
 (test set-union
    (and (= (set 1 2 3 4 5 7 11) (s1.union s2))

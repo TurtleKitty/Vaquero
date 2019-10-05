@@ -12,7 +12,7 @@
 (test tuple-add      (= (tuple 'x 7 'y 11 'z 13) (t3.add 'z 13)))
 (test tuple-put      (and (= (tuple 'x 7 'y 13) (t3.put 'y 13)) (= (tuple 'x 7 'y 11 'z 13) (t3.put 'z 13))))
 (test tuple-del      (= (tuple 'x 7) (t3.del 'y)))
-(test tuple-fields   (= '(bar baz foo) (list-sort < t1.fields)))
+(test tuple-fields   (= '(bar baz foo) (list-sort lt t1.fields)))
 
 (test tuple-clone
    (let (noob t3.clone)

@@ -166,6 +166,61 @@
            (load       . ,vaq-env-load)
            (default    . ,env-default)))))
 
+(define vaquero-lt
+   (vaquero-proc
+      primitive-type
+      'lt
+      (lambda (args opts cont err)
+         (define len (length args))
+         (if (< len 2)
+            (err (vaquero-error-object 'bad-arguments `(lt ,@args) "lt requires 2 arguments.") cont)
+            (let ((x (car args)) (y (cadr args)))
+               (define result
+                  (cond
+                     ((and (number? x) (number? y)) (< x y))
+                     ((vaquero-null? x) #t)
+                     ((vaquero-null? y) #f)
+                     ((and (vaquero-bool? x) (vaquero-bool? y)) (and (eq? x 'false) (eq? y 'true)))
+                     ((and (vaquero-bool? x) (boolean? y)) (and (eq? x 'false) y))
+                     ((and (boolean? x) (boolean? y)) (and (not x) y))
+                     ((and (boolean? x) (vaquero-bool? y)) (and (not x) (eq? y 'true)))
+                     ((and (symbol? x) (symbol? y)) (string<? (symbol->string x) (symbol->string y)))
+                     ((and (string? x) (string? y)) (string<? x y))
+                     (else
+                        (let ((x-ord (vaquero-type-ord x)) (y-ord (vaquero-type-ord y)))
+                           (if (not (and x-ord y-ord))
+                              (err (vaquero-error-object 'bad-comparison (list 'lt x y) "lt cannot compare the given objects.") cont)
+                              (< x-ord y-ord))))))
+                  (cont result))))))
+
+(define vaquero-gt
+   (vaquero-proc
+      primitive-type
+      'gt
+      (lambda (args opts cont err)
+         (define len (length args))
+         (if (< len 2)
+            (err (vaquero-error-object 'bad-arguments `(gt ,@args) "gt requires 2 arguments.") cont)
+            (let ((x (car args)) (y (cadr args)))
+               (define result
+                  (cond
+                     ((and (number? x) (number? y)) (> x y))
+                     ((vaquero-null? x) #f)
+                     ((vaquero-null? y) #t)
+                     ((and (vaquero-bool? x) (vaquero-bool? y)) (and (eq? x 'true) (eq? y 'false)))
+                     ((and (vaquero-bool? x) (boolean? y)) (and (eq? x 'true) (not y)))
+                     ((and (char? x) (char? y) (char>? x y)))
+                     ((and (symbol? x) (symbol? y)) (string>? (symbol->string x) (symbol->string y)))
+                     ((and (string? x) (string? y)) (string>? x y))
+                     ((and (boolean? x) (boolean? y)) (and x (not y)))
+                     ((and (boolean? x) (vaquero-bool? y)) (and x (eq? y 'false)))
+                     (else
+                        (let ((x-ord (vaquero-type-ord x)) (y-ord (vaquero-type-ord y)))
+                           (if (not (and x-ord y-ord))
+                              (err (vaquero-error-object 'bad-comparison (list 'gt x y) "gt cannot compare the given objects.") cont)
+                              (> x-ord y-ord))))))
+                  (cont result))))))
+
 (define (local-env)
    (vaquero-environment 'null))
 
@@ -338,8 +393,10 @@
              (cons '* *)
              (cons '/ /)
              (cons '= vaquero-equal?)
-             (cons '> vaquero->)
-             (cons '< vaquero-<)
+             (cons '> >)
+             (cons '< <)
+             (cons 'gt vaquero-gt)
+             (cons 'lt vaquero-lt)
              (cons 'div quotient)
              (cons 'rem remainder)
              (cons 'mod modulo)

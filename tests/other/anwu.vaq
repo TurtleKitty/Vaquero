@@ -1,0 +1,5 @@
+
+(def sock (sys.net.tcp.connect "www.anwu.org" 80))
+(sock.print "GET /index.html HTTP/1.0\n\n")
+(say sock.read-text)
+
