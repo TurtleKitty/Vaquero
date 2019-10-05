@@ -121,8 +121,9 @@
 
       (method vaq-env-eval
          (cont
-            (lambda (code)
-               (vaquero-eval code obj))))
+            (vaquero-wrap-user-facing-interpreter
+               (lambda (code)
+                  (vaquero-eval code obj)))))
 
       (method vaq-env-expand
          (cont
@@ -131,8 +132,9 @@
 
       (method vaq-env-load
          (cont
-            (lambda (stream)
-               (vaquero-eval (vaquero-read-file stream) obj))))
+            (vaquero-wrap-user-facing-interpreter
+               (lambda (stream)
+                  (vaquero-eval (vaquero-read-file stream) obj)))))
 
       (method env-default
          (cont
@@ -365,8 +367,9 @@
              (cons 'stdout (current-output-port))
              (cons 'stderr (current-error-port))
              (cons 'read
-                (lambda ()
-                   (vaquero-read (current-input-port))))
+                (vaquero-wrap-user-facing-interpreter
+                   (lambda ()
+                      (vaquero-read (current-input-port)))))
              (cons 'write
                 (lambda (out)
                     (vaquero-write out (current-output-port))

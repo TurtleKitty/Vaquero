@@ -39,13 +39,15 @@
 
          (method stream-read
             (if-alive obj msg cont err
-               (lambda ()
-                  (vaquero-read obj))))
+               (vaquero-wrap-user-facing-interpreter
+                  (lambda ()
+                     (vaquero-read obj)))))
 
          (method read-seq
             (if-alive obj msg cont err
-               (lambda ()
-                  (vaquero-read-file obj))))
+               (vaquero-wrap-user-facing-interpreter
+                  (lambda ()
+                     (vaquero-read-file obj)))))
 
          (method stream-read-char
             (if-alive obj msg cont err

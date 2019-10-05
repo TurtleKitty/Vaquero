@@ -278,3 +278,10 @@
 (define (vaquero-internal-primitive-apply cont hand opts fn args)
    (vaquero-apply fn args opts cont hand))
 
+(define (vaquero-wrap-user-facing-interpreter funk)
+   (lambda rest
+      (handle-exceptions exn
+         (condition->list exn)
+         (apply funk rest))))
+
+
