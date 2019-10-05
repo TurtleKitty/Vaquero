@@ -47,14 +47,34 @@
             (vaquero-tuple (alist-copy (vaq-tuple-fields obj)) (vaq-tuple-size obj))))
 
       (method tuple-add
-         (cont (lambda (k v)
-            (define new-fields (cons (cons k v) (list-copy (vaq-tuple-fields obj))))
-            (vaquero-tuple new-fields (length new-fields)))))
+         (cont
+            (vaquero-proc
+               primitive-type
+               'tuple
+               (lambda (args opts cont err)
+                  (define len (length args))
+                  (if (< len 2)
+                     (err (vaquero-error-object 'bad-arguments `(tuple.add ,@args) "tuple.add requires 2 arguments."))
+                     (let ((k (car args)) (v (cadr args)))
+                        (define fields (vaq-tuple-fields obj))
+                        (define exists (assoc k fields))
+                        (if exists
+                           (err (vaquero-error-object 'field-exists `(tuple.add ,@args) "Named field already exists. Use 'put for functional updates."))
+                           (let ((new-fields (cons (cons k v) (list-copy (vaq-tuple-fields obj)))))
+                              (cont (vaquero-tuple new-fields (length new-fields)))))))))))
+
+      (method tuple-put
+         (cont
+            (lambda (k v)
+               (define fields (vaq-tuple-fields obj))
+               (define filtered (filter (lambda (kv) (not (eq? k (car kv)))) fields))
+               (define new-fields (cons (cons k v) filtered))
+               (vaquero-tuple new-fields (length new-fields)))))
 
       (method tuple-del
          (cont (lambda (k)
             (define new-fields (filter (lambda (p) (not (eq? k (car p))))
-                                       (list-copy (vaq-tuple-fields obj))))
+                                       (vaq-tuple-fields obj)))
             (vaquero-tuple new-fields (length new-fields)))))
 
       (method messages
@@ -113,6 +133,7 @@
            (view       . ,to-text)
            (clone      . ,tuple-clone)
            (add        . ,tuple-add)
+           (put        . ,tuple-put)
            (del        . ,tuple-del)
            (size       . ,size)
            (eq?        . ,tuple-eq?)

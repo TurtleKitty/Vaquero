@@ -10,6 +10,7 @@
 (test tuple-equal    (and (not (= t0 t1)) (= t1 t2)))
 (test tuple-get      (and (= t1.foo 2) (= t3.x 7)))
 (test tuple-add      (= (tuple 'x 7 'y 11 'z 13) (t3.add 'z 13)))
+(test tuple-put      (and (= (tuple 'x 7 'y 13) (t3.put 'y 13)) (= (tuple 'x 7 'y 11 'z 13) (t3.put 'z 13))))
 (test tuple-del      (= (tuple 'x 7) (t3.del 'y)))
 (test tuple-fields   (= '(bar baz foo) (list-sort < t1.fields)))
 
