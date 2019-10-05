@@ -48,8 +48,13 @@
    (display (list 'WARNING name form message)) (newline))
 
 (define (vaquero-error name form message)
-   (display (list 'ERROR name form message)) (newline)
-   (exit))
+   (signal
+      (condition
+         `(exn
+            location vaquero-error
+            name ,name
+            form ,form
+            message ,message))))
 
 (define (vaquero-error-object name form to-text)
    (vaquero-object `(type (error) name ,name form ,form to-text ,to-text message ,to-text view ,(lambda () (vector 'error name form to-text))) #f #f #f))
