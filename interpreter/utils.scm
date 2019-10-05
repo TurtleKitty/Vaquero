@@ -217,9 +217,6 @@
                (no-way)
                (> x-ord y-ord))))))
 
-(define (nodef x)
-   (vaquero-error 'undefined-symbol x "Symbol not defined"))
-
 (define (keyword->symbol k)
    (string->symbol (keyword->string k)))
 
