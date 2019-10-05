@@ -54,13 +54,13 @@
                (lambda (args opts cont err)
                   (define len (length args))
                   (if (< len 2)
-                     (err (vaquero-error-object 'bad-arguments `(tuple.add ,@args) "tuple.add requires 2 arguments."))
+                     (err (vaquero-error-object 'bad-arguments `(tuple.add ,@args) "tuple.add requires 2 arguments.") cont)
                      (let ((k (car args)) (v (cadr args)))
                         (define fields (vaq-tuple-fields obj))
                         (define exists (assoc k fields))
                         (if exists
-                           (err (vaquero-error-object 'field-exists `(tuple.add ,@args) "Named field already exists. Use 'put for functional updates."))
-                           (let ((new-fields (cons (cons k v) (list-copy (vaq-tuple-fields obj)))))
+                           (err (vaquero-error-object 'field-exists `(tuple.add ,@args) "Named field already exists. Use 'put for functional updates.") cont)
+                           (let ((new-fields (cons (cons k v) (list-copy fields))))
                               (cont (vaquero-tuple new-fields (length new-fields)))))))))))
 
       (method tuple-put
