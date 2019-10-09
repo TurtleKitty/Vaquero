@@ -1,10 +1,7 @@
 
 (define (check-vaquero-syntax prog)
    (if (and (pair? prog) (list? prog))
-      (let ((first (car prog)))
-         (if (and (pair? first) (eq? 'modules (car first)))
-            (check-vaquero-form (cadr prog)) ; skip (modules)
-            (check-vaquero-form first)))
+      (check-vaquero-form prog)
       #t))
 
 (define (check-vaquero-form form)
@@ -42,8 +39,7 @@
    #f)
 
 (define (check-vaquero-list form)
-   (define (check-with-db form) (check-vaquero-form form))
-   (define bool-party (map check-with-db form))
+   (define bool-party (map check-vaquero-form form))
    (define true? (lambda (x) (eq? x #t)))
    (every true? bool-party))
 
