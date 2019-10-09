@@ -31,7 +31,7 @@
 (define (find-file path)
    (define (fnf f)
       (debug "File not found!" f)
-      (exit))
+      (vaquero-error 'file-not-found path "Could not find module file."))
    (cond
       ((symbol? path) #f)
       ((uri? path)

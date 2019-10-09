@@ -37,11 +37,11 @@
          (else (read port)))))
 
 (define (vaquero-read-error-handler e kont)
-   (debug 'read-error
+   (define error-view
       (if (vaquero-error? e)
          (map (lambda (f) (vaquero-view (vaquero-send-atomic e f))) '(name form to-text))
          (vaquero-view e)))
-   (exit))
+   (vaquero-error 'read-error error-view "Error while reading s-expression."))
 
 (define (vaquero-read-structure port)
    (let ((nothing (read-char port)) ; ditch the #

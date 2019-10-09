@@ -36,14 +36,16 @@
 (import (chicken string))
 (import (chicken time))
 
+
 (define top-cont identity)
+
 (define top-err
    (lambda (ex continue)
-      (debug 'runtime-error
+      (define runtime-error
          (if (vaquero-error? ex)
             (map (lambda (f) (vaquero-view (vaquero-send-atomic ex f))) '(name form to-text))
             (vaquero-view ex)))
-      (exit)))
+      (vaquero-error 'runtime-error runtime-error "Error while executing program.")))
 
 (define *cwd* (current-directory))
 (define *use-cache* #t)

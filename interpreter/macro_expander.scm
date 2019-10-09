@@ -3,11 +3,11 @@
 
 (define expand-err
    (lambda (ex continue)
-      (debug 'compile-error
+      (define error-view
          (if (vaquero-error? ex)
             (map (lambda (f) (vaquero-view (vaquero-send-atomic ex f))) '(name form to-text))
             (vaquero-view ex)))
-      (exit)))
+      (vaquero-error 'expand-error error-view "Error expanding s-expression." )))
 
 (define (vaquero-expand code env)
    (define (expand x)
@@ -44,11 +44,11 @@
                            (begin
                               (hts! done-been-expanded p #t) ; FIXME modules should be importable more than once
                               (vaquero-expand-use re-use env))))
-                     (exit)))
+                     (vaquero-error 'expand-error code "Error expanding use statement." )))
                ((import)
                   (if (check-vaquero-import code)
                      (vaquero-expand-import code env)
-                     (exit)))
+                     (vaquero-error 'expand-error code "Error expanding import statement." )))
                ((export)
                   (if (check-vaquero-export code)
                      (let ((names (cdr code))
@@ -56,7 +56,7 @@
                         (vaquero-apply setter! (list 'vaquero-internal-exports names) 'null
                            (lambda (v) code)
                            expand-err))
-                     (exit)))
+                     (vaquero-error 'expand-error code "Error expanding export statement." )))
                ((op)
                   (let* ((noo-env (noob)) (nucode (map (lambda (c) (vaquero-expand c noo-env)) code)))
                      ((vaquero-compile nucode) env top-cont expand-err)
@@ -70,19 +70,19 @@
                      (let ((expanded (punt)))
                         (prep-defs (cdr expanded) env top-cont expand-err)
                         expanded)
-                     (exit)))
+                     (vaquero-error 'expand-error code "Error expanding seq statement." )))
                ((let)
                   (if (> (length code) 2)
                      (cons head (vaquero-expand (cdr code) (noob)))
-                     (exit)))
+                     (vaquero-error 'expand-error code "Error expanding let statement." )))
                ((wall)
                   (if (> (length code) 2)
                      (cons head (vaquero-expand (cdr code) (local-env)))
-                     (exit)))
+                     (vaquero-error 'expand-error code "Error expanding wall statement." )))
                ((quote)
                   (if (= (length code) 2)
                      code
-                     (exit)))
+                     (vaquero-error 'expand-error code "Error expanding quote statement." )))
                (else
                   (if (symbol? head)
                      (let ((obj (look-it-up head)))
@@ -114,8 +114,7 @@
    (define prog (read-expand-cache-prog path prog-env))
    (define use-err
       (lambda (e cont)
-         (debug 'use-error e)
-         (exit)))
+         (vaquero-error 'use-error code "Error expanding module.")))
    (define (looker name)
       (lookup prog-env name top-cont use-err))
    (define exports (looker 'vaquero-internal-exports))
@@ -138,8 +137,7 @@
    (define import-names (cddr code))
    (define import-err
       (lambda (e cont)
-         (debug 'import-error e)
-         (exit)))
+         (vaquero-error 'import-error code "Error expanding module.")))
    (define package  (lookup env package-name top-cont import-err))
    (define def-env! (vaquero-send-atomic env 'def!))
    (define yargs
