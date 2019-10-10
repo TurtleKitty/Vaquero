@@ -23,6 +23,8 @@ sh ./bin/run_tests.sh
 
 Compilation should take a minute or two. `run_tests.sh` will execute a few hundred tests written in Vaquero. This should give the user a feel for whether the compilation worked.
 
+Or you can build an image from the Dockerfile, if you're into that sort of thing. It will boot into a repl with `docker run -it lang/vaquero`.
+
 ```bash
 home> ./vaquero 
 
