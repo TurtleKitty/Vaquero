@@ -172,9 +172,10 @@
          (let ((len (length args)))
             (if (= len 0)
                (err (vaquero-error-object 'bad-arguments `(sys.proc.spawn ,@args) "Shell command required.") cont)
-               (let ((cmd (car args)))
+               (let ((cmd (car args))
+		     (cmd-args  (cdr args)))
                   (define env (if (hte? opts 'env) (hash-table->alist (htr opts 'env)) '()))
-                  (define-values (stdout stdin pid stderr) (process* cmd '() env))
+                  (define-values (stdout stdin pid stderr) (process* cmd cmd-args env))
                   (cont
                      (vaquero-object
                         (list
