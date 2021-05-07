@@ -110,7 +110,7 @@
       (method split
          (cont
             (vaquero-proc
-               primitive-type
+               primitive-code
                'text
                (lambda (args opts cont err)
                   (define flags (vaquero-send-atomic opts 'flags))
@@ -124,7 +124,7 @@
       (method match
          (cont
             (vaquero-proc
-               primitive-type
+               primitive-code
                'text
                (lambda (args opts cont err)
                   (define flags (vaquero-send-atomic opts 'flags))
@@ -138,7 +138,7 @@
       (method capture
          (cont
             (vaquero-proc
-               primitive-type
+               primitive-code
                'text
                (lambda (args opts cont err)
                   (define flags (vaquero-send-atomic opts 'flags))
@@ -159,7 +159,7 @@
       (method replace
          (cont
             (vaquero-proc
-               primitive-type
+               primitive-code
                'text
                (lambda (args opts cont err)
                   (define fopt (vaquero-send-atomic opts 'flags))

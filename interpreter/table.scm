@@ -118,7 +118,7 @@
       (method table-apply
          (cont
             (vaquero-proc
-               primitive-type
+               primitive-code
                'table
                (lambda (args opts cont err)
                   (vaquero-send-table obj (caar args) cont err)))))

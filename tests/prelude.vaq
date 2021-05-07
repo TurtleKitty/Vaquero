@@ -517,3 +517,10 @@
                         (x.set! 0 5)
                         (+ 2 (fail x.0))))))
         (and (= x.0 3) (= y 12)))))
+
+(test proc-type
+   (= '(proc lambda) cat.type))
+
+(test proc-code
+   (= '(proc (xyzzy) 0xDEADBEEF) cat.code))
+

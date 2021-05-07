@@ -72,7 +72,7 @@
                (cons (vaquero-fs-socket '? in1 out1) (vaquero-fs-socket '? in2 out2)))
          'read-from
             (vaquero-proc
-               primitive-type
+               primitive-code
                'sys
                (lambda (args opts cont err)
                   (define len (length args))
@@ -89,7 +89,7 @@
                         (cont (open-input-file (car args)))))))
          'write-to
             (vaquero-proc
-               primitive-type
+               primitive-code
                'sys
                (lambda (args opts cont err)
                   (define len (length args))
@@ -166,7 +166,7 @@
 
 (define vaquero-spawn-process
    (vaquero-proc
-      primitive-type
+      primitive-code
       'sys
       (lambda (args opts cont err)
          (let ((len (length args)))

@@ -49,7 +49,7 @@
       (method tuple-add
          (cont
             (vaquero-proc
-               primitive-type
+               primitive-code
                'tuple
                (lambda (args opts cont err)
                   (define len (length args))

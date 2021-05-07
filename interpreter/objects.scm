@@ -35,7 +35,7 @@
             (write (htr fields 'type)) (newline)
             (write view-obj-messages) (newline)
             (vaquero-warning 'view-must-be-a-thunk `(object 'view ,(vaquero-view view-obj)) "The 'view message of a user-defined object must be a thunk."))
-         (if (eq? view-view primitive-type)
+         (if (eq? view-view primitive-code)
             'ignore-it
             (if (and has-apply has-arity)
                (let* ((arity (vaquero-send-atomic view-obj 'arity))
@@ -58,7 +58,7 @@
 
 (define (default-udo-idk this)
    (vaquero-proc
-      primitive-type
+      primitive-code
       'object
       (lambda (args opts cont err)
          (idk this (car args) cont err))))

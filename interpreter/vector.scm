@@ -73,7 +73,7 @@
       (method v-get
          (cont
             (vaquero-proc
-               primitive-type
+               primitive-code
                'vector
                (lambda (args opts cont err)
                   (define idx (car args))
@@ -84,7 +84,7 @@
       (method v-set!
          (cont
             (vaquero-proc
-               primitive-type
+               primitive-code
                'vector
                (lambda (args opts cont err)
                   (define idx (car args))
@@ -112,7 +112,7 @@
       (method v-apply
          (cont
             (vaquero-proc
-               primitive-type
+               primitive-code
                'vector
                (lambda (args opts cont err)
                   (if (pair? (car args))

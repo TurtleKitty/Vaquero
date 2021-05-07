@@ -39,7 +39,7 @@
          (cont '(lambda)))
 
       (method view
-         (cont primitive-type))
+         (cont primitive-code))
 
       (method to-bool
          (cont #t))
@@ -124,7 +124,7 @@
       (method proc-apply
          (cont
             (vaquero-proc
-               primitive-type
+               primitive-code
                'proc
                (lambda (args opts cont err)
                   (define min-args 1)

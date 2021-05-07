@@ -49,7 +49,7 @@
          (define vars (vaquero-env-vars obj))
          (cont
             (vaquero-proc
-               primitive-type
+               primitive-code
                'env
                (lambda (args opts cont err)
                    (define getter (vaquero-send-table vars 'get  top-cont err))
@@ -69,7 +69,7 @@
       (method env-lookup
          (cont
             (vaquero-proc
-                primitive-type
+                primitive-code
                 'env
                 (lambda (args opts cont err)
                    (lookup
@@ -85,7 +85,7 @@
       (method env-merge!
          (cont
             (vaquero-proc
-                primitive-type
+                primitive-code
                 'env
                 (lambda (args opts cont err)
                    (define (arg-fail form)
@@ -108,7 +108,7 @@
       (method env-extend
          (cont
             (vaquero-proc
-               primitive-type
+               primitive-code
                'env
                (lambda (args opts cont err)
                    (let loop ((names '()) (vals '()) (left args))
@@ -170,7 +170,7 @@
 
 (define vaquero-lt
    (vaquero-proc
-      primitive-type
+      primitive-code
       'lt
       (lambda (args opts cont err)
          (define len (length args))
@@ -197,7 +197,7 @@
 
 (define vaquero-gt
    (vaquero-proc
-      primitive-type
+      primitive-code
       'gt
       (lambda (args opts cont err)
          (define len (length args))
@@ -244,7 +244,7 @@
          (map setem! fs))
       (define vaquero-make-vector
          (vaquero-proc
-             primitive-type
+             primitive-code
              'global
              (lambda (args opts cont err)
                 (define size ((vaquero-send-atomic opts 'get) 'size))
@@ -257,7 +257,7 @@
                       (apply vector args))))))
       (define vaquero-make-tuple
          (vaquero-proc
-            primitive-type
+            primitive-code
             'global
             (lambda (args opts cont err)
                (if (not (eq? (modulo (length args) 2) 0))
@@ -265,19 +265,19 @@
                   (cont (apply make-vaquero-tuple args))))))
       (define vaquero-make-set
          (vaquero-proc
-            primitive-type
+            primitive-code
             'global
             (lambda (args opts cont err)
                (cont (apply make-vaquero-set args)))))
       (define vaquero-make-table
          (vaquero-proc
-            primitive-type
+            primitive-code
             'global
             (lambda (args opts cont err)
                (cont (apply vaquero-table args)))))
       (define vaquero-make-object
          (vaquero-proc
-            primitive-type
+            primitive-code
             'global
             (lambda (args opts cont err)
                (define autos (vaquero-send-atomic opts 'auto))
@@ -335,7 +335,7 @@
             #f))
       (define vaquero-send-global
          (vaquero-proc
-            primitive-type
+            primitive-code
             'global
             (lambda (args opts cont err)
                (define l (length args))
@@ -346,7 +346,7 @@
                   (vaquero-send (car args) (cadr args) cont err)))))
       (define vaquero-cat-global
          (vaquero-proc
-            primitive-type
+            primitive-code
             'global
             (lambda (args opts cont err)
                (define l (length args))

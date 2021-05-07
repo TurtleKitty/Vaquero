@@ -121,7 +121,7 @@
          (method list-apply
             (cont
                (vaquero-proc
-                  primitive-type
+                  primitive-code
                   'list
                   (lambda (args opts cont err)
                      (if (pair? (car args))

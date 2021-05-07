@@ -8,7 +8,7 @@
 (define htd! hash-table-delete!)
 
 (define null            'null)
-(define primitive-type  'primitive-procedure)
+(define primitive-code  '(proc (xyzzy) 0xDEADBEEF))
 (define not-found       'vaquero-internal-this-name-was-not-found)
 (define will-exist      'vaquero-internal-this-name-is-about-to-be-defined)
 

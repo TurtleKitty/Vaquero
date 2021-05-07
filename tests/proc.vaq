@@ -2,7 +2,7 @@
 ; primitives
 
 (test primitive-type (= pair.type '(lambda)))
-(test primitive-view (= pair.view 'primitive-procedure))
+(test primitive-view (= pair.view '(proc (xyzzy) 0xDEADBEEF)))
 (test primitive-code (= pair.code '0xDEADBEEF))
 (test primitive-true (= pair.to-bool true))
 (test primitive-env (= pair.env 'global))
