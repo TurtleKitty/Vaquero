@@ -48,13 +48,17 @@
    (display (list 'WARNING name form message)) (newline))
 
 (define (vaquero-error name form message)
-   (signal
+   (define whoops
       (condition
          `(exn
             location vaquero-error
             name ,name
             form ,form
-            message ,message))))
+            message ,message)))
+   (define stderr (current-error-port))
+   (write (condition->list whoops) stderr)
+   (newline stderr)
+   (signal whoops))
 
 (define (vaquero-error-object name form to-text)
    (vaquero-object `(type (error) name ,name form ,form to-text ,to-text message ,to-text view ,(lambda () (vector 'error name form to-text))) #f #f #f))
