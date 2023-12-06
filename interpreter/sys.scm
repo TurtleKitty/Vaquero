@@ -4,7 +4,10 @@
 
 (define shell-exec
    (lambda (cmd)
-      (string-chomp (read-string #f (process cmd)))))
+      (define output (read-string #f (process cmd)))
+      (if (string? output)
+         (string-chomp output)
+         null)))
 
 (define sys-env
    (let ((get-env-ht (lambda () (alist->hash-table (get-environment-variables)))))
