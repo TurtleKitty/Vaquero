@@ -2,7 +2,7 @@
 (def host "localhost")
 (def port 9999)
 
-(def L (sys.net.tcp.listen host port))
+(def listener (sys.net.tcp.listen host port))
 
 (say "Server booted")
 
@@ -22,10 +22,10 @@
 (sys.proc.fork sender)
 
 (loop listen ()
-   (if L.ready?
+   (if listener.ready?
       (seq
          (say "Server ready")
-         (def sock L.accept)
+         (def sock listener.accept)
          (say "Server reading")
          (def request sock.read)
          (def n request.tail)
